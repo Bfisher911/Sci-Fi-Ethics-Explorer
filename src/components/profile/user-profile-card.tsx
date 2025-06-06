@@ -48,34 +48,39 @@ export function UserProfileCard() {
   useEffect(() => {
     const fetchProfile = async () => {
       if (authUser) {
-        console.log(`UserProfileCard useEffect: authUser found. UID: '${authUser.uid}', DisplayName: '${authUser.displayName}'`); // Client-side log
+        console.log(`UserProfileCard useEffect: authUser found. UID: '${authUser.uid}', DisplayName: '${authUser.displayName}'`);
         setIsLoadingProfile(true);
         setProfileError(null);
         try {
-          if (!authUser.uid) { // Safety check
+          if (!authUser.uid) {
             console.error("UserProfileCard: authUser.uid is undefined or empty!");
-            throw new Error("Authenticated user UID is missing.");
+            setProfileError("Authenticated user UID is missing.");
+            setIsLoadingProfile(false);
+            return;
           }
-          const userProfileData = await getUserProfile(authUser.uid);
-          setProfile(userProfileData);
-          
-          const nameParts = (userProfileData?.displayName || authUser.displayName || authUser.email?.split('@')[0] || '').trim().split(/\s+/);
-          const defaultFirstName = userProfileData?.firstName || nameParts[0] || '';
-          const defaultLastName = userProfileData?.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : '');
+          const result = await getUserProfile(authUser.uid);
+          if (result.success) {
+            setProfile(result.data);
+            const userProfileData = result.data;
+            const nameParts = (userProfileData?.displayName || authUser.displayName || authUser.email?.split('@')[0] || '').trim().split(/\s+/);
+            const defaultFirstName = userProfileData?.firstName || nameParts[0] || '';
+            const defaultLastName = userProfileData?.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : '');
 
-          setEditDisplayName(userProfileData?.displayName || authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer');
-          setEditFirstName(defaultFirstName);
-          setEditLastName(defaultLastName);
-          setEditFavoriteGenre(userProfileData?.favoriteGenre || '');
-          setEditAvatarUrl(userProfileData?.avatarUrl || authUser.photoURL || '');
-          setEditRole(userProfileData?.role || 'Explorer');
-
+            setEditDisplayName(userProfileData?.displayName || authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer');
+            setEditFirstName(defaultFirstName);
+            setEditLastName(defaultLastName);
+            setEditFavoriteGenre(userProfileData?.favoriteGenre || '');
+            setEditAvatarUrl(userProfileData?.avatarUrl || authUser.photoURL || '');
+            setEditRole(userProfileData?.role || 'Explorer');
+          } else {
+            throw new Error(result.error);
+          }
         } catch (error: any) {
           console.error("UserProfileCard: Failed to fetch profile:", error);
-          setProfileError(error.message || "Could not load your profile.");
-          toast({ title: "Error Loading Profile", description: error.message || "Could not load your profile.", variant: "destructive" });
+          const errorMessage = error.message || "Could not load your profile.";
+          setProfileError(errorMessage);
+          toast({ title: "Error Loading Profile", description: errorMessage, variant: "destructive" });
 
-          // Fallback initialization for edit fields if profile fetch fails
           const nameParts = (authUser.displayName || authUser.email?.split('@')[0] || '').trim().split(/\s+/);
           const defaultFirstName = nameParts[0] || '';
           const defaultLastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
@@ -91,7 +96,7 @@ export function UserProfileCard() {
         }
       } else if (!authLoading) {
           setIsLoadingProfile(false);
-          setProfile(null); // No authenticated user, so no profile to load
+          setProfile(null);
       }
     };
     fetchProfile();
@@ -106,39 +111,39 @@ export function UserProfileCard() {
     setIsUpdating(true);
     try {
       const updatedData: Partial<UserProfile> = {
-        // uid is not directly updated here; it's the document key
         displayName: editDisplayName,
         firstName: editFirstName,
         lastName: editLastName,
         favoriteGenre: editFavoriteGenre,
         avatarUrl: editAvatarUrl,
         role: editRole,
-        // isAdmin is not user-editable, don't include it here
       };
-      await updateUserProfile(authUser.uid, updatedData); // updateUserProfile will add uid to the data for Firestore.
+      const result = await updateUserProfile(authUser.uid, updatedData);
       
-      // Optimistically update local profile state
-      setProfile(prev => ({
-        ...(prev || { // Base for new profile if prev was null
-            uid: authUser.uid,
-            email: authUser.email,
-            storiesCompleted: 0,
-            dilemmasAnalyzed: 0,
-            communitySubmissions: 0,
-            isAdmin: prev?.isAdmin || false, // Preserve isAdmin if it was set
-            createdAt: prev?.createdAt || new Date(), // Placeholder if new
-        }),
-        ...updatedData, // Apply updated fields
-        // Ensure all required fields for UserProfile are present
-        displayName: editDisplayName,
-        firstName: editFirstName,
-        lastName: editLastName,
-        favoriteGenre: editFavoriteGenre,
-        avatarUrl: editAvatarUrl,
-        role: editRole,
-        lastUpdated: new Date(), // Client-side optimistic update
-      } as UserProfile));
-      toast({ title: "Profile Updated", description: "Your changes have been saved." });
+      if (result.success) {
+        setProfile(prev => ({
+          ...(prev || {
+              uid: authUser.uid,
+              email: authUser.email,
+              storiesCompleted: 0,
+              dilemmasAnalyzed: 0,
+              communitySubmissions: 0,
+              isAdmin: prev?.isAdmin || false,
+              createdAt: prev?.createdAt || new Date(),
+          }),
+          ...updatedData,
+          displayName: editDisplayName,
+          firstName: editFirstName,
+          lastName: editLastName,
+          favoriteGenre: editFavoriteGenre,
+          avatarUrl: editAvatarUrl,
+          role: editRole,
+          lastUpdated: new Date(),
+        } as UserProfile));
+        toast({ title: "Profile Updated", description: "Your changes have been saved." });
+      } else {
+        throw new Error(result.error);
+      }
     } catch (error: any) {
       console.error("UserProfileCard: Failed to update profile:", error);
       toast({ title: "Error Updating Profile", description: error.message || "Could not update your profile.", variant: "destructive" });
@@ -175,8 +180,6 @@ export function UserProfileCard() {
     );
   }
   
-  // Fallback profile data structure if `profile` is null but `authUser` exists
-  // This allows the "Edit Profile" dialog to function and create the profile.
   const defaultFirstNameForDisplay = editFirstName || (authUser.displayName?.trim().split(/\s+/)[0] || '');
   const defaultLastNameForDisplay = editLastName || (authUser.displayName?.trim().split(/\s+/).slice(1).join(' ') || '');
 
@@ -192,15 +195,14 @@ export function UserProfileCard() {
     dilemmasAnalyzed: 0,
     communitySubmissions: 0,
     role: editRole || 'Explorer',
-    isAdmin: profile?.isAdmin || false, // Preserve isAdmin from fetched if available
-    createdAt: profile?.createdAt, // Undefined if no profile fetched yet
-    lastUpdated: profile?.lastUpdated, // Undefined if no profile fetched yet
+    isAdmin: profile?.isAdmin || false,
+    createdAt: profile?.createdAt,
+    lastUpdated: profile?.lastUpdated,
   };
   
   const cardTitle = displayProfile.displayName || `${displayProfile.firstName} ${displayProfile.lastName}`.trim() || 'No Name Set';
   const fullNameDisplay = `${displayProfile.firstName} ${displayProfile.lastName}`.trim();
   const showFullNameLine = fullNameDisplay && fullNameDisplay !== displayProfile.displayName;
-
 
   const engagementStats = [
     { label: "Dilemmas Explored", value: displayProfile.storiesCompleted || 0, icon: BookOpenCheck },
@@ -219,7 +221,7 @@ export function UserProfileCard() {
 
   return (
     <>
-    {profileError && ( // Show error regardless of whether profile object exists, if error is present
+    {profileError && (
         <Alert variant="destructive" className="mb-6 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Error Loading Profile</AlertTitle>
@@ -232,7 +234,7 @@ export function UserProfileCard() {
                 Please check your Firestore rules.
               </strong>
             )}
-             {!isPermissionError && (
+             {!isPermissionError && !profileError.includes("User UID is required") && (
               <p className="mt-2">
                 You can try to update and save your profile using the "Edit Profile" button below.
                 This might create the profile if it's missing and your Firestore write permissions are correctly set.
@@ -241,7 +243,7 @@ export function UserProfileCard() {
           </AlertDescription>
         </Alert>
       )}
-      {!profileError && !profile && authUser && ( // Show this only if no error AND no profile but authUser exists
+      {!profileError && !profile && authUser && (
         <Alert variant="info" className="mb-6 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm">
           <UserCog className="h-4 w-4" />
           <AlertTitle>Complete Your Profile</AlertTitle>
@@ -306,12 +308,11 @@ export function UserProfileCard() {
                             id="editRole"
                             value={editRole}
                             onChange={(e) => setEditRole(e.target.value)}
-                            // Disable if current user is not an admin AND the role is Admin (unless it's their own current role)
                             disabled={!displayProfile.isAdmin && roles.includes('Admin') && editRole === 'Admin' && displayProfile.role !== 'Admin'}
                             className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-input px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {roles
-                              .filter(r => displayProfile.isAdmin || r !== 'Admin' || r === displayProfile.role) // Non-admins can't select Admin unless they are already Admin
+                              .filter(r => displayProfile.isAdmin || r !== 'Admin' || r === displayProfile.role)
                               .map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
                     </div>

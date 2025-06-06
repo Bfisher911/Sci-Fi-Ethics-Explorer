@@ -5,12 +5,17 @@ import { db } from '@/lib/firebase/config';
 import { doc, getDoc, setDoc, serverTimestamp, type Timestamp } from 'firebase/firestore';
 import type { UserProfile } from '@/types';
 
-export async function getUserProfile(uid: string): Promise<UserProfile | null> {
+type GetUserProfileResult = { success: true; data: UserProfile | null } | { success: false; error: string };
+type MutateUserProfileResult = { success: true } | { success: false; error: string };
+
+
+export async function getUserProfile(uid: string): Promise<GetUserProfileResult> {
   console.log(`[SERVER ACTION] getUserProfile: Received UID to fetch: '${uid}'`);
 
   if (!uid || uid.trim() === "") {
-    console.error("[SERVER ACTION] getUserProfile: Called with undefined, null, or empty UID.");
-    throw new Error("User UID is required to fetch profile and was not provided or was empty.");
+    const errorMsg = "[SERVER ACTION] getUserProfile: Called with undefined, null, or empty UID. User UID is required to fetch profile.";
+    console.error(errorMsg);
+    return { success: false, error: "User UID is required to fetch profile and was not provided or was empty." };
   }
   console.log(`[SERVER ACTION] getUserProfile: Attempting to fetch profile for UID: ${uid} from 'users' collection`);
   try {
@@ -26,7 +31,7 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
         if (timestamp instanceof Date) return timestamp;
         // @ts-ignore Firestore Timestamps have a toDate method
         if (timestamp.toDate) return timestamp.toDate();
-        if (typeof timestamp === 'string') return new Date(timestamp); // Handle ISO string if necessary
+        if (typeof timestamp === 'string') return new Date(timestamp);
         return undefined;
       };
 
@@ -47,23 +52,24 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
         lastUpdated: toDate(data.lastUpdated as Timestamp | Date | undefined),
       };
       console.log(`[SERVER ACTION] getUserProfile: Processed profile for UID ${uid}:`, JSON.stringify(profile));
-      return profile;
+      return { success: true, data: profile };
     } else {
       console.log(`[SERVER ACTION] getUserProfile: No profile document found for UID: ${uid} in 'users' collection.`);
-      return null;
+      return { success: true, data: null };
     }
   } catch (error) {
     console.error(`[SERVER ACTION] getUserProfile: Error fetching user profile from Firestore for UID ${uid}:`, error);
     const specificErrorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(`Could not fetch user profile. Original error: ${specificErrorMessage}`);
+    return { success: false, error: `Could not fetch user profile. Original error: ${specificErrorMessage}` };
   }
 }
 
-export async function updateUserProfile(uid: string, data: Partial<UserProfile>): Promise<void> {
+export async function updateUserProfile(uid: string, data: Partial<UserProfile>): Promise<MutateUserProfileResult> {
   console.log(`[SERVER ACTION] updateUserProfile: Received UID: '${uid}', Data:`, JSON.stringify(data));
   if (!uid || uid.trim() === "") {
-    console.error("[SERVER ACTION] updateUserProfile: Called with undefined, null, or empty UID.");
-    throw new Error("User UID is required to update profile and was not provided or was empty.");
+    const errorMsg = "[SERVER ACTION] updateUserProfile: Called with undefined, null, or empty UID. User UID is required to update profile.";
+    console.error(errorMsg);
+    return { success: false, error: "User UID is required to update profile and was not provided or was empty."};
   }
   console.log(`[SERVER ACTION] updateUserProfile: Attempting to update/create profile for UID: ${uid} in 'users' collection`);
   try {
@@ -71,28 +77,26 @@ export async function updateUserProfile(uid: string, data: Partial<UserProfile>)
 
     const updateData: Record<string, any> = {
       ...data,
-      lastUpdated: serverTimestamp(),
       uid: uid, // Ensure uid is always part of the data being set/merged
+      lastUpdated: serverTimestamp(),
     };
-
-    // Remove uid from data if it was destructured, as it's already in updateData.uid
-    // However, by explicitly setting updateData.uid = uid, we ensure it's correct.
-    // No need to delete `data.uid` as `...data` spread comes first.
 
     await setDoc(userDocRef, updateData, { merge: true });
     console.log(`[SERVER ACTION] updateUserProfile: Successfully updated/created profile for UID: ${uid}`);
+    return { success: true };
   } catch (error) {
     console.error(`[SERVER ACTION] updateUserProfile: Error updating/creating user profile for UID ${uid}:`, error);
     const specificErrorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(`Could not update/create user profile. Original error: ${specificErrorMessage}`);
+    return { success: false, error: `Could not update/create user profile. Original error: ${specificErrorMessage}` };
   }
 }
 
-export async function createUserProfile(uid: string, email: string | null, displayName?: string, avatarUrl?: string): Promise<void> {
+export async function createUserProfile(uid: string, email: string | null, displayName?: string, avatarUrl?: string): Promise<MutateUserProfileResult> {
   console.log(`[SERVER ACTION] createUserProfile: Received UID: '${uid}', Email: ${email}, DisplayName: ${displayName}`);
   if (!uid || uid.trim() === "") {
-    console.error("[SERVER ACTION] createUserProfile: Called with undefined, null, or empty UID.");
-    throw new Error("User UID is required to create profile and was not provided or was empty.");
+    const errorMsg = "[SERVER ACTION] createUserProfile: Called with undefined, null, or empty UID. User UID is required to create profile.";
+    console.error(errorMsg);
+    return { success: false, error: "User UID is required to create profile and was not provided or was empty." };
   }
   console.log(`[SERVER ACTION] createUserProfile: Attempting to create profile for UID: ${uid} in 'users' collection`);
   try {
@@ -112,7 +116,7 @@ export async function createUserProfile(uid: string, email: string | null, displ
     }
 
     const initialProfileData: UserProfile = {
-      uid: uid, // CRITICAL: This must match request.auth.uid for create rule and be present in the document
+      uid: uid,
       email: email || null,
       displayName: displayName || email?.split('@')[0] || 'Anonymous Explorer',
       firstName: initialFirstName,
@@ -132,9 +136,10 @@ export async function createUserProfile(uid: string, email: string | null, displ
 
     await setDoc(userDocRef, initialProfileData);
     console.log(`[SERVER ACTION] createUserProfile: Successfully created profile for UID: ${uid} with data:`, JSON.stringify(initialProfileData).replace(/"now"/g, "serverTimestamp()"));
+    return { success: true };
   } catch (error) {
     console.error(`[SERVER ACTION] createUserProfile: Error creating user profile for UID ${uid}:`, error);
     const specificErrorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(`Could not create user profile. Original error: ${specificErrorMessage}`);
+    return { success: false, error: `Could not create user profile. Original error: ${specificErrorMessage}` };
   }
 }

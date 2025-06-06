@@ -10,9 +10,9 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase/config'; // db import might be removable if not used elsewhere here
-import { doc, getDoc } from 'firebase/firestore'; // getDoc is still needed for Google Sign-In check
-import { createUserProfile } from '@/app/actions/user'; // Import the server action
+import { auth, db } from '@/lib/firebase/config';
+import { doc, getDoc } from 'firebase/firestore';
+import { createUserProfile } from '@/app/actions/user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -45,9 +45,17 @@ export function AuthForms() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      // Use the server action to create the user profile
-      await createUserProfile(user.uid, user.email, displayName, user.photoURL || '');
-      toast({ title: "Account Created", description: "Welcome to Sci-Fi Ethics Explorer!" });
+      const profileResult = await createUserProfile(user.uid, user.email, displayName || user.displayName, user.photoURL || '');
+      if (!profileResult.success) {
+        // If profile creation failed, we should probably inform the user or retry.
+        // For now, we'll log the error and still proceed to redirect,
+        // as the auth user IS created. Profile can be completed later.
+        console.error("Sign up: Auth user created, but profile creation failed:", profileResult.error);
+        setError(`Account created, but profile setup failed: ${profileResult.error}. You can complete your profile later.`);
+        toast({ title: "Account Created with Issues", description: `Authentication successful, but profile setup encountered an error: ${profileResult.error}. Please try updating your profile.`, variant: "destructive", duration: 7000 });
+      } else {
+        toast({ title: "Account Created", description: "Welcome to Sci-Fi Ethics Explorer!" });
+      }
       router.push('/stories');
     } catch (err: any) {
       setError(err.message);
@@ -106,10 +114,17 @@ export function AuthForms() {
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
       if (!userDoc.exists()) {
-        // Use the server action to create the user profile if it doesn't exist
-        await createUserProfile(user.uid, user.email, user.displayName, user.photoURL || '');
+        const profileResult = await createUserProfile(user.uid, user.email, user.displayName, user.photoURL || '');
+        if (!profileResult.success) {
+            console.error("Google Sign-In: New user, but profile creation failed:", profileResult.error);
+            setError(`Signed in, but profile setup failed: ${profileResult.error}. You can complete your profile later.`);
+            toast({ title: "Signed In with Issues", description: `Authentication successful, but profile setup encountered an error: ${profileResult.error}. Please try updating your profile.`, variant: "destructive", duration: 7000 });
+        } else {
+            toast({ title: "Signed in with Google", description: "Welcome!" });
+        }
+      } else {
+        toast({ title: "Signed in with Google", description: "Welcome back!" });
       }
-      toast({ title: "Signed in with Google", description: "Welcome!" });
       router.push('/stories');
     } catch (err: any) {
       setError(err.message);
@@ -201,7 +216,7 @@ export function AuthForms() {
           </div>
 
           <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading}>
-            <ChromeIcon className="mr-2 h-4 w-4" /> {/* Using ChromeIcon as a stand-in for Google icon */}
+            <ChromeIcon className="mr-2 h-4 w-4" />
             {isLoading ? 'Processing...' : 'Sign in with Google'}
           </Button>
 
@@ -224,4 +239,3 @@ export function AuthForms() {
     </div>
   );
 }
-
