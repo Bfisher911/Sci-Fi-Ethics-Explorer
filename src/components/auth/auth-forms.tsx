@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, type FormEvent } from 'react';
@@ -9,8 +10,9 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase/config';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase/config'; // db import might be removable if not used elsewhere here
+import { doc, getDoc } from 'firebase/firestore'; // getDoc is still needed for Google Sign-In check
+import { createUserProfile } from '@/app/actions/user'; // Import the server action
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,17 +45,10 @@ export function AuthForms() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      // Create a user profile in Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
-        email: user.email,
-        displayName: displayName || user.email?.split('@')[0] || 'Anonymous User',
-        avatarUrl: user.photoURL || '',
-        favoriteGenre: '',
-        createdAt: new Date(),
-      });
+      // Use the server action to create the user profile
+      await createUserProfile(user.uid, user.email, displayName, user.photoURL || '');
       toast({ title: "Account Created", description: "Welcome to Sci-Fi Ethics Explorer!" });
-      router.push('/stories'); // Redirect to a protected page
+      router.push('/stories');
     } catch (err: any) {
       setError(err.message);
       toast({ title: "Sign Up Error", description: err.message, variant: "destructive" });
@@ -70,7 +65,7 @@ export function AuthForms() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: "Login Successful", description: "Welcome back!" });
-      router.push('/stories'); // Redirect to a protected page
+      router.push('/stories');
     } catch (err: any) {
       setError(err.message);
       toast({ title: "Login Error", description: err.message, variant: "destructive" });
@@ -107,18 +102,12 @@ export function AuthForms() {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      // Check if user exists in Firestore, if not, create a profile
+      
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
       if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName || user.email?.split('@')[0] || 'Anonymous User',
-          avatarUrl: user.photoURL || '',
-          favoriteGenre: '',
-          createdAt: new Date(),
-        });
+        // Use the server action to create the user profile if it doesn't exist
+        await createUserProfile(user.uid, user.email, user.displayName, user.photoURL || '');
       }
       toast({ title: "Signed in with Google", description: "Welcome!" });
       router.push('/stories');
@@ -235,3 +224,4 @@ export function AuthForms() {
     </div>
   );
 }
+
