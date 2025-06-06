@@ -48,31 +48,38 @@ export function UserProfileCard() {
   useEffect(() => {
     const fetchProfile = async () => {
       if (authUser) {
+        console.log(`UserProfileCard useEffect: authUser found. UID: '${authUser.uid}', DisplayName: '${authUser.displayName}'`); // Client-side log
         setIsLoadingProfile(true);
         setProfileError(null);
         try {
+          if (!authUser.uid) { // Safety check
+            console.error("UserProfileCard: authUser.uid is undefined or empty!");
+            throw new Error("Authenticated user UID is missing.");
+          }
           const userProfileData = await getUserProfile(authUser.uid);
           setProfile(userProfileData);
-          const nameParts = authUser.displayName?.trim().split(/\s+/) || [];
-          const defaultFirstName = nameParts[0] || '';
-          const defaultLastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+          
+          const nameParts = (userProfileData?.displayName || authUser.displayName || authUser.email?.split('@')[0] || '').trim().split(/\s+/);
+          const defaultFirstName = userProfileData?.firstName || nameParts[0] || '';
+          const defaultLastName = userProfileData?.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : '');
 
           setEditDisplayName(userProfileData?.displayName || authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer');
-          setEditFirstName(userProfileData?.firstName || defaultFirstName);
-          setEditLastName(userProfileData?.lastName || defaultLastName);
+          setEditFirstName(defaultFirstName);
+          setEditLastName(defaultLastName);
           setEditFavoriteGenre(userProfileData?.favoriteGenre || '');
           setEditAvatarUrl(userProfileData?.avatarUrl || authUser.photoURL || '');
           setEditRole(userProfileData?.role || 'Explorer');
 
         } catch (error: any) {
-          console.error("Failed to fetch profile:", error);
+          console.error("UserProfileCard: Failed to fetch profile:", error);
           setProfileError(error.message || "Could not load your profile.");
           toast({ title: "Error Loading Profile", description: error.message || "Could not load your profile.", variant: "destructive" });
 
-          const nameParts = authUser.displayName?.trim().split(/\s+/) || [];
+          // Fallback initialization for edit fields if profile fetch fails
+          const nameParts = (authUser.displayName || authUser.email?.split('@')[0] || '').trim().split(/\s+/);
           const defaultFirstName = nameParts[0] || '';
           const defaultLastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-
+          
           setEditDisplayName(authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer');
           setEditFirstName(defaultFirstName);
           setEditLastName(defaultLastName);
@@ -84,7 +91,7 @@ export function UserProfileCard() {
         }
       } else if (!authLoading) {
           setIsLoadingProfile(false);
-          setProfile(null);
+          setProfile(null); // No authenticated user, so no profile to load
       }
     };
     fetchProfile();
@@ -92,40 +99,48 @@ export function UserProfileCard() {
 
   const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
-    if (!authUser) return;
+    if (!authUser || !authUser.uid) {
+      toast({ title: "Authentication Error", description: "User not authenticated.", variant: "destructive" });
+      return;
+    }
     setIsUpdating(true);
     try {
       const updatedData: Partial<UserProfile> = {
+        // uid is not directly updated here; it's the document key
         displayName: editDisplayName,
         firstName: editFirstName,
         lastName: editLastName,
         favoriteGenre: editFavoriteGenre,
         avatarUrl: editAvatarUrl,
         role: editRole,
+        // isAdmin is not user-editable, don't include it here
       };
-      await updateUserProfile(authUser.uid, updatedData);
+      await updateUserProfile(authUser.uid, updatedData); // updateUserProfile will add uid to the data for Firestore.
+      
+      // Optimistically update local profile state
       setProfile(prev => ({
-        ...(prev || {
+        ...(prev || { // Base for new profile if prev was null
             uid: authUser.uid,
             email: authUser.email,
             storiesCompleted: 0,
             dilemmasAnalyzed: 0,
             communitySubmissions: 0,
-            isAdmin: prev?.isAdmin || false,
-            createdAt: prev?.createdAt || new Date(),
+            isAdmin: prev?.isAdmin || false, // Preserve isAdmin if it was set
+            createdAt: prev?.createdAt || new Date(), // Placeholder if new
         }),
-        ...updatedData,
+        ...updatedData, // Apply updated fields
+        // Ensure all required fields for UserProfile are present
         displayName: editDisplayName,
         firstName: editFirstName,
         lastName: editLastName,
         favoriteGenre: editFavoriteGenre,
         avatarUrl: editAvatarUrl,
         role: editRole,
-        lastUpdated: new Date(),
+        lastUpdated: new Date(), // Client-side optimistic update
       } as UserProfile));
       toast({ title: "Profile Updated", description: "Your changes have been saved." });
     } catch (error: any) {
-      console.error("Failed to update profile:", error);
+      console.error("UserProfileCard: Failed to update profile:", error);
       toast({ title: "Error Updating Profile", description: error.message || "Could not update your profile.", variant: "destructive" });
     } finally {
       setIsUpdating(false);
@@ -159,32 +174,32 @@ export function UserProfileCard() {
         </Card>
     );
   }
-
-  const defaultDisplayName = authUser.displayName || authUser.email?.split('@')[0] || '';
-  const nameParts = defaultDisplayName.trim().split(/\s+/) || [];
-  const initialFirstName = profile?.firstName || nameParts[0] || '';
-  const initialLastName = profile?.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : '');
-
+  
+  // Fallback profile data structure if `profile` is null but `authUser` exists
+  // This allows the "Edit Profile" dialog to function and create the profile.
+  const defaultFirstNameForDisplay = editFirstName || (authUser.displayName?.trim().split(/\s+/)[0] || '');
+  const defaultLastNameForDisplay = editLastName || (authUser.displayName?.trim().split(/\s+/).slice(1).join(' ') || '');
 
   const displayProfile: UserProfile = profile || {
     uid: authUser.uid,
     email: authUser.email,
-    displayName: authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer',
-    firstName: initialFirstName,
-    lastName: initialLastName,
-    avatarUrl: authUser.photoURL || '',
-    favoriteGenre: '',
+    displayName: editDisplayName || authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer',
+    firstName: defaultFirstNameForDisplay,
+    lastName: defaultLastNameForDisplay,
+    avatarUrl: editAvatarUrl || authUser.photoURL || '',
+    favoriteGenre: editFavoriteGenre || '',
     storiesCompleted: 0,
     dilemmasAnalyzed: 0,
     communitySubmissions: 0,
-    role: 'Explorer',
-    isAdmin: false,
-    createdAt: undefined,
-    lastUpdated: undefined,
+    role: editRole || 'Explorer',
+    isAdmin: profile?.isAdmin || false, // Preserve isAdmin from fetched if available
+    createdAt: profile?.createdAt, // Undefined if no profile fetched yet
+    lastUpdated: profile?.lastUpdated, // Undefined if no profile fetched yet
   };
   
-  const cardTitle = displayProfile.displayName || `${displayProfile.firstName} ${displayProfile.lastName}`.trim() || 'Anonymous Explorer';
-  const showFullNameLine = displayProfile.displayName && (displayProfile.firstName || displayProfile.lastName) && displayProfile.displayName !== `${displayProfile.firstName} ${displayProfile.lastName}`.trim();
+  const cardTitle = displayProfile.displayName || `${displayProfile.firstName} ${displayProfile.lastName}`.trim() || 'No Name Set';
+  const fullNameDisplay = `${displayProfile.firstName} ${displayProfile.lastName}`.trim();
+  const showFullNameLine = fullNameDisplay && fullNameDisplay !== displayProfile.displayName;
 
 
   const engagementStats = [
@@ -204,7 +219,7 @@ export function UserProfileCard() {
 
   return (
     <>
-    {profileError && !profile && (
+    {profileError && ( // Show error regardless of whether profile object exists, if error is present
         <Alert variant="destructive" className="mb-6 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Error Loading Profile</AlertTitle>
@@ -226,14 +241,14 @@ export function UserProfileCard() {
           </AlertDescription>
         </Alert>
       )}
-      {!profileError && !profile && authUser && (
+      {!profileError && !profile && authUser && ( // Show this only if no error AND no profile but authUser exists
         <Alert variant="info" className="mb-6 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm">
           <UserCog className="h-4 w-4" />
           <AlertTitle>Complete Your Profile</AlertTitle>
           <AlertDescription>
-            It seems your profile hasn't been fully saved to our database yet, or we couldn't access it.
-            (If you see repeated "Missing or insufficient permissions" errors after attempting to save, please check your Firestore security rules in the Firebase Console).
+            It seems your profile hasn't been fully saved to our database yet.
             Please use the "Edit Profile" button to create or save your details.
+            If you encounter permission errors after attempting to save, please check your Firestore security rules in the Firebase Console.
           </AlertDescription>
         </Alert>
       )}
@@ -241,7 +256,7 @@ export function UserProfileCard() {
     <Card className="max-w-2xl mx-auto shadow-xl bg-card/70 backdrop-blur-sm">
       <CardHeader className="items-center text-center relative pb-4">
         <Avatar className="h-24 w-24 mb-4 border-4 border-primary shadow-lg">
-          <AvatarImage src={editAvatarUrl || displayProfile.avatarUrl || undefined} alt={cardTitle} data-ai-hint="profile avatar" />
+          <AvatarImage src={displayProfile.avatarUrl || undefined} alt={cardTitle} data-ai-hint="profile avatar" />
           <AvatarFallback className="text-3xl bg-muted text-muted-foreground">
             {cardTitle ? cardTitle.charAt(0).toUpperCase() : <User />}
           </AvatarFallback>
@@ -249,7 +264,7 @@ export function UserProfileCard() {
         <CardTitle className="text-3xl font-bold text-primary">{cardTitle}</CardTitle>
         {showFullNameLine && (
              <p className="text-md text-muted-foreground">
-               Full Name: {displayProfile.firstName} {displayProfile.lastName}
+               (Full Name: {fullNameDisplay})
              </p>
         )}
         <div className="flex items-center gap-2 mt-1">
@@ -291,10 +306,13 @@ export function UserProfileCard() {
                             id="editRole"
                             value={editRole}
                             onChange={(e) => setEditRole(e.target.value)}
+                            // Disable if current user is not an admin AND the role is Admin (unless it's their own current role)
+                            disabled={!displayProfile.isAdmin && roles.includes('Admin') && editRole === 'Admin' && displayProfile.role !== 'Admin'}
                             className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-input px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            {roles.filter(r => displayProfile.isAdmin || r !== 'Admin').map(r => <option key={r} value={r}>{r}</option>)}
-                            {displayProfile.isAdmin && <option value="Admin">Admin (Current)</option>}
+                            {roles
+                              .filter(r => displayProfile.isAdmin || r !== 'Admin' || r === displayProfile.role) // Non-admins can't select Admin unless they are already Admin
+                              .map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
                     </div>
                     <div className="space-y-1.5">
