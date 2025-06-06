@@ -1,3 +1,4 @@
+
 import type { User as FirebaseUser } from 'firebase/auth';
 
 export interface UserProfile {
@@ -10,6 +11,8 @@ export interface UserProfile {
   storiesCompleted?: number;
   dilemmasAnalyzed?: number;
   communitySubmissions?: number;
+  createdAt?: Date; // Store as Date object in the app
+  lastUpdated?: Date; // Store as Date object in the app
 }
 
 export interface StoryChoice {
@@ -67,7 +70,8 @@ export interface SubmittedDilemma {
   authorId?: string; // Firebase UID if logged in
   imageUrl?: string;
   imageHint?: string;
-  submittedAt: Date;
+  // Store as Date in app, will be Timestamp in Firestore
+  submittedAt: Date | any; // Allow 'any' for serverTimestamp during creation
   status: 'pending' | 'approved' | 'rejected';
 }
 
