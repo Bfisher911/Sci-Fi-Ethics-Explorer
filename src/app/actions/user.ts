@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/firebase/config';
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp, type Timestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, type Timestamp } from 'firebase/firestore';
 import type { UserProfile } from '@/types';
 
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
@@ -21,10 +21,10 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
       
       const toDate = (timestamp: Timestamp | Date | undefined): Date | undefined => {
         if (!timestamp) return undefined;
-        if (timestamp instanceof Date) return timestamp; // Already a Date
-        if (typeof timestamp === 'string') return new Date(timestamp); // ISO string
+        if (timestamp instanceof Date) return timestamp;
         // @ts-ignore
         if (timestamp.toDate) return timestamp.toDate(); // Firestore Timestamp
+        if (typeof timestamp === 'string') return new Date(timestamp); // ISO string for flexibility, though Firestore should give Timestamp
         return undefined;
       };
 
@@ -37,6 +37,8 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
         storiesCompleted: data.storiesCompleted || 0,
         dilemmasAnalyzed: data.dilemmasAnalyzed || 0,
         communitySubmissions: data.communitySubmissions || 0,
+        role: data.role || 'Explorer',
+        isAdmin: data.isAdmin || false,
         createdAt: toDate(data.createdAt as Timestamp | Date | undefined),
         lastUpdated: toDate(data.lastUpdated as Timestamp | Date | undefined),
       };
@@ -61,23 +63,17 @@ export async function updateUserProfile(uid: string, data: Partial<UserProfile>)
   try {
     const userDocRef = doc(db, 'users', uid);
     
-    // Prepare data for Firestore, ensuring serverTimestamp is used
     const updateData: Record<string, any> = { 
       ...data, 
       lastUpdated: serverTimestamp() 
     };
     
-    // Remove fields that shouldn't be directly updated this way or are handled by serverTimestamp
-    // uid and email are part of the profile data but usually not changed here.
-    // createdAt should only be set on creation.
     delete updateData.createdAt; 
     if (data.uid && data.uid !== uid) {
         console.warn("Attempting to change UID in updateUserProfile. This is not allowed. Using original UID.");
     }
     updateData.uid = uid; // Ensure UID is part of the data for creation/merge
 
-    // Using setDoc with merge: true will create the document if it doesn't exist,
-    // or update/merge fields if it does.
     await setDoc(userDocRef, updateData, { merge: true });
     console.log(`Successfully updated/created profile for UID: ${uid}`);
   } catch (error) {
@@ -96,7 +92,8 @@ export async function createUserProfile(uid: string, email: string | null, displ
     const userDocRef = doc(db, 'users', uid);
     const now = serverTimestamp();
     
-    const initialProfileData: UserProfile = {
+    // Ensure this structure matches the UserProfile type and expectations.
+    const initialProfileData: Record<string, any> = {
       uid,
       email: email || null,
       displayName: displayName || email?.split('@')[0] || 'Anonymous Explorer',
@@ -105,13 +102,13 @@ export async function createUserProfile(uid: string, email: string | null, displ
       storiesCompleted: 0,
       dilemmasAnalyzed: 0,
       communitySubmissions: 0,
-      // @ts-ignore serverTimestamp will be converted by Firestore
+      role: 'Explorer', // Default role
+      isAdmin: false, // Default admin status
       createdAt: now,
-      // @ts-ignore
       lastUpdated: now,
     };
 
-    await setDoc(userDocRef, initialProfileData);
+    await setDoc(userDocRef, initialProfileData, { merge: true }); // Use merge:true to be safe, though it's a create operation
     console.log(`Successfully created profile for UID: ${uid} with data:`, JSON.stringify(initialProfileData).replace(/"now"/g, "serverTimestamp()"));
   } catch (error) {
     console.error(`Error creating user profile for UID ${uid}:`, error);

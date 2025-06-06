@@ -4,7 +4,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import type { UserProfile } from '@/types';
-import { getUserProfile, updateUserProfile } from '@/app/actions/user'; // Server Actions
+import { getUserProfile, updateUserProfile } from '@/app/actions/user'; 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Library, Tv, Save, Loader2, Edit3, BarChartHorizontalBig, BookOpenCheck, MessageSquarePlus, AlertTriangle } from 'lucide-react';
+import { User, Mail, Library, Tv, Save, Loader2, Edit3, BarChartHorizontalBig, BookOpenCheck, MessageSquarePlus, AlertTriangle, ShieldCheck, UserCog } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -24,11 +24,13 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from '@/components/ui/badge';
 
 const genres = ["Cyberpunk", "Space Opera", "Post-Apocalyptic", "Biopunk", "Time Travel", "Utopian/Dystopian", "Military Sci-Fi", "Philosophical Sci-Fi"];
+const roles = ["Explorer", "Contributor", "Moderator"]; // Example roles for editing
 
 export function UserProfileCard() {
-  const { user:authUser, loading: authLoading } = useAuth();
+  const { user: authUser, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -38,8 +40,8 @@ export function UserProfileCard() {
   const [editDisplayName, setEditDisplayName] = useState('');
   const [editFavoriteGenre, setEditFavoriteGenre] = useState('');
   const [editAvatarUrl, setEditAvatarUrl] = useState('');
+  const [editRole, setEditRole] = useState('Explorer'); // Added for editing
   const [isUpdating, setIsUpdating] = useState(false);
-
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -49,25 +51,24 @@ export function UserProfileCard() {
         try {
           const userProfileData = await getUserProfile(authUser.uid);
           setProfile(userProfileData);
-          // Initialize edit fields from profile data or authUser fallbacks
           setEditDisplayName(userProfileData?.displayName || authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer');
           setEditFavoriteGenre(userProfileData?.favoriteGenre || '');
           setEditAvatarUrl(userProfileData?.avatarUrl || authUser.photoURL || '');
-
+          setEditRole(userProfileData?.role || 'Explorer');
         } catch (error: any) {
           console.error("Failed to fetch profile:", error);
           setProfileError(error.message || "Could not load your profile.");
           toast({ title: "Error Loading Profile", description: error.message || "Could not load your profile.", variant: "destructive" });
-           // Initialize edit fields from authUser as a fallback if profile fetch fails but authUser exists
           setEditDisplayName(authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer');
           setEditFavoriteGenre('');
           setEditAvatarUrl(authUser.photoURL || '');
+          setEditRole('Explorer');
         } finally {
           setIsLoadingProfile(false);
         }
       } else if (!authLoading) {
-          setIsLoadingProfile(false); // Not logged in, not loading
-          setProfile(null); // Clear profile if user logs out
+          setIsLoadingProfile(false); 
+          setProfile(null);
       }
     };
     fetchProfile();
@@ -79,29 +80,29 @@ export function UserProfileCard() {
     setIsUpdating(true);
     try {
       const updatedData: Partial<UserProfile> = {
-        // uid is implicitly authUser.uid in the action
         displayName: editDisplayName,
         favoriteGenre: editFavoriteGenre,
         avatarUrl: editAvatarUrl,
+        role: editRole,
       };
       await updateUserProfile(authUser.uid, updatedData);
-      // Optimistically update local profile state or re-fetch
       setProfile(prev => ({
-        ...(prev || { // Base structure if prev was null
+        ...(prev || { 
             uid: authUser.uid,
             email: authUser.email,
             storiesCompleted: 0,
             dilemmasAnalyzed: 0,
             communitySubmissions: 0,
+            isAdmin: false, // Default for new if prev is null
         }),
         ...updatedData,
-        displayName: editDisplayName, // ensure direct state update
+        displayName: editDisplayName, 
         favoriteGenre: editFavoriteGenre,
         avatarUrl: editAvatarUrl,
-        lastUpdated: new Date(), // Optimistic update for UI
+        role: editRole,
+        lastUpdated: new Date(), 
       } as UserProfile));
       toast({ title: "Profile Updated", description: "Your changes have been saved." });
-      // Dialog will close itself via DialogClose if used within form submission
     } catch (error: any) {
       console.error("Failed to update profile:", error);
       toast({ title: "Error Updating Profile", description: error.message || "Could not update your profile.", variant: "destructive" });
@@ -138,7 +139,6 @@ export function UserProfileCard() {
     );
   }
   
-  // authUser exists, but profile might be null (if fetch failed or document doesn't exist)
   const displayProfile = profile || {
     uid: authUser.uid,
     email: authUser.email,
@@ -148,10 +148,11 @@ export function UserProfileCard() {
     storiesCompleted: 0,
     dilemmasAnalyzed: 0,
     communitySubmissions: 0,
-    createdAt: undefined, // Will be undefined if profile is null
+    role: 'Explorer',
+    isAdmin: false,
+    createdAt: undefined, 
     lastUpdated: undefined,
   };
-
 
   const engagementStats = [
     { label: "Dilemmas Explored", value: displayProfile.storiesCompleted || 0, icon: BookOpenCheck },
@@ -166,7 +167,6 @@ export function UserProfileCard() {
     ? new Date(displayProfile.createdAt).toLocaleDateString()
     : 'N/A';
 
-
   return (
     <>
     {profileError && !profile && (
@@ -174,18 +174,18 @@ export function UserProfileCard() {
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Profile Data Missing</AlertTitle>
           <AlertDescription>
-            We couldn't load your saved profile data from the database. This might be because it wasn't created correctly during sign-up.
+            We couldn't load your saved profile data. This might be because it wasn't created correctly.
             You can try to save your profile information by using the "Edit Profile" button.
-            Error details: {profileError}
+            Error: {profileError}
           </AlertDescription>
         </Alert>
       )}
       {!profileError && !profile && authUser && (
         <Alert variant="info" className="mb-6 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Profile Not Found</AlertTitle>
+          <UserCog className="h-4 w-4" />
+          <AlertTitle>Complete Your Profile</AlertTitle>
           <AlertDescription>
-            It seems your profile hasn't been saved to our database yet. 
+            It seems your profile hasn't been fully saved to our database yet. 
             Please use the "Edit Profile" button to create and save your details.
           </AlertDescription>
         </Alert>
@@ -200,7 +200,11 @@ export function UserProfileCard() {
           </AvatarFallback>
         </Avatar>
         <CardTitle className="text-3xl font-bold text-primary">{displayProfile.displayName || 'Anonymous Explorer'}</CardTitle>
-        <CardDescription className="text-md text-muted-foreground flex items-center"><Mail className="mr-2 h-4 w-4"/>{displayProfile.email}</CardDescription>
+        <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-sm">{displayProfile.role || 'Explorer'}</Badge>
+            {displayProfile.isAdmin && <Badge variant="destructive" className="text-sm bg-accent text-accent-foreground"><ShieldCheck className="mr-1 h-4 w-4" />Admin</Badge>}
+        </div>
+        <CardDescription className="text-md text-muted-foreground flex items-center mt-1"><Mail className="mr-2 h-4 w-4"/>{displayProfile.email}</CardDescription>
          <Dialog>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="absolute top-4 right-4 text-primary hover:text-accent border-primary hover:border-accent">
@@ -211,13 +215,24 @@ export function UserProfileCard() {
                 <DialogHeader>
                     <DialogTitle className="text-primary">Edit Your Profile</DialogTitle>
                     <DialogDescription>
-                        Update your display name, favorite genre, and avatar. Click save when you're done.
+                        Update your display name, favorite genre, avatar, and role. Click save when you're done.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleUpdateProfile} className="grid gap-6 py-4">
                     <div className="space-y-2">
                         <Label htmlFor="displayName" className="text-muted-foreground">Display Name</Label>
                         <Input id="displayName" value={editDisplayName} onChange={(e) => setEditDisplayName(e.target.value)} className="bg-input" />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="editRole" className="text-muted-foreground">Role</Label>
+                        <select 
+                            id="editRole" 
+                            value={editRole} 
+                            onChange={(e) => setEditRole(e.target.value)} 
+                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-input px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                        </select>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="favoriteGenre" className="text-muted-foreground">Favorite Sci-Fi Genre</Label>

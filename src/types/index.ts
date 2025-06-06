@@ -7,18 +7,19 @@ export interface UserProfile {
   displayName: string | null;
   avatarUrl?: string;
   favoriteGenre?: string;
-  // Mock engagement stats
   storiesCompleted?: number;
   dilemmasAnalyzed?: number;
   communitySubmissions?: number;
-  createdAt?: Date; // Store as Date object in the app
-  lastUpdated?: Date; // Store as Date object in the app
+  role?: string; // Added: e.g., 'Explorer', 'Contributor', 'Admin'
+  isAdmin?: boolean; // Added
+  createdAt?: Date; 
+  lastUpdated?: Date;
 }
 
 export interface StoryChoice {
   text: string;
-  nextSegmentId?: string; // Points to the next segment or indicates an ending
-  reflectionTrigger?: boolean; // If this choice leads to a custom reflection
+  nextSegmentId?: string; 
+  reflectionTrigger?: boolean; 
 }
 
 export interface StorySegment {
@@ -28,21 +29,21 @@ export interface StorySegment {
   imageHint?: string;
   text: string;
   choices?: StoryChoice[];
-  poll?: PollData; // Optional poll for this segment
+  poll?: PollData; 
 }
 
 export interface Story {
   id: string;
   title: string;
   description: string;
-  genre: string; // e.g., "Cyberpunk", "Space Opera", "Post-Apocalyptic"
-  theme: string; // e.g., "AI Sentience", "Resource Scarcity", "Transhumanism"
+  genre: string; 
+  theme: string; 
   author: string;
   imageUrl?: string;
   imageHint?: string;
-  segments: StorySegment[]; // Array of story segments
+  segments: StorySegment[]; 
   isInteractive: boolean;
-  estimatedReadingTime: string; // e.g., "10 min read"
+  estimatedReadingTime: string;
 }
 
 export interface EthicalTheory {
@@ -62,20 +63,18 @@ export interface PollData {
 }
 
 export interface SubmittedDilemma {
-  id?: string; // Assigned by Firestore
+  id?: string; 
   title: string;
   description: string;
   theme: string;
-  authorName: string; // User's display name or anonymous
-  authorId?: string; // Firebase UID if logged in
+  authorName: string; 
+  authorId?: string; 
   imageUrl?: string;
   imageHint?: string;
-  // Store as Date in app, will be Timestamp in Firestore
-  submittedAt: Date | any; // Allow 'any' for serverTimestamp during creation
+  submittedAt: Date | any; 
   status: 'pending' | 'approved' | 'rejected';
 }
 
-// For AI Chat
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
