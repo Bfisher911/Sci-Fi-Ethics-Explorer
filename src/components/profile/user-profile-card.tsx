@@ -4,7 +4,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import type { UserProfile } from '@/types';
-import { getUserProfile, updateUserProfile } from '@/app/actions/user'; 
+import { getUserProfile, updateUserProfile } from '@/app/actions/user';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +27,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from '@/components/ui/badge';
 
 const genres = ["Cyberpunk", "Space Opera", "Post-Apocalyptic", "Biopunk", "Time Travel", "Utopian/Dystopian", "Military Sci-Fi", "Philosophical Sci-Fi"];
-const roles = ["Explorer", "Contributor", "Moderator"]; // Example roles for editing
+const roles = ["Explorer", "Contributor", "Moderator", "Admin"];
 
 export function UserProfileCard() {
   const { user: authUser, loading: authLoading } = useAuth();
@@ -36,11 +36,11 @@ export function UserProfileCard() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [profileError, setProfileError] = useState<string | null>(null);
-  
+
   const [editDisplayName, setEditDisplayName] = useState('');
   const [editFavoriteGenre, setEditFavoriteGenre] = useState('');
   const [editAvatarUrl, setEditAvatarUrl] = useState('');
-  const [editRole, setEditRole] = useState('Explorer'); // Added for editing
+  const [editRole, setEditRole] = useState('Explorer');
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
@@ -51,6 +51,7 @@ export function UserProfileCard() {
         try {
           const userProfileData = await getUserProfile(authUser.uid);
           setProfile(userProfileData);
+          // Initialize edit fields from fetched profile or authUser fallbacks
           setEditDisplayName(userProfileData?.displayName || authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer');
           setEditFavoriteGenre(userProfileData?.favoriteGenre || '');
           setEditAvatarUrl(userProfileData?.avatarUrl || authUser.photoURL || '');
@@ -59,6 +60,7 @@ export function UserProfileCard() {
           console.error("Failed to fetch profile:", error);
           setProfileError(error.message || "Could not load your profile.");
           toast({ title: "Error Loading Profile", description: error.message || "Could not load your profile.", variant: "destructive" });
+          // Fallback initialization for edit fields if fetch fails
           setEditDisplayName(authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer');
           setEditFavoriteGenre('');
           setEditAvatarUrl(authUser.photoURL || '');
@@ -67,7 +69,7 @@ export function UserProfileCard() {
           setIsLoadingProfile(false);
         }
       } else if (!authLoading) {
-          setIsLoadingProfile(false); 
+          setIsLoadingProfile(false);
           setProfile(null);
       }
     };
@@ -84,23 +86,25 @@ export function UserProfileCard() {
         favoriteGenre: editFavoriteGenre,
         avatarUrl: editAvatarUrl,
         role: editRole,
+        // isAdmin cannot be set by user, it would be set by an admin interface or directly in Firestore
       };
-      await updateUserProfile(authUser.uid, updatedData);
+      await updateUserProfile(authUser.uid, updatedData); // This will create if not exists due to merge:true
       setProfile(prev => ({
-        ...(prev || { 
+        ...(prev || {
             uid: authUser.uid,
             email: authUser.email,
             storiesCompleted: 0,
             dilemmasAnalyzed: 0,
             communitySubmissions: 0,
-            isAdmin: false, // Default for new if prev is null
+            isAdmin: prev?.isAdmin || false, // Preserve isAdmin if it existed
+            createdAt: prev?.createdAt || new Date(), // Preserve or set
         }),
         ...updatedData,
-        displayName: editDisplayName, 
+        displayName: editDisplayName,
         favoriteGenre: editFavoriteGenre,
         avatarUrl: editAvatarUrl,
         role: editRole,
-        lastUpdated: new Date(), 
+        lastUpdated: new Date(),
       } as UserProfile));
       toast({ title: "Profile Updated", description: "Your changes have been saved." });
     } catch (error: any) {
@@ -110,7 +114,7 @@ export function UserProfileCard() {
       setIsUpdating(false);
     }
   };
-  
+
   if (authLoading || isLoadingProfile) {
     return (
       <Card className="max-w-2xl mx-auto shadow-xl bg-card/70 backdrop-blur-sm">
@@ -138,7 +142,7 @@ export function UserProfileCard() {
         </Card>
     );
   }
-  
+
   const displayProfile = profile || {
     uid: authUser.uid,
     email: authUser.email,
@@ -150,7 +154,7 @@ export function UserProfileCard() {
     communitySubmissions: 0,
     role: 'Explorer',
     isAdmin: false,
-    createdAt: undefined, 
+    createdAt: undefined,
     lastUpdated: undefined,
   };
 
@@ -160,23 +164,34 @@ export function UserProfileCard() {
     { label: "Community Submissions", value: displayProfile.communitySubmissions || 0, icon: MessageSquarePlus },
   ];
 
-  const lastUpdatedText = displayProfile.lastUpdated 
-    ? new Date(displayProfile.lastUpdated).toLocaleDateString() 
+  const lastUpdatedText = displayProfile.lastUpdated
+    ? new Date(displayProfile.lastUpdated).toLocaleDateString()
     : (profile ? 'Not available' : 'Profile not yet saved');
   const createdAtText = displayProfile.createdAt
     ? new Date(displayProfile.createdAt).toLocaleDateString()
     : 'N/A';
 
+  const isPermissionError = profileError?.includes("Missing or insufficient permissions");
+
   return (
     <>
     {profileError && !profile && (
-        <Alert variant="warning" className="mb-6 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm">
+        <Alert variant="destructive" className="mb-6 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Profile Data Missing</AlertTitle>
+          <AlertTitle>Error Loading Profile</AlertTitle>
           <AlertDescription>
-            We couldn't load your saved profile data. This might be because it wasn't created correctly.
-            You can try to save your profile information by using the "Edit Profile" button.
-            Error: {profileError}
+            We encountered an error trying to load your profile: {profileError}.
+            {isPermissionError && (
+              <strong className="block mt-2 text-destructive-foreground/90">
+                This "Missing or insufficient permissions" error means your Firestore security rules
+                in the Firebase Console need to be updated to allow reading your profile.
+                Please check your Firestore rules.
+              </strong>
+            )}
+            <p className="mt-2">
+              You can try to update and save your profile using the "Edit Profile" button below.
+              This might create the profile if it's missing and your Firestore write permissions are correctly set.
+            </p>
           </AlertDescription>
         </Alert>
       )}
@@ -185,8 +200,9 @@ export function UserProfileCard() {
           <UserCog className="h-4 w-4" />
           <AlertTitle>Complete Your Profile</AlertTitle>
           <AlertDescription>
-            It seems your profile hasn't been fully saved to our database yet. 
-            Please use the "Edit Profile" button to create and save your details.
+            It seems your profile hasn't been fully saved to our database yet, or we couldn't access it.
+            (If you see repeated errors, please check your Firestore security rules in the Firebase Console).
+            Please use the "Edit Profile" button to create or save your details.
           </AlertDescription>
         </Alert>
       )}
@@ -225,21 +241,24 @@ export function UserProfileCard() {
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="editRole" className="text-muted-foreground">Role</Label>
-                        <select 
-                            id="editRole" 
-                            value={editRole} 
-                            onChange={(e) => setEditRole(e.target.value)} 
+                        <select
+                            id="editRole"
+                            value={editRole}
+                            onChange={(e) => setEditRole(e.target.value)}
                             className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-input px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            // Admin role should not be self-selectable by regular users. This is illustrative.
+                            // In a real app, role assignment (especially Admin) would be a privileged operation.
                         >
-                            {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                            {roles.filter(r => displayProfile.isAdmin || r !== 'Admin').map(r => <option key={r} value={r}>{r}</option>)}
+                            {displayProfile.isAdmin && <option value="Admin">Admin (Current)</option>}
                         </select>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="favoriteGenre" className="text-muted-foreground">Favorite Sci-Fi Genre</Label>
-                        <select 
-                            id="favoriteGenre" 
-                            value={editFavoriteGenre} 
-                            onChange={(e) => setEditFavoriteGenre(e.target.value)} 
+                        <select
+                            id="favoriteGenre"
+                            value={editFavoriteGenre}
+                            onChange={(e) => setEditFavoriteGenre(e.target.value)}
                             className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-input px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <option value="">Select Genre</option>
@@ -273,7 +292,7 @@ export function UserProfileCard() {
                 </p>
             </div>
         </div>
-        
+
         <div>
             <h3 className="text-xl font-semibold text-accent mb-4 flex items-center">
                 <Tv className="mr-2 h-5 w-5"/>
@@ -298,3 +317,5 @@ export function UserProfileCard() {
     </>
   );
 }
+
+    
