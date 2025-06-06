@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -10,8 +11,11 @@ import { Search, Filter } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 // Get unique genres and themes for filters
-const genres = Array.from(new Set(mockStories.map(story => story.genre)));
-const themes = Array.from(new Set(mockStories.map(story => story.theme)));
+const genres = Array.from(new Set(mockStories.map(story => story.genre).filter(g => g))); // Filter out empty strings just in case
+const themes = Array.from(new Set(mockStories.map(story => story.theme).filter(t => t))); // Filter out empty strings just in case
+
+const ALL_GENRES_INTERNAL_VALUE = "__all_genres__";
+const ALL_THEMES_INTERNAL_VALUE = "__all_themes__";
 
 export default function StoriesPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,25 +46,43 @@ export default function StoriesPage() {
                 className="pl-10 w-full"
               />
             </div>
-            <Select value={selectedGenre} onValueChange={setSelectedGenre}>
+            <Select
+              value={selectedGenre}
+              onValueChange={(value) => {
+                if (value === ALL_GENRES_INTERNAL_VALUE) {
+                  setSelectedGenre('');
+                } else {
+                  setSelectedGenre(value);
+                }
+              }}
+            >
               <SelectTrigger className="w-full">
                 <Filter className="h-5 w-5 text-muted-foreground mr-2" />
                 <SelectValue placeholder="Filter by Genre" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Genres</SelectItem>
+                <SelectItem value={ALL_GENRES_INTERNAL_VALUE}>All Genres</SelectItem>
                 {genres.map(genre => (
                   <SelectItem key={genre} value={genre}>{genre}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={selectedTheme} onValueChange={setSelectedTheme}>
+            <Select
+              value={selectedTheme}
+              onValueChange={(value) => {
+                if (value === ALL_THEMES_INTERNAL_VALUE) {
+                  setSelectedTheme('');
+                } else {
+                  setSelectedTheme(value);
+                }
+              }}
+            >
               <SelectTrigger className="w-full">
                 <Filter className="h-5 w-5 text-muted-foreground mr-2" />
                 <SelectValue placeholder="Filter by Theme" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Themes</SelectItem>
+                <SelectItem value={ALL_THEMES_INTERNAL_VALUE}>All Themes</SelectItem>
                 {themes.map(theme => (
                   <SelectItem key={theme} value={theme}>{theme}</SelectItem>
                 ))}
