@@ -17,6 +17,13 @@ export async function getUserProfile(uid: string): Promise<GetUserProfileResult>
     console.error(errorMsg);
     return { success: false, error: "User UID is required to fetch profile and was not provided or was empty." };
   }
+
+  if (!db) {
+    const errorMsg = "[SERVER ACTION] getUserProfile: Firestore database instance (db) is not initialized. Check Firebase config in /src/lib/firebase/config.ts and ensure environment variables are available.";
+    console.error(errorMsg);
+    return { success: false, error: errorMsg };
+  }
+
   console.log(`[SERVER ACTION] getUserProfile: Attempting to fetch profile for UID: ${uid} from 'users' collection`);
   try {
     const userDocRef = doc(db, 'users', uid);
@@ -60,6 +67,9 @@ export async function getUserProfile(uid: string): Promise<GetUserProfileResult>
   } catch (error) {
     console.error(`[SERVER ACTION] getUserProfile: Error fetching user profile from Firestore for UID ${uid}:`, error);
     const specificErrorMessage = error instanceof Error ? error.message : String(error);
+    if (specificErrorMessage.toLowerCase().includes("permission") || specificErrorMessage.toLowerCase().includes("permission_denied")) {
+        return { success: false, error: `Could not fetch user profile due to permissions. Original error: ${specificErrorMessage}. Please check Firestore security rules.` };
+    }
     return { success: false, error: `Could not fetch user profile. Original error: ${specificErrorMessage}` };
   }
 }
@@ -71,13 +81,20 @@ export async function updateUserProfile(uid: string, data: Partial<UserProfile>)
     console.error(errorMsg);
     return { success: false, error: "User UID is required to update profile and was not provided or was empty."};
   }
+
+  if (!db) {
+    const errorMsg = "[SERVER ACTION] updateUserProfile: Firestore database instance (db) is not initialized. Check Firebase config and environment variables.";
+    console.error(errorMsg);
+    return { success: false, error: errorMsg };
+  }
+
   console.log(`[SERVER ACTION] updateUserProfile: Attempting to update/create profile for UID: ${uid} in 'users' collection`);
   try {
     const userDocRef = doc(db, 'users', uid);
 
     const updateData: Record<string, any> = {
       ...data,
-      uid: uid, // Ensure uid is always part of the data being set/merged
+      uid: uid, 
       lastUpdated: serverTimestamp(),
     };
 
@@ -87,40 +104,51 @@ export async function updateUserProfile(uid: string, data: Partial<UserProfile>)
   } catch (error) {
     console.error(`[SERVER ACTION] updateUserProfile: Error updating/creating user profile for UID ${uid}:`, error);
     const specificErrorMessage = error instanceof Error ? error.message : String(error);
+     if (specificErrorMessage.toLowerCase().includes("permission") || specificErrorMessage.toLowerCase().includes("permission_denied")) {
+        return { success: false, error: `Could not update user profile due to permissions. Original error: ${specificErrorMessage}. Please check Firestore security rules.` };
+    }
     return { success: false, error: `Could not update/create user profile. Original error: ${specificErrorMessage}` };
   }
 }
 
-export async function createUserProfile(uid: string, email: string | null, displayName?: string, avatarUrl?: string): Promise<MutateUserProfileResult> {
-  console.log(`[SERVER ACTION] createUserProfile: Received UID: '${uid}', Email: ${email}, DisplayName: ${displayName}`);
+export async function createUserProfile(uid: string, email: string | null, displayName?: string, firstNameProp?: string, lastNameProp?: string, avatarUrl?: string): Promise<MutateUserProfileResult> {
+  console.log(`[SERVER ACTION] createUserProfile: Received UID: '${uid}', Email: ${email}, DisplayName: ${displayName}, FirstName: ${firstNameProp}, LastName: ${lastNameProp}`);
   if (!uid || uid.trim() === "") {
     const errorMsg = "[SERVER ACTION] createUserProfile: Called with undefined, null, or empty UID. User UID is required to create profile.";
     console.error(errorMsg);
     return { success: false, error: "User UID is required to create profile and was not provided or was empty." };
   }
+
+  if (!db) {
+    const errorMsg = "[SERVER ACTION] createUserProfile: Firestore database instance (db) is not initialized. Check Firebase config and environment variables.";
+    console.error(errorMsg);
+    return { success: false, error: errorMsg };
+  }
+  
   console.log(`[SERVER ACTION] createUserProfile: Attempting to create profile for UID: ${uid} in 'users' collection`);
   try {
     const userDocRef = doc(db, 'users', uid);
     const now = serverTimestamp();
 
-    let initialFirstName = '';
-    let initialLastName = '';
-    if (displayName) {
+    let finalFirstName = firstNameProp || '';
+    let finalLastName = lastNameProp || '';
+
+    if (!finalFirstName && !finalLastName && displayName) {
         const nameParts = displayName.trim().split(/\s+/);
         if (nameParts.length > 0) {
-            initialFirstName = nameParts[0];
+            finalFirstName = nameParts[0];
             if (nameParts.length > 1) {
-                initialLastName = nameParts.slice(1).join(' ');
+                finalLastName = nameParts.slice(1).join(' ');
             }
         }
     }
-
+    
     const initialProfileData: UserProfile = {
       uid: uid,
       email: email || null,
       displayName: displayName || email?.split('@')[0] || 'Anonymous Explorer',
-      firstName: initialFirstName,
-      lastName: initialLastName,
+      firstName: finalFirstName,
+      lastName: finalLastName,
       avatarUrl: avatarUrl || '',
       favoriteGenre: '',
       storiesCompleted: 0,
@@ -140,6 +168,9 @@ export async function createUserProfile(uid: string, email: string | null, displ
   } catch (error) {
     console.error(`[SERVER ACTION] createUserProfile: Error creating user profile for UID ${uid}:`, error);
     const specificErrorMessage = error instanceof Error ? error.message : String(error);
+    if (specificErrorMessage.toLowerCase().includes("permission") || specificErrorMessage.toLowerCase().includes("permission_denied")) {
+        return { success: false, error: `Could not create user profile due to permissions. Original error: ${specificErrorMessage}. Please check Firestore security rules.` };
+    }
     return { success: false, error: `Could not create user profile. Original error: ${specificErrorMessage}` };
   }
 }
