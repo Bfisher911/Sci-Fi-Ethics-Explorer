@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -66,9 +67,17 @@ const quizQuestions: QuizQuestion[] = [
 
 type Scores = Record<EthicalTheory['id'], number>;
 
+// Define explicit types for the answers state to avoid potential issues with complex inline generics
+type QuizQuestionId = QuizQuestion['id'];
+type SelectedOptionType = QuizQuestion['options'][0];
+
+type AnswersState = {
+  [Key in QuizQuestionId]?: SelectedOptionType;
+};
+
 export function EthicalFrameworkQuiz() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Partial<Record<QuizQuestion['id'], QuizQuestion['options'][0]>>({});
+  const [answers, setAnswers] = useState<AnswersState>({});
   const [showResults, setShowResults] = useState(false);
   const [finalScores, setFinalScores] = useState<Scores | null>(null);
 
@@ -217,4 +226,3 @@ export function EthicalFrameworkQuiz() {
     </Card>
   );
 }
-
