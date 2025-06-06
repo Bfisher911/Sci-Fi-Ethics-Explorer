@@ -5,21 +5,23 @@ export interface UserProfile {
   uid: string;
   email: string | null;
   displayName: string | null;
+  firstName?: string;
+  lastName?: string;
   avatarUrl?: string;
   favoriteGenre?: string;
   storiesCompleted?: number;
   dilemmasAnalyzed?: number;
   communitySubmissions?: number;
-  role?: string; // Added: e.g., 'Explorer', 'Contributor', 'Admin'
-  isAdmin?: boolean; // Added
-  createdAt?: Date; 
+  role?: string;
+  isAdmin?: boolean;
+  createdAt?: Date;
   lastUpdated?: Date;
 }
 
 export interface StoryChoice {
   text: string;
-  nextSegmentId?: string; 
-  reflectionTrigger?: boolean; 
+  nextSegmentId?: string;
+  reflectionTrigger?: boolean;
 }
 
 export interface StorySegment {
@@ -29,19 +31,19 @@ export interface StorySegment {
   imageHint?: string;
   text: string;
   choices?: StoryChoice[];
-  poll?: PollData; 
+  poll?: PollData;
 }
 
 export interface Story {
   id: string;
   title: string;
   description: string;
-  genre: string; 
-  theme: string; 
+  genre: string;
+  theme: string;
   author: string;
   imageUrl?: string;
   imageHint?: string;
-  segments: StorySegment[]; 
+  segments: StorySegment[];
   isInteractive: boolean;
   estimatedReadingTime: string;
 }
@@ -63,15 +65,15 @@ export interface PollData {
 }
 
 export interface SubmittedDilemma {
-  id?: string; 
+  id?: string;
   title: string;
   description: string;
   theme: string;
-  authorName: string; 
-  authorId?: string; 
+  authorName: string;
+  authorId?: string;
   imageUrl?: string;
   imageHint?: string;
-  submittedAt: Date | any; 
+  submittedAt: Date | any;
   status: 'pending' | 'approved' | 'rejected';
 }
 

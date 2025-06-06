@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Library, Tv, Save, Loader2, Edit3, BarChartHorizontalBig, BookOpenCheck, MessageSquarePlus, AlertTriangle, ShieldCheck, UserCog } from 'lucide-react';
+import { User, Mail, Library, Tv, Save, Loader2, Edit3, BarChartHorizontalBig, BookOpenCheck, MessageSquarePlus, AlertTriangle, ShieldCheck, UserCog, Contact } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -38,6 +38,8 @@ export function UserProfileCard() {
   const [profileError, setProfileError] = useState<string | null>(null);
 
   const [editDisplayName, setEditDisplayName] = useState('');
+  const [editFirstName, setEditFirstName] = useState('');
+  const [editLastName, setEditLastName] = useState('');
   const [editFavoriteGenre, setEditFavoriteGenre] = useState('');
   const [editAvatarUrl, setEditAvatarUrl] = useState('');
   const [editRole, setEditRole] = useState('Explorer');
@@ -51,17 +53,29 @@ export function UserProfileCard() {
         try {
           const userProfileData = await getUserProfile(authUser.uid);
           setProfile(userProfileData);
-          // Initialize edit fields from fetched profile or authUser fallbacks
+          const nameParts = authUser.displayName?.trim().split(/\s+/) || [];
+          const defaultFirstName = nameParts[0] || '';
+          const defaultLastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
           setEditDisplayName(userProfileData?.displayName || authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer');
+          setEditFirstName(userProfileData?.firstName || defaultFirstName);
+          setEditLastName(userProfileData?.lastName || defaultLastName);
           setEditFavoriteGenre(userProfileData?.favoriteGenre || '');
           setEditAvatarUrl(userProfileData?.avatarUrl || authUser.photoURL || '');
           setEditRole(userProfileData?.role || 'Explorer');
+
         } catch (error: any) {
           console.error("Failed to fetch profile:", error);
           setProfileError(error.message || "Could not load your profile.");
           toast({ title: "Error Loading Profile", description: error.message || "Could not load your profile.", variant: "destructive" });
-          // Fallback initialization for edit fields if fetch fails
+
+          const nameParts = authUser.displayName?.trim().split(/\s+/) || [];
+          const defaultFirstName = nameParts[0] || '';
+          const defaultLastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
           setEditDisplayName(authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer');
+          setEditFirstName(defaultFirstName);
+          setEditLastName(defaultLastName);
           setEditFavoriteGenre('');
           setEditAvatarUrl(authUser.photoURL || '');
           setEditRole('Explorer');
@@ -83,12 +97,13 @@ export function UserProfileCard() {
     try {
       const updatedData: Partial<UserProfile> = {
         displayName: editDisplayName,
+        firstName: editFirstName,
+        lastName: editLastName,
         favoriteGenre: editFavoriteGenre,
         avatarUrl: editAvatarUrl,
         role: editRole,
-        // isAdmin cannot be set by user, it would be set by an admin interface or directly in Firestore
       };
-      await updateUserProfile(authUser.uid, updatedData); // This will create if not exists due to merge:true
+      await updateUserProfile(authUser.uid, updatedData);
       setProfile(prev => ({
         ...(prev || {
             uid: authUser.uid,
@@ -96,11 +111,13 @@ export function UserProfileCard() {
             storiesCompleted: 0,
             dilemmasAnalyzed: 0,
             communitySubmissions: 0,
-            isAdmin: prev?.isAdmin || false, // Preserve isAdmin if it existed
-            createdAt: prev?.createdAt || new Date(), // Preserve or set
+            isAdmin: prev?.isAdmin || false,
+            createdAt: prev?.createdAt || new Date(),
         }),
         ...updatedData,
         displayName: editDisplayName,
+        firstName: editFirstName,
+        lastName: editLastName,
         favoriteGenre: editFavoriteGenre,
         avatarUrl: editAvatarUrl,
         role: editRole,
@@ -143,10 +160,18 @@ export function UserProfileCard() {
     );
   }
 
-  const displayProfile = profile || {
+  const defaultDisplayName = authUser.displayName || authUser.email?.split('@')[0] || '';
+  const nameParts = defaultDisplayName.trim().split(/\s+/) || [];
+  const initialFirstName = profile?.firstName || nameParts[0] || '';
+  const initialLastName = profile?.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : '');
+
+
+  const displayProfile: UserProfile = profile || {
     uid: authUser.uid,
     email: authUser.email,
     displayName: authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer',
+    firstName: initialFirstName,
+    lastName: initialLastName,
     avatarUrl: authUser.photoURL || '',
     favoriteGenre: '',
     storiesCompleted: 0,
@@ -157,6 +182,10 @@ export function UserProfileCard() {
     createdAt: undefined,
     lastUpdated: undefined,
   };
+  
+  const cardTitle = displayProfile.displayName || `${displayProfile.firstName} ${displayProfile.lastName}`.trim() || 'Anonymous Explorer';
+  const showFullNameLine = displayProfile.displayName && (displayProfile.firstName || displayProfile.lastName) && displayProfile.displayName !== `${displayProfile.firstName} ${displayProfile.lastName}`.trim();
+
 
   const engagementStats = [
     { label: "Dilemmas Explored", value: displayProfile.storiesCompleted || 0, icon: BookOpenCheck },
@@ -183,15 +212,17 @@ export function UserProfileCard() {
             We encountered an error trying to load your profile: {profileError}.
             {isPermissionError && (
               <strong className="block mt-2 text-destructive-foreground/90">
-                This "Missing or insufficient permissions" error means your Firestore security rules
-                in the Firebase Console need to be updated to allow reading your profile.
+                This "Missing or insufficient permissions" error likely means your Firestore security rules
+                in the Firebase Console need to be updated to allow reading your profile from the 'users' collection.
                 Please check your Firestore rules.
               </strong>
             )}
-            <p className="mt-2">
-              You can try to update and save your profile using the "Edit Profile" button below.
-              This might create the profile if it's missing and your Firestore write permissions are correctly set.
-            </p>
+             {!isPermissionError && (
+              <p className="mt-2">
+                You can try to update and save your profile using the "Edit Profile" button below.
+                This might create the profile if it's missing and your Firestore write permissions are correctly set.
+              </p>
+            )}
           </AlertDescription>
         </Alert>
       )}
@@ -201,7 +232,7 @@ export function UserProfileCard() {
           <AlertTitle>Complete Your Profile</AlertTitle>
           <AlertDescription>
             It seems your profile hasn't been fully saved to our database yet, or we couldn't access it.
-            (If you see repeated errors, please check your Firestore security rules in the Firebase Console).
+            (If you see repeated "Missing or insufficient permissions" errors after attempting to save, please check your Firestore security rules in the Firebase Console).
             Please use the "Edit Profile" button to create or save your details.
           </AlertDescription>
         </Alert>
@@ -210,13 +241,18 @@ export function UserProfileCard() {
     <Card className="max-w-2xl mx-auto shadow-xl bg-card/70 backdrop-blur-sm">
       <CardHeader className="items-center text-center relative pb-4">
         <Avatar className="h-24 w-24 mb-4 border-4 border-primary shadow-lg">
-          <AvatarImage src={editAvatarUrl || displayProfile.avatarUrl || undefined} alt={displayProfile.displayName || 'User'} data-ai-hint="profile avatar" />
+          <AvatarImage src={editAvatarUrl || displayProfile.avatarUrl || undefined} alt={cardTitle} data-ai-hint="profile avatar" />
           <AvatarFallback className="text-3xl bg-muted text-muted-foreground">
-            {displayProfile.displayName ? displayProfile.displayName.charAt(0).toUpperCase() : <User />}
+            {cardTitle ? cardTitle.charAt(0).toUpperCase() : <User />}
           </AvatarFallback>
         </Avatar>
-        <CardTitle className="text-3xl font-bold text-primary">{displayProfile.displayName || 'Anonymous Explorer'}</CardTitle>
-        <div className="flex items-center gap-2">
+        <CardTitle className="text-3xl font-bold text-primary">{cardTitle}</CardTitle>
+        {showFullNameLine && (
+             <p className="text-md text-muted-foreground">
+               Full Name: {displayProfile.firstName} {displayProfile.lastName}
+             </p>
+        )}
+        <div className="flex items-center gap-2 mt-1">
             <Badge variant="secondary" className="text-sm">{displayProfile.role || 'Explorer'}</Badge>
             {displayProfile.isAdmin && <Badge variant="destructive" className="text-sm bg-accent text-accent-foreground"><ShieldCheck className="mr-1 h-4 w-4" />Admin</Badge>}
         </div>
@@ -227,36 +263,44 @@ export function UserProfileCard() {
                     <Edit3 className="mr-2 h-4 w-4" /> Edit Profile
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[480px] bg-card border-border shadow-xl">
+            <DialogContent className="sm:max-w-md bg-card border-border shadow-xl">
                 <DialogHeader>
                     <DialogTitle className="text-primary">Edit Your Profile</DialogTitle>
                     <DialogDescription>
-                        Update your display name, favorite genre, avatar, and role. Click save when you're done.
+                        Update your details. Click save when you're done.
                     </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleUpdateProfile} className="grid gap-6 py-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="displayName" className="text-muted-foreground">Display Name</Label>
-                        <Input id="displayName" value={editDisplayName} onChange={(e) => setEditDisplayName(e.target.value)} className="bg-input" />
+                <form onSubmit={handleUpdateProfile} className="grid gap-4 py-4">
+                    <div className="space-y-1.5">
+                        <Label htmlFor="editDisplayName" className="text-muted-foreground">Display Name</Label>
+                        <Input id="editDisplayName" value={editDisplayName} onChange={(e) => setEditDisplayName(e.target.value)} className="bg-input" />
                     </div>
-                     <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="editFirstName" className="text-muted-foreground">First Name</Label>
+                            <Input id="editFirstName" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} className="bg-input" />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="editLastName" className="text-muted-foreground">Last Name</Label>
+                            <Input id="editLastName" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="bg-input" />
+                        </div>
+                    </div>
+                     <div className="space-y-1.5">
                         <Label htmlFor="editRole" className="text-muted-foreground">Role</Label>
                         <select
                             id="editRole"
                             value={editRole}
                             onChange={(e) => setEditRole(e.target.value)}
                             className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-input px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            // Admin role should not be self-selectable by regular users. This is illustrative.
-                            // In a real app, role assignment (especially Admin) would be a privileged operation.
                         >
                             {roles.filter(r => displayProfile.isAdmin || r !== 'Admin').map(r => <option key={r} value={r}>{r}</option>)}
                             {displayProfile.isAdmin && <option value="Admin">Admin (Current)</option>}
                         </select>
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="favoriteGenre" className="text-muted-foreground">Favorite Sci-Fi Genre</Label>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="editFavoriteGenre" className="text-muted-foreground">Favorite Sci-Fi Genre</Label>
                         <select
-                            id="favoriteGenre"
+                            id="editFavoriteGenre"
                             value={editFavoriteGenre}
                             onChange={(e) => setEditFavoriteGenre(e.target.value)}
                             className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-input px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -265,9 +309,9 @@ export function UserProfileCard() {
                             {genres.map(g => <option key={g} value={g}>{g}</option>)}
                         </select>
                     </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="avatarUrl" className="text-muted-foreground">Avatar URL</Label>
-                        <Input id="avatarUrl" type="url" value={editAvatarUrl} onChange={(e) => setEditAvatarUrl(e.target.value)} className="bg-input" placeholder="https://example.com/avatar.png" />
+                     <div className="space-y-1.5">
+                        <Label htmlFor="editAvatarUrl" className="text-muted-foreground">Avatar URL</Label>
+                        <Input id="editAvatarUrl" type="url" value={editAvatarUrl} onChange={(e) => setEditAvatarUrl(e.target.value)} className="bg-input" placeholder="https://example.com/avatar.png" />
                     </div>
                     <DialogFooter className="pt-4">
                       <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
@@ -317,5 +361,3 @@ export function UserProfileCard() {
     </>
   );
 }
-
-    
