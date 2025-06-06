@@ -4,9 +4,12 @@ import type { User as FirebaseUser } from 'firebase/auth';
 export interface UserProfile {
   uid: string;
   email: string | null;
-  displayName: string | null;
+  displayName: string | null; // This will store the 'name'
   firstName?: string;
   lastName?: string;
+  // 🔁 PATCH: Add bio to UserProfile (BF 2025-06-06)
+  bio?: string;
+  // 🔁 END PATCH
   avatarUrl?: string;
   favoriteGenre?: string;
   storiesCompleted?: number;
@@ -14,8 +17,8 @@ export interface UserProfile {
   communitySubmissions?: number;
   role?: string;
   isAdmin?: boolean;
-  createdAt?: Date;
-  lastUpdated?: Date;
+  createdAt?: Date | any; // Allow 'any' for Firebase ServerTimestamp
+  lastUpdated?: Date | any; // Allow 'any' for Firebase ServerTimestamp
 }
 
 export interface StoryChoice {

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, type ReactNode } from 'react';
@@ -14,9 +15,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && !user && pathname !== '/auth') {
-      router.push('/auth');
+    // 🔁 PATCH: Redirect to new /login page if unauthenticated (BF 2025-06-06)
+    // Also ensure /auth (old page) is not accessible within this layout
+    if (!loading && !user && pathname !== '/login' && pathname !== '/signup') {
+      router.push('/login'); 
     }
+    // 🔁 END PATCH
   }, [user, loading, router, pathname]);
 
   if (loading) {
@@ -33,7 +37,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!user && pathname !== '/auth') {
+  // 🔁 PATCH: Condition to redirect to /login if unauthenticated (BF 2025-06-06)
+  if (!user && pathname !== '/login' && pathname !== '/signup') {
+  // 🔁 END PATCH
     // Still loading or redirecting, show loader
      return (
        <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -47,9 +53,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     );
   }
   
-  if (pathname === '/auth') {
-    return <>{children}</>; // Render AuthPage directly without AppShell
-  }
+  // 🔁 PATCH: Remove direct rendering of old /auth page within this layout (BF 2025-06-06)
+  // The (auth) layout will handle /login and /signup
+  // if (pathname === '/auth') {
+  //   return <>{children}</>; 
+  // }
+  // 🔁 END PATCH
 
 
   return (

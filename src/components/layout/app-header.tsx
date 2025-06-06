@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -17,18 +18,17 @@ import { useAuth } from '@/hooks/use-auth';
 import { auth } from '@/lib/firebase/config';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { useSidebar } from '@/components/ui/sidebar'; // Assuming you'll use shadcn sidebar
+import { useSidebar } from '@/components/ui/sidebar'; 
+import React from 'react'; // Ensured React is imported for useState
 
 export function AppHeader() {
   const { user } = useAuth();
   const router = useRouter();
-  const { toggleSidebar, isMobile } = useSidebar(); // Get toggleSidebar from context
+  const { toggleSidebar, isMobile } = useSidebar(); 
 
-  // Placeholder for theme toggle functionality
   const [isDarkMode, setIsDarkMode] = React.useState(true); 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
-    // In a real app, you'd also update the class on <html>
     document.documentElement.classList.toggle('dark', !isDarkMode);
   };
 
@@ -36,10 +36,11 @@ export function AppHeader() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      router.push('/auth');
+      // 🔁 PATCH: Redirect to new /login page on sign out (BF 2025-06-06)
+      router.push('/login');
+      // 🔁 END PATCH
     } catch (error) {
       console.error('Error signing out:', error);
-      // Handle error (e.g., show a toast notification)
     }
   };
 
@@ -53,14 +54,6 @@ export function AppHeader() {
       )}
       <div className="flex-1">
         {/* Search can be added here if needed */}
-        {/* <form className="relative hidden md:flex flex-1">
-          <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search dilemmas, theories..."
-            className="w-full rounded-lg bg-muted pl-8 md:w-[200px] lg:w-[320px]"
-          />
-        </form> */}
       </div>
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
@@ -91,14 +84,13 @@ export function AppHeader() {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
+          // 🔁 PATCH: Redirect to new /login page if no user (BF 2025-06-06)
           <Button asChild variant="outline">
-            <Link href="/auth">Login</Link>
+            <Link href="/login">Login</Link>
           </Button>
+          // 🔁 END PATCH
         )}
       </div>
     </header>
   );
 }
-
-// Dummy React for state
-import React from 'react';

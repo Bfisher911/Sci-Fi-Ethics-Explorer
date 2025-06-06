@@ -33,21 +33,25 @@ export async function getUserProfile(uid: string): Promise<GetUserProfileResult>
       const data = userDoc.data();
       console.log(`[SERVER ACTION] getUserProfile: Raw profile data found for UID ${uid}:`, JSON.stringify(data));
 
-      const toDate = (timestamp: Timestamp | Date | undefined): Date | undefined => {
-        if (!timestamp) return undefined;
-        if (timestamp instanceof Date) return timestamp;
-        // @ts-ignore Firestore Timestamps have a toDate method
-        if (timestamp.toDate) return timestamp.toDate();
-        if (typeof timestamp === 'string') return new Date(timestamp);
-        return undefined;
+      const toDate = (timestampField: Timestamp | Date | undefined): Date | undefined => {
+        if (!timestampField) return undefined;
+        if (timestampField instanceof Date) return timestampField;
+        if (typeof (timestampField as Timestamp).toDate === 'function') return (timestampField as Timestamp).toDate();
+        if (typeof timestampField === 'string') return new Date(timestampField); // Fallback for string dates
+        return undefined; // Or handle as an error if unexpected type
       };
-
+      
       const profile: UserProfile = {
         uid: data.uid || uid,
         email: data.email,
-        displayName: data.displayName,
+        // 🔁 PATCH: Map 'name' from Firestore to 'displayName' in UserProfile type (BF 2025-06-06)
+        displayName: data.name || data.displayName, // Prioritize 'name' if it exists from Cloud Function
+        // 🔁 END PATCH
         firstName: data.firstName || '',
         lastName: data.lastName || '',
+        // 🔁 PATCH: Include bio in profile data (BF 2025-06-06)
+        bio: data.bio || '',
+        // 🔁 END PATCH
         avatarUrl: data.avatarUrl,
         favoriteGenre: data.favoriteGenre,
         storiesCompleted: data.storiesCompleted || 0,
@@ -62,7 +66,7 @@ export async function getUserProfile(uid: string): Promise<GetUserProfileResult>
       return { success: true, data: profile };
     } else {
       console.log(`[SERVER ACTION] getUserProfile: No profile document found for UID: ${uid} in 'users' collection.`);
-      return { success: true, data: null };
+      return { success: true, data: null }; // No document found is not an error, but data is null
     }
   } catch (error) {
     console.error(`[SERVER ACTION] getUserProfile: Error fetching user profile from Firestore for UID ${uid}:`, error);
@@ -92,11 +96,16 @@ export async function updateUserProfile(uid: string, data: Partial<UserProfile>)
   try {
     const userDocRef = doc(db, 'users', uid);
 
+    // 🔁 PATCH: Ensure 'name' (for displayName) and 'bio' are part of the update (BF 2025-06-06)
     const updateData: Record<string, any> = {
       ...data,
-      uid: uid, 
+      uid: uid,
       lastUpdated: serverTimestamp(),
     };
+    if (data.displayName !== undefined) { // If displayName is being updated from client
+        updateData.name = data.displayName; // Store it as 'name' in Firestore
+    }
+    // 🔁 END PATCH
 
     await setDoc(userDocRef, updateData, { merge: true });
     console.log(`[SERVER ACTION] updateUserProfile: Successfully updated/created profile for UID: ${uid}`);
@@ -111,7 +120,7 @@ export async function updateUserProfile(uid: string, data: Partial<UserProfile>)
   }
 }
 
-export async function createUserProfile(uid: string, email: string | null, displayName?: string, firstNameProp?: string, lastNameProp?: string, avatarUrl?: string): Promise<MutateUserProfileResult> {
+export async function createUserProfile(uid: string, email: string | null, displayName?: string | null, firstNameProp?: string, lastNameProp?: string, avatarUrl?: string): Promise<MutateUserProfileResult> {
   console.log(`[SERVER ACTION] createUserProfile: Received UID: '${uid}', Email: ${email}, DisplayName: ${displayName}, FirstName: ${firstNameProp}, LastName: ${lastNameProp}`);
   if (!uid || uid.trim() === "") {
     const errorMsg = "[SERVER ACTION] createUserProfile: Called with undefined, null, or empty UID. User UID is required to create profile.";
@@ -143,12 +152,14 @@ export async function createUserProfile(uid: string, email: string | null, displ
         }
     }
     
+    // 🔁 PATCH: Use 'name' for displayName and add 'bio' (BF 2025-06-06)
     const initialProfileData: UserProfile = {
       uid: uid,
       email: email || null,
-      displayName: displayName || email?.split('@')[0] || 'Anonymous Explorer',
+      displayName: displayName || email?.split('@')[0] || 'Anonymous Explorer', // Will be stored as 'name' by cloud function too
       firstName: finalFirstName,
       lastName: finalLastName,
+      bio: '', // Initialize bio
       avatarUrl: avatarUrl || '',
       favoriteGenre: '',
       storiesCompleted: 0,
@@ -156,14 +167,19 @@ export async function createUserProfile(uid: string, email: string | null, displ
       communitySubmissions: 0,
       role: 'Explorer',
       isAdmin: false,
-      // @ts-ignore serverTimestamp will be converted by Firestore
       createdAt: now,
-      // @ts-ignore serverTimestamp will be converted by Firestore
       lastUpdated: now,
     };
+    // Map UserProfile.displayName to Firestore 'name' field for consistency with Cloud Function
+    const firestoreData = {
+        ...initialProfileData,
+        name: initialProfileData.displayName, // Ensure 'name' field is set
+        displayName: undefined // Remove UserProfile's displayName from direct Firestore write if 'name' is used
+    };
+    // 🔁 END PATCH
 
-    await setDoc(userDocRef, initialProfileData);
-    console.log(`[SERVER ACTION] createUserProfile: Successfully created profile for UID: ${uid} with data:`, JSON.stringify(initialProfileData).replace(/"now"/g, "serverTimestamp()"));
+    await setDoc(userDocRef, firestoreData, { merge: true }); // Use merge:true
+    console.log(`[SERVER ACTION] createUserProfile: Successfully created/merged profile for UID: ${uid} with data:`, JSON.stringify(firestoreData));
     return { success: true };
   } catch (error) {
     console.error(`[SERVER ACTION] createUserProfile: Error creating user profile for UID ${uid}:`, error);

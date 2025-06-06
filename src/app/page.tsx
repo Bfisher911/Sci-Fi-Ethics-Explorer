@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,9 +18,11 @@ export default function HomePage() {
           <Button asChild variant="outline">
             <Link href="/stories">Explore Dilemmas</Link>
           </Button>
+          {/* 🔁 PATCH: Update Login/Sign Up link to point to new /login page (BF 2025-06-06) */}
           <Button asChild variant="ghost" className="ml-2">
-            <Link href="/auth">Login / Sign Up</Link>
+            <Link href="/login">Login / Sign Up</Link>
           </Button>
+          {/* 🔁 END PATCH */}
         </nav>
       </header>
 

@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Zap, Target, BookOpen } from 'lucide-react';
@@ -15,9 +16,11 @@ export default function AboutPage() {
           <Button asChild variant="outline" className="mr-2">
             <Link href="/stories">Explore Dilemmas</Link>
           </Button>
+          {/* 🔁 PATCH: Update Login/Sign Up link to point to new /login page (BF 2025-06-06) */}
           <Button asChild variant="ghost">
-            <Link href="/auth">Login / Sign Up</Link>
+            <Link href="/login">Login / Sign Up</Link>
           </Button>
+          {/* 🔁 END PATCH */}
         </nav>
       </header>
 

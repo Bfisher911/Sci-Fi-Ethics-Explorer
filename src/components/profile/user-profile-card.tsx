@@ -4,7 +4,11 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import type { UserProfile } from '@/types';
-import { getUserProfile, updateUserProfile } from '@/app/actions/user';
+// 🔁 PATCH: Use onSnapshot for real-time updates and client-side updateDoc (BF 2025-06-06)
+import { db } from '@/lib/firebase/config';
+import { doc, onSnapshot, updateDoc, serverTimestamp, setDoc } from 'firebase/firestore';
+// import { getUserProfile, updateUserProfile } from '@/app/actions/user'; // No longer using server actions for fetch/update here
+// 🔁 END PATCH
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +16,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Library, Tv, Save, Loader2, Edit3, BarChartHorizontalBig, BookOpenCheck, MessageSquarePlus, AlertTriangle, ShieldCheck, UserCog, Contact } from 'lucide-react';
+// 🔁 PATCH: Add Edit2 for Bio icon (BF 2025-06-06)
+import { User, Mail, Library, Tv, Save, Loader2, Edit3, BarChartHorizontalBig, BookOpenCheck, MessageSquarePlus, AlertTriangle, ShieldCheck, UserCog, Contact, Edit2 } from 'lucide-react';
+// 🔁 END PATCH
 import {
   Dialog,
   DialogContent,
@@ -25,9 +31,12 @@ import {
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from '@/components/ui/badge';
+// 🔁 PATCH: Import Textarea for Bio (BF 2025-06-06)
+import { Textarea } from '@/components/ui/textarea';
+// 🔁 END PATCH
 
 const genres = ["Cyberpunk", "Space Opera", "Post-Apocalyptic", "Biopunk", "Time Travel", "Utopian/Dystopian", "Military Sci-Fi", "Philosophical Sci-Fi"];
-const roles = ["Explorer", "Contributor", "Moderator", "Admin"];
+const roles = ["Explorer", "Contributor", "Moderator", "Admin"]; // 'Admin' role editing is restricted if not admin
 
 export function UserProfileCard() {
   const { user: authUser, loading: authLoading } = useAuth();
@@ -40,68 +49,84 @@ export function UserProfileCard() {
   const [editDisplayName, setEditDisplayName] = useState('');
   const [editFirstName, setEditFirstName] = useState('');
   const [editLastName, setEditLastName] = useState('');
+  // 🔁 PATCH: Add state for bio (BF 2025-06-06)
+  const [editBio, setEditBio] = useState('');
+  // 🔁 END PATCH
   const [editFavoriteGenre, setEditFavoriteGenre] = useState('');
   const [editAvatarUrl, setEditAvatarUrl] = useState('');
   const [editRole, setEditRole] = useState('Explorer');
   const [isUpdating, setIsUpdating] = useState(false);
 
+  // 🔁 PATCH: Real-time profile fetching with onSnapshot (BF 2025-06-06)
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (authUser) {
-        console.log(`UserProfileCard useEffect: authUser found. UID: '${authUser.uid}', DisplayName: '${authUser.displayName}'`);
-        setIsLoadingProfile(true);
-        setProfileError(null);
-        try {
-          if (!authUser.uid) {
-            console.error("UserProfileCard: authUser.uid is undefined or empty!");
-            setProfileError("Authenticated user UID is missing.");
-            setIsLoadingProfile(false);
-            return;
-          }
-          const result = await getUserProfile(authUser.uid);
-          if (result.success) {
-            setProfile(result.data);
-            const userProfileData = result.data;
-            const nameParts = (userProfileData?.displayName || authUser.displayName || authUser.email?.split('@')[0] || '').trim().split(/\s+/);
-            const defaultFirstName = userProfileData?.firstName || nameParts[0] || '';
-            const defaultLastName = userProfileData?.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : '');
+    if (authUser) {
+      setIsLoadingProfile(true);
+      setProfileError(null);
+      const userDocRef = doc(db, 'users', authUser.uid);
+      
+      const unsubscribe = onSnapshot(userDocRef, 
+        (docSnapshot) => {
+          if (docSnapshot.exists()) {
+            const data = docSnapshot.data() as UserProfile; // Assume data matches UserProfile
+            // Convert Firestore timestamps to Date objects
+            const firestoreDataToProfile = (d: any): UserProfile => ({
+                ...d,
+                // Ensure 'name' from Firestore (set by cloud function) maps to displayName
+                displayName: d.name || d.displayName || '', 
+                bio: d.bio || '',
+                createdAt: d.createdAt?.toDate ? d.createdAt.toDate() : undefined,
+                lastUpdated: d.lastUpdated?.toDate ? d.lastUpdated.toDate() : undefined,
+            });
+            const userProfileData = firestoreDataToProfile(data);
+            setProfile(userProfileData);
 
-            setEditDisplayName(userProfileData?.displayName || authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer');
-            setEditFirstName(defaultFirstName);
-            setEditLastName(defaultLastName);
-            setEditFavoriteGenre(userProfileData?.favoriteGenre || '');
-            setEditAvatarUrl(userProfileData?.avatarUrl || authUser.photoURL || '');
-            setEditRole(userProfileData?.role || 'Explorer');
+            setEditDisplayName(userProfileData.displayName || authUser.displayName || '');
+            setEditFirstName(userProfileData.firstName || '');
+            setEditLastName(userProfileData.lastName || '');
+            setEditBio(userProfileData.bio || '');
+            setEditFavoriteGenre(userProfileData.favoriteGenre || '');
+            setEditAvatarUrl(userProfileData.avatarUrl || authUser.photoURL || '');
+            setEditRole(userProfileData.role || 'Explorer');
+
           } else {
-            throw new Error(result.error);
+            // Document doesn't exist, might be a new user whose Cloud Function hasn't run yet,
+            // or client-side creation failed and rules blocked.
+            // Initialize form with Auth user data as fallback.
+            setProfile(null); // Explicitly set to null
+            const nameFromAuth = authUser.displayName || authUser.email?.split('@')[0] || '';
+            const nameParts = nameFromAuth.trim().split(/\s+/);
+            setEditDisplayName(nameFromAuth);
+            setEditFirstName(nameParts[0] || '');
+            setEditLastName(nameParts.length > 1 ? nameParts.slice(1).join(' ') : '');
+            setEditBio(''); // Default empty bio
+            setEditFavoriteGenre('');
+            setEditAvatarUrl(authUser.photoURL || '');
+            setEditRole('Explorer');
+            // Optionally, inform the user or attempt to create the profile here if a CTA is desired
+            // For now, editing and saving will create it.
+             setProfileError("Profile document not found. Editing and saving will create it.");
           }
-        } catch (error: any) {
-          console.error("UserProfileCard: Failed to fetch profile:", error);
-          const errorMessage = error.message || "Could not load your profile.";
+          setIsLoadingProfile(false);
+        },
+        (error) => {
+          console.error("UserProfileCard: Error fetching profile with onSnapshot:", error);
+          const errorMessage = error.message.toLowerCase().includes("permission") 
+            ? "Could not fetch user profile due to permissions. Please check Firestore security rules."
+            : "Could not load your profile.";
           setProfileError(errorMessage);
+          setIsLoadingProfile(false);
           toast({ title: "Error Loading Profile", description: errorMessage, variant: "destructive" });
-
-          const nameParts = (authUser.displayName || authUser.email?.split('@')[0] || '').trim().split(/\s+/);
-          const defaultFirstName = nameParts[0] || '';
-          const defaultLastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-          
-          setEditDisplayName(authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer');
-          setEditFirstName(defaultFirstName);
-          setEditLastName(defaultLastName);
-          setEditFavoriteGenre('');
-          setEditAvatarUrl(authUser.photoURL || '');
-          setEditRole('Explorer');
-        } finally {
-          setIsLoadingProfile(false);
         }
-      } else if (!authLoading) {
-          setIsLoadingProfile(false);
-          setProfile(null);
-      }
-    };
-    fetchProfile();
+      );
+      return () => unsubscribe(); // Cleanup listener on component unmount
+    } else if (!authLoading) {
+      setIsLoadingProfile(false);
+      setProfile(null);
+    }
   }, [authUser, authLoading, toast]);
+  // 🔁 END PATCH
 
+  // 🔁 PATCH: Update profile using client-side updateDoc (BF 2025-06-06)
   const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
     if (!authUser || !authUser.uid) {
@@ -110,47 +135,40 @@ export function UserProfileCard() {
     }
     setIsUpdating(true);
     try {
-      const updatedData: Partial<UserProfile> = {
-        displayName: editDisplayName,
+      const userDocRef = doc(db, 'users', authUser.uid);
+      const updatedData: Partial<UserProfile> & { lastUpdated: any, name?: string } = {
+        // Use 'name' for Firestore consistency with Cloud Function
+        name: editDisplayName, 
+        displayName: editDisplayName, // Keep for local state if needed
         firstName: editFirstName,
         lastName: editLastName,
+        bio: editBio,
         favoriteGenre: editFavoriteGenre,
         avatarUrl: editAvatarUrl,
         role: editRole,
+        lastUpdated: serverTimestamp(), // Use server timestamp for updates
       };
-      const result = await updateUserProfile(authUser.uid, updatedData);
       
-      if (result.success) {
-        setProfile(prev => ({
-          ...(prev || {
-              uid: authUser.uid,
-              email: authUser.email,
-              storiesCompleted: 0,
-              dilemmasAnalyzed: 0,
-              communitySubmissions: 0,
-              isAdmin: prev?.isAdmin || false,
-              createdAt: prev?.createdAt || new Date(),
-          }),
-          ...updatedData,
-          displayName: editDisplayName,
-          firstName: editFirstName,
-          lastName: editLastName,
-          favoriteGenre: editFavoriteGenre,
-          avatarUrl: editAvatarUrl,
-          role: editRole,
-          lastUpdated: new Date(),
-        } as UserProfile));
-        toast({ title: "Profile Updated", description: "Your changes have been saved." });
-      } else {
-        throw new Error(result.error);
+      // If profile doesn't exist, setDoc will create it. Otherwise, updateDoc merges.
+      // Using setDoc with merge:true for upsert behavior.
+      await setDoc(userDocRef, updatedData, { merge: true });
+
+      toast({ title: "Profile Updated", description: "Your changes have been saved." });
+      // No need to manually setProfile state, onSnapshot will pick up changes.
+      if (profileError === "Profile document not found. Editing and saving will create it.") {
+          setProfileError(null); // Clear the "not found" message after successful save
       }
     } catch (error: any) {
       console.error("UserProfileCard: Failed to update profile:", error);
-      toast({ title: "Error Updating Profile", description: error.message || "Could not update your profile.", variant: "destructive" });
+      const errorMsg = error.message.toLowerCase().includes("permission")
+        ? "Could not update profile due to permissions. Please check Firestore security rules."
+        : (error.message || "Could not update your profile.");
+      toast({ title: "Error Updating Profile", description: errorMsg, variant: "destructive" });
     } finally {
       setIsUpdating(false);
     }
   };
+  // 🔁 END PATCH
 
   if (authLoading || isLoadingProfile) {
     return (
@@ -163,6 +181,9 @@ export function UserProfileCard() {
         <CardContent className="space-y-4 pt-6">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-20 w-full" />
+          {/* 🔁 PATCH: Skeleton for bio (BF 2025-06-06) */}
+          <Skeleton className="h-24 w-full" />
+          {/* 🔁 END PATCH */}
         </CardContent>
         <CardFooter>
           <Skeleton className="h-10 w-24" />
@@ -180,85 +201,65 @@ export function UserProfileCard() {
     );
   }
   
-  const defaultFirstNameForDisplay = editFirstName || (authUser.displayName?.trim().split(/\s+/)[0] || '');
-  const defaultLastNameForDisplay = editLastName || (authUser.displayName?.trim().split(/\s+/).slice(1).join(' ') || '');
-
-  const displayProfile: UserProfile = profile || {
+  // Fallback data for display if profile is null but authUser exists
+  const displayData = profile || {
     uid: authUser.uid,
     email: authUser.email,
-    displayName: editDisplayName || authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer',
-    firstName: defaultFirstNameForDisplay,
-    lastName: defaultLastNameForDisplay,
-    avatarUrl: editAvatarUrl || authUser.photoURL || '',
-    favoriteGenre: editFavoriteGenre || '',
+    displayName: authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer',
+    firstName: editFirstName, // Use edit state as fallback if profile is null
+    lastName: editLastName,   // Use edit state as fallback
+    bio: editBio,             // Use edit state as fallback
+    avatarUrl: authUser.photoURL || '',
+    favoriteGenre: '',
     storiesCompleted: 0,
     dilemmasAnalyzed: 0,
     communitySubmissions: 0,
-    role: editRole || 'Explorer',
-    isAdmin: profile?.isAdmin || false,
-    createdAt: profile?.createdAt,
-    lastUpdated: profile?.lastUpdated,
+    role: 'Explorer',
+    isAdmin: false,
+    createdAt: undefined, // No reliable client-side creation date
+    lastUpdated: undefined,
   };
   
-  const cardTitle = displayProfile.displayName || `${displayProfile.firstName} ${displayProfile.lastName}`.trim() || 'No Name Set';
-  const fullNameDisplay = `${displayProfile.firstName} ${displayProfile.lastName}`.trim();
-  const showFullNameLine = fullNameDisplay && fullNameDisplay !== displayProfile.displayName;
+  const cardTitle = displayData.displayName || `${displayData.firstName} ${displayData.lastName}`.trim() || 'No Name Set';
+  const fullNameDisplay = `${displayData.firstName} ${displayData.lastName}`.trim();
+  const showFullNameLine = fullNameDisplay && fullNameDisplay !== displayData.displayName;
 
   const engagementStats = [
-    { label: "Dilemmas Explored", value: displayProfile.storiesCompleted || 0, icon: BookOpenCheck },
-    { label: "Scenarios Analyzed", value: displayProfile.dilemmasAnalyzed || 0, icon: BarChartHorizontalBig },
-    { label: "Community Submissions", value: displayProfile.communitySubmissions || 0, icon: MessageSquarePlus },
+    { label: "Dilemmas Explored", value: displayData.storiesCompleted || 0, icon: BookOpenCheck },
+    { label: "Scenarios Analyzed", value: displayData.dilemmasAnalyzed || 0, icon: BarChartHorizontalBig },
+    { label: "Community Submissions", value: displayData.communitySubmissions || 0, icon: MessageSquarePlus },
   ];
 
-  const lastUpdatedText = displayProfile.lastUpdated
-    ? new Date(displayProfile.lastUpdated).toLocaleDateString()
-    : (profile ? 'Not available' : 'Profile not yet saved');
-  const createdAtText = displayProfile.createdAt
-    ? new Date(displayProfile.createdAt).toLocaleDateString()
+  const lastUpdatedText = displayData.lastUpdated instanceof Date
+    ? displayData.lastUpdated.toLocaleDateString()
+    : (displayData.lastUpdated ? 'Processing...' : 'Not yet saved');
+  const createdAtText = displayData.createdAt instanceof Date
+    ? displayData.createdAt.toLocaleDateString()
     : 'N/A';
 
-  const isPermissionError = profileError?.includes("Missing or insufficient permissions");
+  const isPermissionError = profileError?.includes("permission");
 
   return (
     <>
     {profileError && (
-        <Alert variant="destructive" className="mb-6 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm">
+        <Alert variant={isPermissionError ? "destructive" : "info"} className="mb-6 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Error Loading Profile</AlertTitle>
+          <AlertTitle>{isPermissionError ? "Error Loading Profile" : "Profile Information"}</AlertTitle>
           <AlertDescription>
-            We encountered an error trying to load your profile: {profileError}.
+            {profileError}
             {isPermissionError && (
               <strong className="block mt-2 text-destructive-foreground/90">
-                This "Missing or insufficient permissions" error likely means your Firestore security rules
-                in the Firebase Console need to be updated to allow reading your profile from the 'users' collection.
-                Please check your Firestore rules.
+                This likely means your Firestore security rules in the Firebase Console need to be updated to allow reading your profile.
               </strong>
             )}
-             {!isPermissionError && !profileError.includes("User UID is required") && (
-              <p className="mt-2">
-                You can try to update and save your profile using the "Edit Profile" button below.
-                This might create the profile if it's missing and your Firestore write permissions are correctly set.
-              </p>
-            )}
           </AlertDescription>
         </Alert>
       )}
-      {!profileError && !profile && authUser && (
-        <Alert variant="info" className="mb-6 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm">
-          <UserCog className="h-4 w-4" />
-          <AlertTitle>Complete Your Profile</AlertTitle>
-          <AlertDescription>
-            It seems your profile hasn't been fully saved to our database yet.
-            Please use the "Edit Profile" button to create or save your details.
-            If you encounter permission errors after attempting to save, please check your Firestore security rules in the Firebase Console.
-          </AlertDescription>
-        </Alert>
-      )}
-
+     
     <Card className="max-w-2xl mx-auto shadow-xl bg-card/70 backdrop-blur-sm">
       <CardHeader className="items-center text-center relative pb-4">
         <Avatar className="h-24 w-24 mb-4 border-4 border-primary shadow-lg">
-          <AvatarImage src={displayProfile.avatarUrl || undefined} alt={cardTitle} data-ai-hint="profile avatar" />
+          <AvatarImage src={displayData.avatarUrl || undefined} alt={cardTitle} data-ai-hint="profile avatar" />
           <AvatarFallback className="text-3xl bg-muted text-muted-foreground">
             {cardTitle ? cardTitle.charAt(0).toUpperCase() : <User />}
           </AvatarFallback>
@@ -270,17 +271,17 @@ export function UserProfileCard() {
              </p>
         )}
         <div className="flex items-center gap-2 mt-1">
-            <Badge variant="secondary" className="text-sm">{displayProfile.role || 'Explorer'}</Badge>
-            {displayProfile.isAdmin && <Badge variant="destructive" className="text-sm bg-accent text-accent-foreground"><ShieldCheck className="mr-1 h-4 w-4" />Admin</Badge>}
+            <Badge variant="secondary" className="text-sm">{displayData.role || 'Explorer'}</Badge>
+            {displayData.isAdmin && <Badge variant="destructive" className="text-sm bg-accent text-accent-foreground"><ShieldCheck className="mr-1 h-4 w-4" />Admin</Badge>}
         </div>
-        <CardDescription className="text-md text-muted-foreground flex items-center mt-1"><Mail className="mr-2 h-4 w-4"/>{displayProfile.email}</CardDescription>
+        <CardDescription className="text-md text-muted-foreground flex items-center mt-1"><Mail className="mr-2 h-4 w-4"/>{displayData.email}</CardDescription>
          <Dialog>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="absolute top-4 right-4 text-primary hover:text-accent border-primary hover:border-accent">
                     <Edit3 className="mr-2 h-4 w-4" /> Edit Profile
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md bg-card border-border shadow-xl">
+            <DialogContent className="sm:max-w-lg bg-card border-border shadow-xl">
                 <DialogHeader>
                     <DialogTitle className="text-primary">Edit Your Profile</DialogTitle>
                     <DialogDescription>
@@ -302,17 +303,24 @@ export function UserProfileCard() {
                             <Input id="editLastName" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} className="bg-input" />
                         </div>
                     </div>
+                    {/* 🔁 PATCH: Add Bio field to edit dialog (BF 2025-06-06) */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="editBio" className="text-muted-foreground">Bio</Label>
+                        <Textarea id="editBio" value={editBio} onChange={(e) => setEditBio(e.target.value)} className="bg-input" placeholder="Tell us a bit about yourself..." rows={3} />
+                    </div>
+                    {/* 🔁 END PATCH */}
                      <div className="space-y-1.5">
                         <Label htmlFor="editRole" className="text-muted-foreground">Role</Label>
                         <select
                             id="editRole"
                             value={editRole}
                             onChange={(e) => setEditRole(e.target.value)}
-                            disabled={!displayProfile.isAdmin && roles.includes('Admin') && editRole === 'Admin' && displayProfile.role !== 'Admin'}
+                            // Prevent non-admins from assigning themselves Admin role, unless they are already admin
+                            disabled={!displayData.isAdmin && editRole === 'Admin' && displayData.role !== 'Admin'}
                             className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-input px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {roles
-                              .filter(r => displayProfile.isAdmin || r !== 'Admin' || r === displayProfile.role)
+                              .filter(r => displayData.isAdmin || r !== 'Admin' || r === displayData.role)
                               .map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
                     </div>
@@ -344,6 +352,18 @@ export function UserProfileCard() {
         </Dialog>
       </CardHeader>
       <CardContent className="space-y-8 pt-6">
+        {/* 🔁 PATCH: Display Bio (BF 2025-06-06) */}
+        <div>
+            <h3 className="text-xl font-semibold text-accent mb-3 flex items-center">
+                <Edit2 className="mr-2 h-5 w-5"/> Bio
+            </h3>
+            <div className="p-4 bg-muted/60 rounded-lg shadow-inner min-h-[60px]">
+                <p className="text-md text-foreground whitespace-pre-wrap">
+                    {displayData.bio || <span className="italic text-muted-foreground">No bio yet.</span>}
+                </p>
+            </div>
+        </div>
+        {/* 🔁 END PATCH */}
         <div>
             <h3 className="text-xl font-semibold text-accent mb-3 flex items-center">
                 <Library className="mr-2 h-5 w-5"/>
@@ -351,7 +371,7 @@ export function UserProfileCard() {
             </h3>
             <div className="p-4 bg-muted/60 rounded-lg shadow-inner">
                 <p className="text-xl font-bold text-primary text-center">
-                    {displayProfile.favoriteGenre || <span className="italic text-muted-foreground text-lg font-medium">Not yet specified</span>}
+                    {displayData.favoriteGenre || <span className="italic text-muted-foreground text-lg font-medium">Not yet specified</span>}
                 </p>
             </div>
         </div>
