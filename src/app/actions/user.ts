@@ -8,7 +8,6 @@ import type { UserProfile } from '@/types';
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   if (!uid) {
     console.error("getUserProfile called with undefined or empty UID.");
-    // Consider throwing a specific error or returning null based on how you want to handle this upstream
     throw new Error("User UID is required to fetch profile.");
   }
   console.log(`Attempting to fetch profile for UID: ${uid}`);
@@ -20,9 +19,13 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
       const data = userDoc.data();
       console.log(`Raw profile data found for UID ${uid}:`, JSON.stringify(data));
       
-      // Helper to convert Firestore Timestamp to JS Date
-      const toDate = (timestamp: Timestamp | undefined): Date | undefined => {
-        return timestamp?.toDate ? timestamp.toDate() : undefined;
+      const toDate = (timestamp: Timestamp | Date | undefined): Date | undefined => {
+        if (!timestamp) return undefined;
+        if (timestamp instanceof Date) return timestamp; // Already a Date
+        if (typeof timestamp === 'string') return new Date(timestamp); // ISO string
+        // @ts-ignore
+        if (timestamp.toDate) return timestamp.toDate(); // Firestore Timestamp
+        return undefined;
       };
 
       const profile: UserProfile = {
@@ -34,8 +37,8 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
         storiesCompleted: data.storiesCompleted || 0,
         dilemmasAnalyzed: data.dilemmasAnalyzed || 0,
         communitySubmissions: data.communitySubmissions || 0,
-        createdAt: toDate(data.createdAt as Timestamp | undefined),
-        lastUpdated: toDate(data.lastUpdated as Timestamp | undefined),
+        createdAt: toDate(data.createdAt as Timestamp | Date | undefined),
+        lastUpdated: toDate(data.lastUpdated as Timestamp | Date | undefined),
       };
       console.log(`Processed profile for UID ${uid}:`, JSON.stringify(profile));
       return profile;
@@ -46,7 +49,6 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   } catch (error) {
     console.error(`Error fetching user profile from Firestore for UID ${uid}:`, error);
     const specificErrorMessage = error instanceof Error ? error.message : String(error);
-    // This new Error is what gets shown to the client if the action fails
     throw new Error(`Could not fetch user profile. Original error: ${specificErrorMessage}`);
   }
 }
@@ -55,23 +57,33 @@ export async function updateUserProfile(uid: string, data: Partial<UserProfile>)
   if (!uid) {
     throw new Error("User UID is required to update profile.");
   }
-  console.log(`Attempting to update profile for UID: ${uid} with data:`, JSON.stringify(data));
+  console.log(`Attempting to update/create profile for UID: ${uid} with data:`, JSON.stringify(data));
   try {
     const userDocRef = doc(db, 'users', uid);
     
-    const updateData: Record<string, any> = { ...data, lastUpdated: serverTimestamp() };
+    // Prepare data for Firestore, ensuring serverTimestamp is used
+    const updateData: Record<string, any> = { 
+      ...data, 
+      lastUpdated: serverTimestamp() 
+    };
     
     // Remove fields that shouldn't be directly updated this way or are handled by serverTimestamp
-    delete updateData.uid;
-    delete updateData.email; // Email is usually managed by Firebase Auth, not directly in profile doc updates
-    delete updateData.createdAt; // createdAt should not change after initial creation
+    // uid and email are part of the profile data but usually not changed here.
+    // createdAt should only be set on creation.
+    delete updateData.createdAt; 
+    if (data.uid && data.uid !== uid) {
+        console.warn("Attempting to change UID in updateUserProfile. This is not allowed. Using original UID.");
+    }
+    updateData.uid = uid; // Ensure UID is part of the data for creation/merge
 
-    await updateDoc(userDocRef, updateData);
-    console.log(`Successfully updated profile for UID: ${uid}`);
+    // Using setDoc with merge: true will create the document if it doesn't exist,
+    // or update/merge fields if it does.
+    await setDoc(userDocRef, updateData, { merge: true });
+    console.log(`Successfully updated/created profile for UID: ${uid}`);
   } catch (error) {
-    console.error(`Error updating user profile for UID ${uid}:`, error);
+    console.error(`Error updating/creating user profile for UID ${uid}:`, error);
     const specificErrorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(`Could not update user profile. Original error: ${specificErrorMessage}`);
+    throw new Error(`Could not update/create user profile. Original error: ${specificErrorMessage}`);
   }
 }
 
@@ -84,22 +96,23 @@ export async function createUserProfile(uid: string, email: string | null, displ
     const userDocRef = doc(db, 'users', uid);
     const now = serverTimestamp();
     
-    // Constructing the profile with explicit fields expected by UserProfile (excluding optional ones if not provided)
-    const initialProfileData: Record<string, any> = {
+    const initialProfileData: UserProfile = {
       uid,
       email: email || null,
-      displayName: displayName || email?.split('@')[0] || 'Anonymous User',
+      displayName: displayName || email?.split('@')[0] || 'Anonymous Explorer',
       avatarUrl: avatarUrl || '',
       favoriteGenre: '',
       storiesCompleted: 0,
       dilemmasAnalyzed: 0,
       communitySubmissions: 0,
+      // @ts-ignore serverTimestamp will be converted by Firestore
       createdAt: now,
+      // @ts-ignore
       lastUpdated: now,
     };
 
     await setDoc(userDocRef, initialProfileData);
-    console.log(`Successfully created profile for UID: ${uid} with data:`, JSON.stringify(initialProfileData).replace(/"now"/g, "serverTimestamp()")); // For logging, show serverTimestamp placeholder
+    console.log(`Successfully created profile for UID: ${uid} with data:`, JSON.stringify(initialProfileData).replace(/"now"/g, "serverTimestamp()"));
   } catch (error) {
     console.error(`Error creating user profile for UID ${uid}:`, error);
     const specificErrorMessage = error instanceof Error ? error.message : String(error);

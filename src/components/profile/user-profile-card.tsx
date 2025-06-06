@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Library, Tv, Save, Loader2, Edit3, BarChartHorizontalBig, BookOpenCheck, MessageSquarePlus } from 'lucide-react';
+import { User, Mail, Library, Tv, Save, Loader2, Edit3, BarChartHorizontalBig, BookOpenCheck, MessageSquarePlus, AlertTriangle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const genres = ["Cyberpunk", "Space Opera", "Post-Apocalyptic", "Biopunk", "Time Travel", "Utopian/Dystopian", "Military Sci-Fi", "Philosophical Sci-Fi"];
 
@@ -32,6 +33,7 @@ export function UserProfileCard() {
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [profileError, setProfileError] = useState<string | null>(null);
   
   const [editDisplayName, setEditDisplayName] = useState('');
   const [editFavoriteGenre, setEditFavoriteGenre] = useState('');
@@ -40,47 +42,69 @@ export function UserProfileCard() {
 
 
   useEffect(() => {
-    if (authUser) {
-      const fetchProfile = async () => {
+    const fetchProfile = async () => {
+      if (authUser) {
         setIsLoadingProfile(true);
+        setProfileError(null);
         try {
           const userProfileData = await getUserProfile(authUser.uid);
-          if (userProfileData) {
-            setProfile(userProfileData);
-            setEditDisplayName(userProfileData.displayName || '');
-            setEditFavoriteGenre(userProfileData.favoriteGenre || '');
-            setEditAvatarUrl(userProfileData.avatarUrl || '');
-          }
-        } catch (error) {
+          setProfile(userProfileData);
+          // Initialize edit fields from profile data or authUser fallbacks
+          setEditDisplayName(userProfileData?.displayName || authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer');
+          setEditFavoriteGenre(userProfileData?.favoriteGenre || '');
+          setEditAvatarUrl(userProfileData?.avatarUrl || authUser.photoURL || '');
+
+        } catch (error: any) {
           console.error("Failed to fetch profile:", error);
-          toast({ title: "Error", description: "Could not load your profile.", variant: "destructive" });
+          setProfileError(error.message || "Could not load your profile.");
+          toast({ title: "Error Loading Profile", description: error.message || "Could not load your profile.", variant: "destructive" });
+           // Initialize edit fields from authUser as a fallback if profile fetch fails but authUser exists
+          setEditDisplayName(authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer');
+          setEditFavoriteGenre('');
+          setEditAvatarUrl(authUser.photoURL || '');
         } finally {
           setIsLoadingProfile(false);
         }
-      };
-      fetchProfile();
-    } else if (!authLoading) {
-        setIsLoadingProfile(false); // Not logged in, not loading
-    }
+      } else if (!authLoading) {
+          setIsLoadingProfile(false); // Not logged in, not loading
+          setProfile(null); // Clear profile if user logs out
+      }
+    };
+    fetchProfile();
   }, [authUser, authLoading, toast]);
 
   const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
-    if (!authUser || !profile) return;
+    if (!authUser) return;
     setIsUpdating(true);
     try {
       const updatedData: Partial<UserProfile> = {
+        // uid is implicitly authUser.uid in the action
         displayName: editDisplayName,
         favoriteGenre: editFavoriteGenre,
         avatarUrl: editAvatarUrl,
       };
       await updateUserProfile(authUser.uid, updatedData);
-      setProfile(prev => prev ? { ...prev, ...updatedData } : null);
+      // Optimistically update local profile state or re-fetch
+      setProfile(prev => ({
+        ...(prev || { // Base structure if prev was null
+            uid: authUser.uid,
+            email: authUser.email,
+            storiesCompleted: 0,
+            dilemmasAnalyzed: 0,
+            communitySubmissions: 0,
+        }),
+        ...updatedData,
+        displayName: editDisplayName, // ensure direct state update
+        favoriteGenre: editFavoriteGenre,
+        avatarUrl: editAvatarUrl,
+        lastUpdated: new Date(), // Optimistic update for UI
+      } as UserProfile));
       toast({ title: "Profile Updated", description: "Your changes have been saved." });
-      // setIsEditing(false); // Dialog will close itself via DialogClose
-    } catch (error) {
+      // Dialog will close itself via DialogClose if used within form submission
+    } catch (error: any) {
       console.error("Failed to update profile:", error);
-      toast({ title: "Error", description: "Could not update your profile.", variant: "destructive" });
+      toast({ title: "Error Updating Profile", description: error.message || "Could not update your profile.", variant: "destructive" });
     } finally {
       setIsUpdating(false);
     }
@@ -105,27 +129,78 @@ export function UserProfileCard() {
     );
   }
 
-  if (!authUser || !profile) {
-    return <p className="text-center text-muted-foreground">Please log in to view your profile.</p>;
+  if (!authUser) {
+    return (
+        <Card className="max-w-2xl mx-auto shadow-xl bg-card/70 backdrop-blur-sm p-8 text-center">
+            <AlertTriangle className="mx-auto h-12 w-12 text-primary mb-4" />
+            <p className="text-lg text-muted-foreground">Please log in to view or edit your profile.</p>
+        </Card>
+    );
   }
+  
+  // authUser exists, but profile might be null (if fetch failed or document doesn't exist)
+  const displayProfile = profile || {
+    uid: authUser.uid,
+    email: authUser.email,
+    displayName: authUser.displayName || authUser.email?.split('@')[0] || 'Anonymous Explorer',
+    avatarUrl: authUser.photoURL || '',
+    favoriteGenre: '',
+    storiesCompleted: 0,
+    dilemmasAnalyzed: 0,
+    communitySubmissions: 0,
+    createdAt: undefined, // Will be undefined if profile is null
+    lastUpdated: undefined,
+  };
+
 
   const engagementStats = [
-    { label: "Dilemmas Explored", value: profile.storiesCompleted || 0, icon: BookOpenCheck },
-    { label: "Scenarios Analyzed", value: profile.dilemmasAnalyzed || 0, icon: BarChartHorizontalBig },
-    { label: "Community Submissions", value: profile.communitySubmissions || 0, icon: MessageSquarePlus },
+    { label: "Dilemmas Explored", value: displayProfile.storiesCompleted || 0, icon: BookOpenCheck },
+    { label: "Scenarios Analyzed", value: displayProfile.dilemmasAnalyzed || 0, icon: BarChartHorizontalBig },
+    { label: "Community Submissions", value: displayProfile.communitySubmissions || 0, icon: MessageSquarePlus },
   ];
 
+  const lastUpdatedText = displayProfile.lastUpdated 
+    ? new Date(displayProfile.lastUpdated).toLocaleDateString() 
+    : (profile ? 'Not available' : 'Profile not yet saved');
+  const createdAtText = displayProfile.createdAt
+    ? new Date(displayProfile.createdAt).toLocaleDateString()
+    : 'N/A';
+
+
   return (
+    <>
+    {profileError && !profile && (
+        <Alert variant="warning" className="mb-6 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Profile Data Missing</AlertTitle>
+          <AlertDescription>
+            We couldn't load your saved profile data from the database. This might be because it wasn't created correctly during sign-up.
+            You can try to save your profile information by using the "Edit Profile" button.
+            Error details: {profileError}
+          </AlertDescription>
+        </Alert>
+      )}
+      {!profileError && !profile && authUser && (
+        <Alert variant="info" className="mb-6 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Profile Not Found</AlertTitle>
+          <AlertDescription>
+            It seems your profile hasn't been saved to our database yet. 
+            Please use the "Edit Profile" button to create and save your details.
+          </AlertDescription>
+        </Alert>
+      )}
+
     <Card className="max-w-2xl mx-auto shadow-xl bg-card/70 backdrop-blur-sm">
       <CardHeader className="items-center text-center relative pb-4">
         <Avatar className="h-24 w-24 mb-4 border-4 border-primary shadow-lg">
-          <AvatarImage src={profile.avatarUrl || undefined} alt={profile.displayName || 'User'} data-ai-hint="profile avatar" />
+          <AvatarImage src={editAvatarUrl || displayProfile.avatarUrl || undefined} alt={displayProfile.displayName || 'User'} data-ai-hint="profile avatar" />
           <AvatarFallback className="text-3xl bg-muted text-muted-foreground">
-            {profile.displayName ? profile.displayName.charAt(0).toUpperCase() : <User />}
+            {displayProfile.displayName ? displayProfile.displayName.charAt(0).toUpperCase() : <User />}
           </AvatarFallback>
         </Avatar>
-        <CardTitle className="text-3xl font-bold text-primary">{profile.displayName || 'Anonymous User'}</CardTitle>
-        <CardDescription className="text-md text-muted-foreground flex items-center"><Mail className="mr-2 h-4 w-4"/>{profile.email}</CardDescription>
+        <CardTitle className="text-3xl font-bold text-primary">{displayProfile.displayName || 'Anonymous Explorer'}</CardTitle>
+        <CardDescription className="text-md text-muted-foreground flex items-center"><Mail className="mr-2 h-4 w-4"/>{displayProfile.email}</CardDescription>
          <Dialog>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="absolute top-4 right-4 text-primary hover:text-accent border-primary hover:border-accent">
@@ -179,7 +254,7 @@ export function UserProfileCard() {
             </h3>
             <div className="p-4 bg-muted/60 rounded-lg shadow-inner">
                 <p className="text-xl font-bold text-primary text-center">
-                    {profile.favoriteGenre || <span className="italic text-muted-foreground text-lg font-medium">Not yet specified</span>}
+                    {displayProfile.favoriteGenre || <span className="italic text-muted-foreground text-lg font-medium">Not yet specified</span>}
                 </p>
             </div>
         </div>
@@ -200,24 +275,11 @@ export function UserProfileCard() {
             </div>
         </div>
       </CardContent>
-      <CardFooter className="border-t pt-4 mt-6">
-         <p className="text-xs text-muted-foreground italic text-center w-full">Profile last updated: {profile.lastUpdated ? new Date(profile.lastUpdated.seconds * 1000).toLocaleDateString() : 'Not available'}</p>
+      <CardFooter className="border-t pt-4 mt-6 flex flex-col sm:flex-row justify-between text-xs text-muted-foreground italic">
+         <p>Joined: {createdAtText}</p>
+         <p>Last updated: {lastUpdatedText}</p>
       </CardFooter>
     </Card>
+    </>
   );
 }
-
-// Helper to add lastUpdated to UserProfile if it's not already there
-// For now, we'll assume it might come from Firestore but isn't strictly in UserProfile type
-// Add it to UserProfile type if it's consistently used:
-// export interface UserProfile {
-//   // ... other fields
-//   lastUpdated?: { seconds: number; nanoseconds: number } | Date; 
-//   createdAt?: { seconds: number; nanoseconds: number } | Date; 
-// }
-// For this update, I am not modifying the types/index.ts
-// The code will try to display lastUpdated if profile.lastUpdated exists,
-// which means getUserProfile and updateUserProfile would need to handle it.
-// For now, this only affects display. The `updateUserProfile` action already adds `lastUpdated`.
-// `getUserProfile` would need to be modified to return it for display.
-// I will assume `getUserProfile` might return it and handle its absence gracefully.
