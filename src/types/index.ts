@@ -7,15 +7,13 @@ export interface UserProfile {
   displayName: string | null; // This will store the 'name'
   firstName?: string;
   lastName?: string;
-  // 🔁 PATCH: Add bio to UserProfile (BF 2025-06-06)
   bio?: string;
-  // 🔁 END PATCH
   avatarUrl?: string;
   favoriteGenre?: string;
   storiesCompleted?: number;
   dilemmasAnalyzed?: number;
   communitySubmissions?: number;
-  role?: string;
+  role?: string; // User's role within the platform (e.g., 'Explorer', 'Contributor')
   isAdmin?: boolean;
   createdAt?: Date | any; // Allow 'any' for Firebase ServerTimestamp
   lastUpdated?: Date | any; // Allow 'any' for Firebase ServerTimestamp
@@ -86,3 +84,25 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
 }
+
+// 🔁 PATCH: Add Organization types (BF 2025-06-06)
+export type OrganizationMemberRole = 'owner' | 'leader' | 'member';
+
+export interface Organization {
+  id: string; // Firestore document ID
+  name: string;
+  ownerId: string; // UID of the user who created/owns the org
+  members?: string[]; // Array of UIDs of members
+  memberRoles?: { [uid: string]: OrganizationMemberRole }; // Map UIDs to roles for quick lookup
+  plan?: 'free' | 'premium' | string; // Subscription plan status
+  features?: { // Dynamically enabled features based on plan
+    dashboard?: boolean;
+    analytics?: boolean;
+    customModules?: boolean;
+    // ... other feature flags
+  };
+  createdAt: Date | any; // Firebase ServerTimestamp
+  updatedAt?: Date | any; // Firebase ServerTimestamp
+  settings?: Record<string, any>; // Org-specific settings like branding, etc.
+}
+// 🔁 END PATCH

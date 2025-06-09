@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
@@ -136,8 +135,8 @@ export function UserProfileCard() {
     setIsUpdating(true);
     try {
       const userDocRef = doc(db, 'users', authUser.uid);
-      const updatedData: Partial<UserProfile> & { lastUpdated: any, name?: string } = {
-        // Use 'name' for Firestore consistency with Cloud Function
+      const updatedData: Partial<UserProfile> & { lastUpdated: any, name?: string, uid: string } = {
+        uid: authUser.uid, // Added this line
         name: editDisplayName, 
         displayName: editDisplayName, // Keep for local state if needed
         firstName: editFirstName,

@@ -15,6 +15,7 @@ import {
   User, // For Profile
   Gem, // For Pricing & Plans
   Orbit, // For main Sci-Fi Ethics logo
+  Building, // 🔁 PATCH: Import Building icon (BF 2025-06-06)
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -30,7 +31,6 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
-// Button is not used here directly unless we add a custom logout button
 
 // Main navigation items
 const mainNavItems = [
@@ -46,6 +46,9 @@ const communityNavItems = [
   { href: '/submit-dilemma', label: 'Submit Dilemma', icon: FilePlus2 },
   { href: '/community-dilemmas', label: 'Community Dilemmas', icon: Users },
   { href: '/debate-arena', label: 'Debate Arena', icon: Scale },
+  // 🔁 PATCH: Add Create Organization link (BF 2025-06-06)
+  { href: '/create-organization', label: 'Create Organization', icon: Building },
+  // 🔁 END PATCH
 ];
 
 // Footer navigation items
@@ -57,7 +60,7 @@ const footerNavItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { state } = useSidebar(); // Get sidebar state (expanded/collapsed)
+  const { state } = useSidebar(); 
 
   return (
     <Sidebar collapsible="icon" className="border-r">
@@ -68,14 +71,14 @@ export function AppSidebar() {
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="flex-1 flex flex-col p-2"> {/* Added p-2 for consistent padding for groups */}
-        <div className="flex-grow space-y-1"> {/* Main scrollable nav area */}
+      <SidebarContent className="flex-1 flex flex-col p-2"> 
+        <div className="flex-grow space-y-1"> 
           <SidebarMenu>
             {mainNavItems.map((item) => (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname.startsWith(item.href)}
+                  isActive={pathname === item.href || (item.href !== '/stories' && pathname.startsWith(item.href))}
                   tooltip={item.label}
                   className="group-data-[collapsible=icon]:justify-center"
                 >
@@ -90,9 +93,9 @@ export function AppSidebar() {
 
           <SidebarSeparator className="my-3" />
 
-          <SidebarGroup className="p-0"> {/* Group with no extra padding, label will have its own */}
+          <SidebarGroup className="p-0"> 
             <SidebarGroupLabel className="px-2 pb-1 text-xs text-sidebar-foreground/70 group-data-[collapsible=icon]:hidden">
-              Community
+              Community & Teams
             </SidebarGroupLabel>
             <SidebarMenu>
               {communityNavItems.map((item) => (
