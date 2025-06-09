@@ -7,23 +7,29 @@ import { type Organization, type OrganizationMemberRole } from '@/types';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app as clientApp } from '@/lib/firebase/config';
 
-const getClientFunctions = () => getFunctions(clientApp);
+// Helper to get client functions instance
+const getClientFunctions = () => getFunctions(clientApp, 'us-central1'); // Specify region if not default
 
 export async function createOrganization(
   creatorUserId: string,
   organizationName: string
 ): Promise<{ success: boolean; orgId?: string; error?: string }> {
+  console.log(`[SERVER ACTION] createOrganization: Initiated by creatorUserId: '${creatorUserId}', Org Name: '${organizationName}'`);
+
   if (!creatorUserId) {
-    console.error("[SERVER ACTION] createOrganization: Creator User ID is required.");
-    return { success: false, error: 'Creator User ID is required.' };
+    const errorMsg = "[SERVER ACTION] createOrganization: Creator User ID is required.";
+    console.error(errorMsg);
+    return { success: false, error: errorMsg };
   }
   if (!organizationName || !organizationName.trim()) {
-    console.error("[SERVER ACTION] createOrganization: Organization name is required.");
-    return { success: false, error: 'Organization name is required.' };
+    const errorMsg = "[SERVER ACTION] createOrganization: Organization name is required.";
+    console.error(errorMsg);
+    return { success: false, error: errorMsg };
   }
   if (!db) {
-    console.error("[SERVER ACTION] createOrganization: Firestore database instance (db) is not initialized.");
-    return { success: false, error: "Firestore database instance (db) is not initialized. Check Firebase config." };
+    const errorMsg = "[SERVER ACTION] createOrganization: Firestore database instance (db) is not initialized. Check Firebase config.";
+    console.error(errorMsg);
+    return { success: false, error: errorMsg };
   }
 
   const newOrgRef = doc(collection(db, 'organizations'));
@@ -31,33 +37,34 @@ export async function createOrganization(
 
   const newOrganizationData: Omit<Organization, 'id' | 'createdAt' | 'updatedAt'> & { createdAt: any, updatedAt: any } = {
     name: organizationName.trim(),
-    ownerId: creatorUserId,
-    members: [creatorUserId], // Add creator as the first member
+    ownerId: creatorUserId, // This is critical for the security rule
+    members: [creatorUserId],
     memberRoles: {
       [creatorUserId]: 'owner' as OrganizationMemberRole,
     },
-    plan: 'free', // Default plan
-    features: { // Default features for a free plan
-        dashboard: true, // Example feature
-        analytics: false,  // Example premium feature
+    plan: 'free',
+    features: {
+        dashboard: true,
+        analytics: false,
         customModules: false,
     },
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-    settings: {}, // Initialize with empty settings
+    settings: {},
   };
+
+  console.log(`[SERVER ACTION] createOrganization: Attempting to write org doc for orgId '${orgId}' with data:`, JSON.stringify(newOrganizationData));
 
   try {
     await setDoc(newOrgRef, newOrganizationData);
-    console.log(`[SERVER ACTION] createOrganization: Successfully created organization "${orgId}" for user "${creatorUserId}"`);
+    console.log(`[SERVER ACTION] createOrganization: Successfully created organization Firestore doc "${orgId}" for user "${creatorUserId}"`);
 
     // After creating the organization, set custom claims for the creator
     try {
       const functions = getClientFunctions();
-      // Ensure your Cloud Function region is correct here if not 'us-central1'
-      // e.g., httpsCallable(functions, 'setOrganizationClaims-europe-west1');
       const setClaimsCallable = httpsCallable(functions, 'setOrganizationClaims');
-      console.log(`[SERVER ACTION] createOrganization: Calling setOrganizationClaims for userId: ${creatorUserId}, orgId: ${orgId}, role: owner`);
+      console.log(`[SERVER ACTION] createOrganization: Calling setOrganizationClaims Cloud Function for userId: ${creatorUserId}, orgId: ${orgId}, role: owner`);
+      
       const claimsResult = await setClaimsCallable({ userId: creatorUserId, orgId: orgId, role: 'owner' });
       
       // @ts-ignore - data property exists on HttpsCallableResult
@@ -66,23 +73,26 @@ export async function createOrganization(
       } else {
         // @ts-ignore
         const claimsError = (claimsResult.data as any)?.error || 'Failed to set custom claims, unknown error from function.';
-        console.warn(`[SERVER ACTION] createOrganization: Org created but failed to set custom claims for ${creatorUserId} on org ${orgId}: ${claimsError}`);
-        // Potentially return a specific warning to client if claims setting is critical for immediate next steps.
-        // For now, we'll consider org creation a success and log the claims issue.
+        console.warn(`[SERVER ACTION] createOrganization: Org doc created but failed to set custom claims for ${creatorUserId} on org ${orgId}: ${claimsError}`);
+        // Org creation in Firestore succeeded, but claims failed.
+        // We will still return success for org creation, but the client might need to re-auth to see claims.
       }
     } catch (claimsError: any) {
       console.error(`[SERVER ACTION] createOrganization: Error calling setOrganizationClaims Cloud Function for ${creatorUserId} on org ${orgId}:`, claimsError.message, claimsError.details);
-      // Log error, but org creation itself was successful
+      // Log error, but org creation in Firestore itself was successful before this point.
     }
 
     return { success: true, orgId };
   } catch (error: any) {
-    console.error(`[SERVER ACTION] createOrganization: Error writing organization document for user ${creatorUserId}:`, error);
+    console.error(`[SERVER ACTION] createOrganization: Firestore error writing organization document for orgId '${orgId}', user '${creatorUserId}':`, error);
     const specificErrorMessage = error.message || String(error);
-    if (specificErrorMessage.toLowerCase().includes("permission") || specificErrorMessage.toLowerCase().includes("permission_denied")) {
-        return { success: false, error: `Could not create organization due to Firestore permissions. Original error: ${specificErrorMessage}. Please check Firestore security rules.` };
+    if (specificErrorMessage.toLowerCase().includes("permission_denied") || specificErrorMessage.toLowerCase().includes("permission denied")) {
+        return { 
+            success: false, 
+            error: `Could not create organization due to Firestore permissions. Original error: ${specificErrorMessage}. Please check Firestore security rules for the 'organizations' collection. Ensure the 'create' rule (if request.auth.uid == request.resource.data.ownerId) is met.` 
+        };
     }
-    return { success: false, error: `Could not create organization. Original error: ${specificErrorMessage}` };
+    return { success: false, error: `Could not create organization. Firestore error: ${specificErrorMessage}` };
   }
 }
 
