@@ -1,6 +1,5 @@
 [build]
   command = "npm run build"
-  publish = ".next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -8,15 +7,3 @@
 [build.environment]
   NODE_VERSION = "20"
   NEXT_USE_NETLIFY_EDGE = "true"
-
-# Handles redirects for client-side routing and Next.js structure
-[[redirects]]
-  from = "/*"
-  to = "/.next/server/pages/:splat"
-  status = 200
-  force = false
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
