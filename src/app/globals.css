@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 61% 27%; /* Dark Navy Blue #191970 */
+    --foreground: 200 20% 95%; /* Very light blue/gray #edf1f2 */
+
+    --card: 240 55% 32%; /* Slightly lighter navy #22227D */
+    --card-foreground: 200 20% 95%; /* #edf1f2 */
+
+    --popover: 240 50% 22%; /* Darker navy for popovers #161668 */
+    --popover-foreground: 200 20% 95%; /* #edf1f2 */
+
+    --primary: 181 100% 74%; /* Electric Blue #7DF9FF */
+    --primary-foreground: 240 61% 10%; /* Dark, for contrast #0A0A2A */
+
+    --secondary: 240 50% 40%; /* Distinct blue #333399 */
+    --secondary-foreground: 200 20% 95%; /* #edf1f2 */
+
+    --muted: 240 50% 35%; /* Muted navy #2B2B88 */
+    --muted-foreground: 200 20% 70%; /* Lighter gray/blue #A7B0B3 */
+
+    --accent: 300 100% 50%; /* Vibrant Magenta #FF00FF */
+    --accent-foreground: 0 0% 100%; /* White #FFFFFF */
+
+    --destructive: 0 72% 51%; /* Standard red #E53E3E */
+    --destructive-foreground: 0 0% 98%; /* Off-white #FAFAFA */
+
+    --border: 240 50% 40%; /* Distinct blue #333399 */
+    --input: 240 50% 30%; /* Darker than card for inputs #262680 */
+    --ring: 181 100% 74%; /* Electric Blue #7DF9FF */
+
+    --radius: 0.5rem;
+
+    --chart-1: 181 100% 74%; /* Electric Blue */
+    --chart-2: 300 100% 50%; /* Vibrant Magenta */
+    --chart-3: 200 80% 60%; /* Lighter Blue */
+    --chart-4: 270 70% 70%; /* Lavender */
+    --chart-5: 0 0% 80%;   /* Light Grey */
+
+    --sidebar-background: 240 61% 22%; /* #14145C Slightly darker than main background */
+    --sidebar-foreground: 200 20% 85%; /* #CAD0D3 Slightly less bright than main foreground */
+    --sidebar-primary: 181 100% 74%; /* #7DF9FF Same as main primary */
+    --sidebar-primary-foreground: 240 61% 10%; /* #0A0A2A Same as main primary-foreground */
+    --sidebar-accent: 300 80% 60%; /* #FF66FF Slightly desaturated/lighter magenta */
+    --sidebar-accent-foreground: 0 0% 100%; /* #FFFFFF White */
+    --sidebar-border: 240 50% 35%; /* #2B2B88 Consistent with muted or slightly darker border */
+    --sidebar-ring: 181 100% 74%; /* #7DF9FF Same as main ring */
+  }
+
+  /* Apply dark theme by default as per user request */
+  .dark {
+    --background: 240 61% 27%;
+    --foreground: 200 20% 95%;
+    --card: 240 55% 32%;
+    --card-foreground: 200 20% 95%;
+    --popover: 240 50% 22%;
+    --popover-foreground: 200 20% 95%;
+    --primary: 181 100% 74%;
+    --primary-foreground: 240 61% 10%;
+    --secondary: 240 50% 40%;
+    --secondary-foreground: 200 20% 95%;
+    --muted: 240 50% 35%;
+    --muted-foreground: 200 20% 70%;
+    --accent: 300 100% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 50% 40%;
+    --input: 240 50% 30%;
+    --ring: 181 100% 74%;
+
+    --chart-1: 181 100% 74%;
+    --chart-2: 300 100% 50%;
+    --chart-3: 200 80% 60%;
+    --chart-4: 270 70% 70%;
+    --chart-5: 0 0% 80%;
+
+    --sidebar-background: 240 61% 22%;
+    --sidebar-foreground: 200 20% 85%;
+    --sidebar-primary: 181 100% 74%;
+    --sidebar-primary-foreground: 240 61% 10%;
+    --sidebar-accent: 300 80% 60%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 50% 35%;
+    --sidebar-ring: 181 100% 74%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+}
