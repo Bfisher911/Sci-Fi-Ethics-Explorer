@@ -7,16 +7,24 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bot, User, Send, Loader2, AlertCircle } from 'lucide-react';
+import { Bot, User, Send, Loader2, AlertCircle, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { DevilsAdvocateToggle } from '@/components/ai-counselor/devils-advocate-toggle';
 
-export function AICounselorChat() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+interface AICounselorChatProps {
+  sessionId?: string;
+  initialMessages?: ChatMessage[];
+  onMessagesUpdate?: (messages: ChatMessage[]) => void;
+}
+
+export function AICounselorChat({ sessionId, initialMessages, onMessagesUpdate }: AICounselorChatProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages ?? []);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quotaInfo, setQuotaInfo] = useState<string | null>(null);
+  const [devilsAdvocateMode, setDevilsAdvocateMode] = useState(false);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -26,18 +34,22 @@ export function AICounselorChat() {
       scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
     }
   }, [messages]);
-  
-  // Initial greeting from AI
+
+  // When initialMessages or sessionId changes, update messages
   useEffect(() => {
-    setMessages([
-      { 
-        id: 'initial-greeting', 
-        role: 'assistant', 
-        content: "Hello! I am an AI Ethics Counselor specializing in sci-fi scenarios. How can I help you explore an ethical dilemma today?", 
-        timestamp: new Date() 
-      }
-    ]);
-  }, []);
+    if (initialMessages && initialMessages.length > 0) {
+      setMessages(initialMessages);
+    } else {
+      setMessages([
+        {
+          id: 'initial-greeting',
+          role: 'assistant',
+          content: "Hello! I am an AI Ethics Counselor specializing in sci-fi scenarios. How can I help you explore an ethical dilemma today?",
+          timestamp: new Date(),
+        },
+      ]);
+    }
+  }, [sessionId, initialMessages]);
 
 
   const handleSubmit = async (e: FormEvent) => {
@@ -58,7 +70,7 @@ export function AICounselorChat() {
 
     try {
       const flowInputMessages = [...messages, userMessage].map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }));
-      const result = await chatWithCounselor({ messages: flowInputMessages });
+      const result = await chatWithCounselor({ messages: flowInputMessages, mode: devilsAdvocateMode ? 'devils-advocate' : 'counselor' });
       
       const aiResponse: ChatMessage = {
         id: Date.now().toString() + '-assistant',
@@ -66,7 +78,9 @@ export function AICounselorChat() {
         content: result.response,
         timestamp: new Date(),
       };
-      setMessages((prevMessages) => [...prevMessages, aiResponse]);
+      const updatedMessages = [...messages, userMessage, aiResponse];
+      setMessages(updatedMessages);
+      onMessagesUpdate?.(updatedMessages);
       
       // Genkit flows don't typically return quota info in this structure, this is a placeholder
       // if (result.quotaInformation) { 
@@ -90,6 +104,15 @@ export function AICounselorChat() {
 
   return (
     <div className="flex flex-col h-full bg-card/70 backdrop-blur-sm rounded-lg shadow-xl overflow-hidden">
+      <div className="flex items-center justify-between border-b px-4 py-2 bg-background/50">
+        <span className="text-sm font-medium text-muted-foreground">
+          {devilsAdvocateMode ? "Devil's Advocate Mode" : 'AI Ethics Counselor'}
+        </span>
+        <DevilsAdvocateToggle
+          enabled={devilsAdvocateMode}
+          onToggle={setDevilsAdvocateMode}
+        />
+      </div>
       <ScrollArea className="flex-grow p-4 md:p-6" ref={scrollAreaRef}>
         <div className="space-y-6">
           {messages.map((message) => (
@@ -153,7 +176,7 @@ export function AICounselorChat() {
         </Alert>
       )}
 
-      <form onSubmit={handleSubmit} className="border-t p-4 bg-background/50">
+      <form onSubmit={handleSubmit} className="border-t p-4 bg-background/50 sticky bottom-0 z-10">
         <div className="flex items-center gap-2">
           <Input
             type="text"

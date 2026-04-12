@@ -4,18 +4,27 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  BookOpen, // For Stories
-  FlaskConical, // For Scenario Analyzer
-  BookText, // For Ethical Glossary
-  Compass, // For Framework Explorer
-  MessageSquare, // For AI Counselor
-  FilePlus2, // For Submit Dilemma
-  Users, // For Community Dilemmas
-  Scale, // For Debate Arena
-  User, // For Profile
-  Gem, // For Pricing & Plans
-  Orbit, // For main Sci-Fi Ethics logo
-  Building, // 🔁 PATCH: Import Building icon (BF 2025-06-06)
+  BookOpen,
+  FlaskConical,
+  BookText,
+  Compass,
+  MessageSquare,
+  FilePlus2,
+  Users,
+  Scale,
+  User,
+  Gem,
+  Orbit,
+  Building,
+  PenTool,
+  Trophy,
+  Bookmark,
+  GraduationCap,
+  ScrollText,
+  Presentation,
+  ShieldCheck,
+  GitCompare,
+  Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -31,36 +40,45 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
+import { useAuth } from '@/hooks/use-auth';
+import { useAdmin } from '@/hooks/use-admin';
 
-// Main navigation items
 const mainNavItems = [
   { href: '/stories', label: 'Stories', icon: BookOpen },
   { href: '/analyzer', label: 'Scenario Analyzer', icon: FlaskConical },
   { href: '/glossary', label: 'Ethical Glossary', icon: BookText },
   { href: '/framework-explorer', label: 'Framework Explorer', icon: Compass },
   { href: '/ai-counselor', label: 'AI Counselor', icon: MessageSquare },
+  { href: '/perspective-comparison', label: 'Perspectives', icon: GitCompare },
 ];
 
-// Community navigation items
 const communityNavItems = [
   { href: '/submit-dilemma', label: 'Submit Dilemma', icon: FilePlus2 },
   { href: '/community-dilemmas', label: 'Community Dilemmas', icon: Users },
   { href: '/debate-arena', label: 'Debate Arena', icon: Scale },
-  // 🔁 PATCH: Add Create Organization link (BF 2025-06-06)
+  { href: '/workshops', label: 'Workshops', icon: Presentation },
+  { href: '/create-story', label: 'Create Story', icon: PenTool },
   { href: '/create-organization', label: 'Create Organization', icon: Building },
-  // 🔁 END PATCH
 ];
 
-// Footer navigation items
+const learningNavItems = [
+  { href: '/curriculum', label: 'Learning Paths', icon: GraduationCap },
+  { href: '/philosophers', label: 'Philosophers', icon: ScrollText },
+  { href: '/classroom', label: 'Classroom', icon: Presentation },
+];
+
 const footerNavItems = [
+  { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+  { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
   { href: '/pricing', label: 'Pricing & Plans', icon: Gem },
   { href: '/profile', label: 'Profile', icon: User },
 ];
 
-
 export function AppSidebar() {
   const pathname = usePathname();
-  const { state } = useSidebar(); 
+  const { state } = useSidebar();
+  const { claims } = useAuth();
+  const { isAdmin } = useAdmin();
 
   return (
     <Sidebar collapsible="icon" className="border-r">
@@ -71,8 +89,8 @@ export function AppSidebar() {
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="flex-1 flex flex-col p-2"> 
-        <div className="flex-grow space-y-1"> 
+      <SidebarContent className="flex-1 flex flex-col p-2">
+        <div className="flex-grow space-y-1">
           <SidebarMenu>
             {mainNavItems.map((item) => (
               <SidebarMenuItem key={item.href}>
@@ -93,12 +111,52 @@ export function AppSidebar() {
 
           <SidebarSeparator className="my-3" />
 
-          <SidebarGroup className="p-0"> 
+          <SidebarGroup className="p-0">
             <SidebarGroupLabel className="px-2 pb-1 text-xs text-sidebar-foreground/70 group-data-[collapsible=icon]:hidden">
               Community & Teams
             </SidebarGroupLabel>
             <SidebarMenu>
               {communityNavItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname.startsWith(item.href)}
+                    tooltip={item.label}
+                    className="group-data-[collapsible=icon]:justify-center"
+                  >
+                    <Link href={item.href}>
+                      <item.icon className="h-5 w-5 group-data-[collapsible=icon]:m-auto" />
+                      {state === 'expanded' && <span>{item.label}</span>}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+              {claims?.teamId && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname.startsWith('/organizations')}
+                    tooltip="My Organization"
+                    className="group-data-[collapsible=icon]:justify-center"
+                  >
+                    <Link href={`/organizations/${claims.teamId}`}>
+                      <Building className="h-5 w-5 group-data-[collapsible=icon]:m-auto" />
+                      {state === 'expanded' && <span>My Organization</span>}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+            </SidebarMenu>
+          </SidebarGroup>
+
+          <SidebarSeparator className="my-3" />
+
+          <SidebarGroup className="p-0">
+            <SidebarGroupLabel className="px-2 pb-1 text-xs text-sidebar-foreground/70 group-data-[collapsible=icon]:hidden">
+              Learning
+            </SidebarGroupLabel>
+            <SidebarMenu>
+              {learningNavItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
@@ -119,7 +177,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-2 border-t border-sidebar-border mt-auto">
-         <SidebarMenu>
+        <SidebarMenu>
           {footerNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
@@ -135,6 +193,21 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
+          {isAdmin && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname.startsWith('/admin')}
+                tooltip="Admin"
+                className="group-data-[collapsible=icon]:justify-center"
+              >
+                <Link href="/admin">
+                  <ShieldCheck className="h-5 w-5 group-data-[collapsible=icon]:m-auto" />
+                  {state === 'expanded' && <span>Admin</span>}
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

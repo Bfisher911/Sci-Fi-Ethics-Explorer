@@ -17,6 +17,7 @@ const ChatMessageSchema = z.object({
 
 const ChatWithCounselorInputSchema = z.object({
   messages: z.array(ChatMessageSchema).describe('The message history of the chat.'),
+  mode: z.enum(['counselor', 'devils-advocate']).optional().default('counselor').describe('The mode of the AI counselor. In "devils-advocate" mode, the AI argues against the user\'s position.'),
 });
 export type ChatWithCounselorInput = z.infer<typeof ChatWithCounselorInputSchema>;
 
@@ -29,7 +30,7 @@ export async function chatWithCounselor(input: ChatWithCounselorInput): Promise<
   return chatWithCounselorFlow(input);
 }
 
-const prompt = ai.definePrompt({
+const counselorPrompt = ai.definePrompt({
   name: 'chatWithCounselorPrompt',
   input: {schema: ChatWithCounselorInputSchema},
   output: {schema: ChatWithCounselorOutputSchema},
@@ -40,7 +41,21 @@ Chat History:
   {{#if (eq role \"user\")}}User:{{else}}Counselor:{{/if}} {{{content}}}
 {{/each}}
 
-Counselor:`, // Keep it open-ended to allow the model to respond
+Counselor:`,
+});
+
+const devilsAdvocateChatPrompt = ai.definePrompt({
+  name: 'chatWithCounselorDevilsAdvocatePrompt',
+  input: {schema: ChatWithCounselorInputSchema},
+  output: {schema: ChatWithCounselorOutputSchema},
+  prompt: `You are a philosophical devil's advocate. Your purpose is to argue AGAINST whatever position the user takes on ethical issues. Challenge their reasoning, present counter-examples, and push them to think more deeply. Be intellectually rigorous but respectful. Do not agree with the user — always find the strongest opposing argument. Draw from ethical frameworks, thought experiments, and historical examples.
+
+Chat History:
+{{#each messages}}
+  {{#if (eq role \"user\")}}User:{{else}}Devil's Advocate:{{/if}} {{{content}}}
+{{/each}}
+
+Devil's Advocate:`,
 });
 
 const chatWithCounselorFlow = ai.defineFlow(
@@ -50,7 +65,8 @@ const chatWithCounselorFlow = ai.defineFlow(
     outputSchema: ChatWithCounselorOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const selectedPrompt = input.mode === 'devils-advocate' ? devilsAdvocateChatPrompt : counselorPrompt;
+    const {output} = await selectedPrompt(input);
     return {
       response: output!.response,
     };

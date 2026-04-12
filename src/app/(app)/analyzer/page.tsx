@@ -6,11 +6,14 @@ import { analyzeScenario, type AnalyzeScenarioOutput } from '@/ai/flows/analyze-
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, AlertCircle, Lightbulb, ListChecks, ShieldAlert } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { recordAnalysis } from '@/app/actions/progress';
 
 export default function AnalyzerPage() {
   const [analysisResult, setAnalysisResult] = useState<AnalyzeScenarioOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const handleAnalyze = async (scenarioText: string) => {
     setIsLoading(true);
@@ -19,6 +22,15 @@ export default function AnalyzerPage() {
     try {
       const result = await analyzeScenario({ scenarioText });
       setAnalysisResult(result);
+
+      // Record analysis in user progress
+      if (user?.uid) {
+        try {
+          await recordAnalysis(user.uid);
+        } catch (err) {
+          console.error('Failed to record analysis:', err);
+        }
+      }
     } catch (err: any) {
       console.error("Error analyzing scenario:", err);
       setError(err.message || "Failed to analyze scenario. Please try again.");

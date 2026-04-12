@@ -12,6 +12,9 @@ import { Progress } from '@/components/ui/progress';
 import { BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { ArrowRight, RotateCcw, Check, Lightbulb } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { recordQuizResult } from '@/app/actions/progress';
+import type { QuizResult } from '@/types';
 
 interface QuizQuestion {
   id: string;
@@ -76,6 +79,7 @@ type AnswersState = {
 };
 
 export function EthicalFrameworkQuiz() {
+  const { user } = useAuth();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<AnswersState>({});
   const [showResults, setShowResults] = useState(false);
@@ -107,6 +111,25 @@ export function EthicalFrameworkQuiz() {
       }
     });
     setFinalScores(scores);
+
+    // Find dominant framework
+    const dominantFramework = Object.entries(scores).reduce(
+      (best, [id, score]) => (score > best.score ? { id, score } : best),
+      { id: '', score: -1 }
+    ).id;
+
+    // Record quiz result in user progress
+    if (user?.uid) {
+      const quizResult: QuizResult = {
+        id: `quiz-${Date.now()}`,
+        completedAt: new Date(),
+        scores,
+        dominantFramework,
+      };
+      recordQuizResult(user.uid, quizResult).catch((err) => {
+        console.error('Failed to record quiz result:', err);
+      });
+    }
   };
 
   const handleRetakeQuiz = () => {

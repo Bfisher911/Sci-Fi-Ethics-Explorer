@@ -3,15 +3,18 @@ import { db } from '@/lib/firebase/config';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import type { SubmittedDilemma } from '@/types';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get('status') || 'approved';
+
     const dilemmasRef = collection(db, 'submittedDilemmas');
-    // Query for approved dilemmas, ordered by submission date (newest first), limit to e.g. 50
+    // Query for dilemmas by status, ordered by submission date (newest first), limit to 50
     const q = query(
-        dilemmasRef, 
-        where('status', '==', 'approved'), 
+        dilemmasRef,
+        where('status', '==', status),
         orderBy('submittedAt', 'desc'),
-        limit(50) 
+        limit(50)
     );
 
     const querySnapshot = await getDocs(q);

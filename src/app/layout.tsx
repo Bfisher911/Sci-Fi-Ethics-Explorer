@@ -5,8 +5,35 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'Sci-Fi Ethics Explorer',
-  description: 'Explore sci-fi inspired ethical dilemmas.',
+  title: {
+    default: 'Sci-Fi Ethics Explorer | Navigate the Moral Maze of the Future',
+    template: '%s | Sci-Fi Ethics Explorer'
+  },
+  description: 'Dive into thought-provoking ethical dilemmas inspired by science fiction. Analyze scenarios, explore theories, and ponder the consequences of technological advancement.',
+  keywords: ['science fiction', 'ethics', 'moral dilemmas', 'philosophy', 'AI ethics', 'future technologies'],
+  authors: [{ name: 'Sci-Fi Ethics Explorer Team' }],
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://sci-fi-ethics-explorer-rlmgn.web.app',
+    siteName: 'Sci-Fi Ethics Explorer',
+    title: 'Sci-Fi Ethics Explorer | Navigate the Moral Maze of the Future',
+    description: 'Explore the intersection of technology and morality through the lens of science fiction.',
+    images: [
+      {
+        url: '/images/hero.png',
+        width: 1200,
+        height: 630,
+        alt: 'Sci-Fi Ethics Explorer Hero',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Sci-Fi Ethics Explorer',
+    description: 'Navigate the Moral Maze of the Future.',
+    images: ['/images/hero.png'],
+  },
 };
 
 export default function RootLayout({

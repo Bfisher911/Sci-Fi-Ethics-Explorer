@@ -46,20 +46,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // 🔁 END PATCH
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => { // Make async
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       console.log("Auth Provider: Auth state changed. Current user:", currentUser?.uid || 'None');
-      setUser(currentUser);
-      if (currentUser) {
-        // When auth state changes to a new user, fetch their claims.
-        await refreshClaims(currentUser);
-      } else {
-        // User logged out, clear claims.
-        setClaims(null);
+      
+      try {
+        setUser(currentUser);
+        if (currentUser) {
+          // Promise.race to prevent indefinite hang on claims fetch
+          const claimsTimeout = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("Claims fetch timeout")), 5000)
+          );
+          
+          console.log("Auth Provider: Fetching claims...");
+          await Promise.race([refreshClaims(currentUser), claimsTimeout])
+            .catch(err => console.warn("Auth Provider: Claims fetch failed or timed out, continuing without fresh claims:", err));
+        } else {
+          setClaims(null);
+        }
+      } catch (error) {
+        console.error("Auth Provider: Error in onAuthStateChanged handler:", error);
+      } finally {
+        console.log("Auth Provider: Setting loading to false.");
+        setLoading(false);
       }
-      setLoading(false);
     });
-    return () => unsubscribe(); // Cleanup subscription
-  }, [refreshClaims]); // Add refreshClaims to dependency array
+    return () => unsubscribe();
+  }, [refreshClaims]);
 
   if (loading) {
     // Simple full-page skeleton loader

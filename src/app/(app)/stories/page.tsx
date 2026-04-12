@@ -1,28 +1,46 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StoryCard } from '@/components/stories/story-card';
+import { getStories } from '@/app/actions/stories';
 import { mockStories } from '@/data/mock-data';
 import type { Story } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-
-// Get unique genres and themes for filters
-const genres = Array.from(new Set(mockStories.map(story => story.genre).filter(g => g))); // Filter out empty strings just in case
-const themes = Array.from(new Set(mockStories.map(story => story.theme).filter(t => t))); // Filter out empty strings just in case
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ALL_GENRES_INTERNAL_VALUE = "__all_genres__";
 const ALL_THEMES_INTERNAL_VALUE = "__all_themes__";
 
 export default function StoriesPage() {
+  const [stories, setStories] = useState<Story[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedTheme, setSelectedTheme] = useState('');
 
-  const filteredStories = mockStories.filter(story => {
+  useEffect(() => {
+    async function loadStories() {
+      setLoading(true);
+      const result = await getStories();
+      if (result.success && result.data.length > 0) {
+        setStories(result.data);
+      } else {
+        // Fallback to mock data if Firestore is empty or errors
+        setStories(mockStories);
+      }
+      setLoading(false);
+    }
+    loadStories();
+  }, []);
+
+  const genres = Array.from(new Set(stories.map(s => s.genre).filter(Boolean)));
+  const themes = Array.from(new Set(stories.map(s => s.theme).filter(Boolean)));
+
+  const filteredStories = stories.filter(story => {
     return (
       story.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
       (selectedGenre === '' || story.genre === selectedGenre) &&
@@ -49,11 +67,7 @@ export default function StoriesPage() {
             <Select
               value={selectedGenre}
               onValueChange={(value) => {
-                if (value === ALL_GENRES_INTERNAL_VALUE) {
-                  setSelectedGenre('');
-                } else {
-                  setSelectedGenre(value);
-                }
+                setSelectedGenre(value === ALL_GENRES_INTERNAL_VALUE ? '' : value);
               }}
             >
               <SelectTrigger className="w-full">
@@ -70,11 +84,7 @@ export default function StoriesPage() {
             <Select
               value={selectedTheme}
               onValueChange={(value) => {
-                if (value === ALL_THEMES_INTERNAL_VALUE) {
-                  setSelectedTheme('');
-                } else {
-                  setSelectedTheme(value);
-                }
+                setSelectedTheme(value === ALL_THEMES_INTERNAL_VALUE ? '' : value);
               }}
             >
               <SelectTrigger className="w-full">
@@ -92,7 +102,20 @@ export default function StoriesPage() {
         </CardContent>
       </Card>
 
-      {filteredStories.length > 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="bg-card/80 backdrop-blur-sm">
+              <Skeleton className="h-48 w-full rounded-t-lg" />
+              <div className="p-4 space-y-2">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : filteredStories.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredStories.map((story) => (
             <StoryCard key={story.id} story={story} />

@@ -1,63 +1,74 @@
-import type { Story } from '@/types'; // Assuming dilemmas are based on Story type for now
+'use client';
+
+import type { Debate } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Users, CalendarDays } from 'lucide-react'; // Zap for "Hot Topic"
+import { Users, CalendarDays, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 
 interface DebateTopicCardProps {
-  dilemma: Story; // Using Story type as a base for dilemma structure
+  debate: Debate;
 }
 
-export function DebateTopicCard({ dilemma }: DebateTopicCardProps) {
+const statusVariants: Record<Debate['status'], { label: string; className: string }> = {
+  open: { label: 'Open', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
+  voting: { label: 'Voting', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
+  closed: { label: 'Closed', className: 'bg-muted text-muted-foreground border-muted' },
+};
+
+export function DebateTopicCard({ debate }: DebateTopicCardProps) {
+  const statusInfo = statusVariants[debate.status];
+
+  const formatDate = (date: Date | any): string => {
+    if (!date) return '';
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
   return (
-    <Card className="shadow-xl hover:shadow-accent/30 transition-shadow duration-300 bg-card/80 backdrop-blur-sm">
-      <CardHeader>
-        <div className="flex justify-between items-start mb-2">
-          <Badge variant="destructive" className="bg-accent text-accent-foreground">
-            <Zap className="h-4 w-4 mr-1.5" /> Hot Topic
-          </Badge>
-          <div className="text-xs text-muted-foreground flex items-center">
-             <CalendarDays className="h-4 w-4 mr-1.5"/> Debate Opens: Coming Soon
+    <Link href={`/debate-arena/${debate.id}`}>
+      <Card className="shadow-xl hover:shadow-primary/20 transition-all duration-300 bg-card/80 backdrop-blur-sm hover:border-primary/30 cursor-pointer">
+        <CardHeader>
+          <div className="flex justify-between items-start mb-2">
+            <Badge variant="outline" className={statusInfo.className}>
+              {statusInfo.label}
+            </Badge>
+            <div className="text-xs text-muted-foreground flex items-center">
+              <CalendarDays className="h-3.5 w-3.5 mr-1" />
+              {formatDate(debate.createdAt)}
+            </div>
           </div>
-        </div>
-        <CardTitle className="text-2xl font-bold text-primary">{dilemma.title}</CardTitle>
-        <CardDescription className="text-md text-foreground/80 pt-1">
-          {dilemma.description}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap gap-2 mb-4">
-          <Badge variant="secondary">{dilemma.genre}</Badge>
-          <Badge variant="outline">{dilemma.theme}</Badge>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <h4 className="font-semibold text-lg text-green-400">Affirmative Position (Pro)</h4>
-                <p className="text-sm text-muted-foreground">Argue in favor of a specific stance related to the dilemma.</p>
-                {/* Placeholder for key arguments or top debater */}
+          <CardTitle className="text-xl font-bold text-primary">{debate.title}</CardTitle>
+          <CardDescription className="text-foreground/80 pt-1 line-clamp-2">
+            {debate.description}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {debate.tags && debate.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {debate.tags.map((tag) => (
+                <Badge key={tag} variant="secondary" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
             </div>
-             <div>
-                <h4 className="font-semibold text-lg text-red-400">Negative Position (Con)</h4>
-                <p className="text-sm text-muted-foreground">Argue against the affirmative stance or propose an alternative.</p>
-                 {/* Placeholder for key arguments or top debater */}
-            </div>
-        </div>
-      </CardContent>
-      <CardFooter className="flex flex-col md:flex-row justify-between items-center border-t pt-4">
-        <div className="text-sm text-muted-foreground mb-2 md:mb-0 flex items-center">
-            <Users className="h-4 w-4 mr-1.5"/> Participants: TBD
-        </div>
-        <div className="flex gap-2">
-        <Button variant="outline" disabled>
-          View Arguments (Soon)
-        </Button>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" disabled>
-          Join Debate (Soon)
-        </Button>
-        </div>
-      </CardFooter>
-    </Card>
+          )}
+        </CardContent>
+        <CardFooter className="flex justify-between items-center border-t pt-4">
+          <div className="text-sm text-muted-foreground flex items-center">
+            <Users className="h-4 w-4 mr-1.5" />
+            {debate.participantCount} participant{debate.participantCount !== 1 ? 's' : ''}
+          </div>
+          <div className="text-sm text-muted-foreground flex items-center">
+            <MessageSquare className="h-4 w-4 mr-1.5" />
+            Created by {debate.creatorName}
+          </div>
+        </CardFooter>
+      </Card>
+    </Link>
   );
 }
