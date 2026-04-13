@@ -1,113 +1,236 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, XCircle, Zap } from 'lucide-react';
-import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { PlanSelector } from '@/components/billing/plan-selector';
+import { SeatTierSelector } from '@/components/billing/license-purchase';
+import {
+  ALL_INDIVIDUAL_PLANS,
+  LICENSE_PLAN,
+  getSeatTiers,
+} from '@/config/plans';
+import { useSubscription } from '@/hooks/use-subscription';
+import { useAuth } from '@/hooks/use-auth';
+import {
+  CreditCard,
+  Building2,
+  Users,
+  Check,
+  ArrowRight,
+  Info,
+} from 'lucide-react';
+import type { BillingPeriodId, LicenseTerm } from '@/types';
 
-const tiers = [
-  {
-    name: 'Explorer (Free)',
-    price: '$0',
-    frequency: '/month',
-    description: 'Start your journey into sci-fi ethics with core features.',
-    features: [
-      { text: 'Access to a selection of dilemmas', included: true },
-      { text: 'Basic scenario analysis (limited)', included: true },
-      { text: 'Read community dilemmas', included: true },
-      { text: 'Ethical glossary access', included: true },
-      { text: 'Limited AI Counselor interactions', included: true },
-      { text: 'Submit up to 1 dilemma per month', included: true },
-    ],
-    cta: 'Start Exploring',
-    href: '/stories',
-    isPrimary: false,
-  },
-  {
-    name: 'Philosopher (Premium)',
-    price: '$9.99',
-    frequency: '/month',
-    description: 'Unlock the full potential of ethical exploration and AI tools.',
-    features: [
-      { text: 'Unlimited access to all dilemmas', included: true },
-      { text: 'Advanced scenario analysis (unlimited)', included: true },
-      { text: 'Submit and participate in community dilemmas', included: true },
-      { text: 'Full ethical glossary & framework explorer access', included: true },
-      { text: 'Unlimited AI Counselor interactions', included: true },
-      { text: 'Submit unlimited dilemmas', included: true },
-      { text: 'Priority support & early access to new features', included: true },
-      { text: 'Participate in moderated debates', included: true },
-    ],
-    cta: 'Go Premium',
-    href: '#', // Placeholder for Stripe link
-    isPrimary: true,
-  },
-];
-
+/**
+ * Pricing page with two tabs: Individual Plans and Organization Licenses.
+ */
 export default function PricingPage() {
+  const router = useRouter();
+  const { accountRole } = useSubscription();
+  const { user } = useAuth();
+
+  // Organization license state
+  const [licenseTerm, setLicenseTerm] = useState<LicenseTerm>('semester');
+  const [selectedSeats, setSelectedSeats] = useState<number | undefined>();
+
+  const seatTiers = getSeatTiers(licenseTerm);
+  const selectedTier = seatTiers.find((t) => t.seats === selectedSeats);
+
+  function handleIndividualSelect(planId: string, periodId: BillingPeriodId): void {
+    if (!user) {
+      router.push('/onboarding');
+      return;
+    }
+    // Navigate to onboarding with plan info
+    router.push(`/onboarding?plan=${planId}&period=${periodId}`);
+  }
+
+  function handleLicensePurchase(): void {
+    if (!selectedSeats) return;
+    router.push(`/license/purchase?term=${licenseTerm}&seats=${selectedSeats}`);
+  }
+
   return (
     <div className="container mx-auto py-12 px-4">
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-bold text-primary font-headline">Choose Your Path</h1>
+      <div className="text-center mb-10">
+        <h1 className="text-5xl font-bold text-primary font-headline">
+          Choose Your Path
+        </h1>
         <p className="text-xl text-muted-foreground mt-4 max-w-2xl mx-auto">
-          Select a plan that suits your journey into the complex world of sci-fi ethics.
+          Full access to the Sci-Fi Ethics Explorer for individuals and organizations.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        {tiers.map((tier) => (
-          <Card
-            key={tier.name}
-            className={`flex flex-col shadow-xl hover:shadow-primary/40 transition-shadow duration-300 bg-card/80 backdrop-blur-sm ${
-              tier.isPrimary ? 'border-2 border-accent ring-2 ring-accent/50' : ''
-            }`}
-          >
-            <CardHeader className="text-center">
-              {tier.isPrimary && (
-                <div className="text-sm font-semibold uppercase tracking-wider text-accent mb-2 flex items-center justify-center">
-                  <Zap className="h-4 w-4 mr-1" /> Most Popular
-                </div>
-              )}
-              <CardTitle className={`text-3xl font-bold ${tier.isPrimary ? 'text-accent' : 'text-primary'}`}>{tier.name}</CardTitle>
-              <div className="mt-2">
-                <span className="text-4xl font-extrabold text-foreground">{tier.price}</span>
-                <span className="text-base font-medium text-muted-foreground">{tier.frequency}</span>
-              </div>
-              <CardDescription className="mt-3 text-md">{tier.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-grow">
-              <ul className="space-y-3">
-                {tier.features.map((feature) => (
-                  <li key={feature.text} className="flex items-center">
-                    {feature.included ? (
-                      <CheckCircle className="h-5 w-5 text-green-400 mr-2 flex-shrink-0" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-red-400 mr-2 flex-shrink-0" />
-                    )}
-                    <span className={feature.included ? 'text-foreground/90' : 'text-muted-foreground'}>
-                      {feature.text}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Button
-                asChild
-                size="lg"
-                className={`w-full ${
-                  tier.isPrimary ? 'bg-accent hover:bg-accent/90 text-accent-foreground' : 'bg-primary hover:bg-primary/90 text-primary-foreground'
-                }`}
+      <Tabs defaultValue="individual" className="max-w-6xl mx-auto">
+        <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-10">
+          <TabsTrigger value="individual" className="flex items-center gap-2">
+            <CreditCard className="h-4 w-4" />
+            Individual Plans
+          </TabsTrigger>
+          <TabsTrigger value="organization" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            Organization
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ─── Individual Plans ──────────────────────────────────── */}
+        <TabsContent value="individual">
+          <div className="text-center mb-8">
+            <p className="text-muted-foreground flex items-center justify-center gap-1.5">
+              <Info className="h-4 w-4" />
+              Both roles have the same base rate. Choose the role that fits your needs.
+            </p>
+          </div>
+
+          <PlanSelector
+            plans={ALL_INDIVIDUAL_PLANS}
+            accountRole={accountRole}
+            onSelect={handleIndividualSelect}
+          />
+        </TabsContent>
+
+        {/* ─── Organization License ─────────────────────────────── */}
+        <TabsContent value="organization">
+          <div className="max-w-5xl mx-auto space-y-10">
+            {/* Header */}
+            <div className="text-center space-y-3">
+              <h2 className="text-3xl font-bold text-primary font-headline">
+                Organization &amp; Institution Licenses
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Purchase seats for your team. Invited members join at no individual cost.
+              </p>
+            </div>
+
+            {/* Term Selector */}
+            <div className="flex flex-col items-center space-y-3">
+              <p className="text-sm font-medium text-muted-foreground">Select Term</p>
+              <RadioGroup
+                value={licenseTerm}
+                onValueChange={(val) => {
+                  setLicenseTerm(val as LicenseTerm);
+                  setSelectedSeats(undefined);
+                }}
+                className="flex gap-4"
               >
-                <Link href={tier.href} target={tier.href === '#' ? '_blank' : '_self'} rel={tier.href === '#' ? 'noopener noreferrer' : ''}>
-                  {tier.cta}
-                </Link>
+                <div
+                  className={`flex items-center gap-2 rounded-lg border px-5 py-3 cursor-pointer transition-colors ${
+                    licenseTerm === 'semester'
+                      ? 'border-accent bg-accent/10'
+                      : 'border-border hover:border-muted-foreground/50'
+                  }`}
+                  onClick={() => {
+                    setLicenseTerm('semester');
+                    setSelectedSeats(undefined);
+                  }}
+                >
+                  <RadioGroupItem value="semester" id="term-semester" />
+                  <Label htmlFor="term-semester" className="cursor-pointer font-medium">
+                    Semester (4 months)
+                  </Label>
+                </div>
+                <div
+                  className={`flex items-center gap-2 rounded-lg border px-5 py-3 cursor-pointer transition-colors ${
+                    licenseTerm === 'annual'
+                      ? 'border-accent bg-accent/10'
+                      : 'border-border hover:border-muted-foreground/50'
+                  }`}
+                  onClick={() => {
+                    setLicenseTerm('annual');
+                    setSelectedSeats(undefined);
+                  }}
+                >
+                  <RadioGroupItem value="annual" id="term-annual" />
+                  <Label htmlFor="term-annual" className="cursor-pointer font-medium">
+                    Annual
+                  </Label>
+                  <Badge variant="secondary" className="text-xs ml-1">
+                    Best Value
+                  </Badge>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Seat Tier Selector */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-center">Select Seats</h3>
+              <SeatTierSelector
+                tiers={seatTiers}
+                selectedTier={selectedSeats}
+                onSelect={setSelectedSeats}
+              />
+            </div>
+
+            {/* Selected Tier Summary */}
+            {selectedTier && (
+              <Card className="bg-card/80 backdrop-blur-sm border-accent/50 max-w-lg mx-auto">
+                <CardContent className="pt-6 space-y-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">Seats</span>
+                    <span className="font-semibold flex items-center gap-1.5">
+                      <Users className="h-4 w-4" /> {selectedTier.seats}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">Price per seat</span>
+                    <span className="font-semibold">${selectedTier.pricePerSeat.toFixed(2)}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground font-medium">Total</span>
+                    <span className="text-2xl font-extrabold text-foreground">
+                      ${selectedTier.totalPrice.toFixed(2)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground text-center">
+                    {licenseTerm === 'semester' ? '4-month term' : '12-month term'}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Features */}
+            <Card className="bg-card/80 backdrop-blur-sm max-w-2xl mx-auto">
+              <CardHeader>
+                <CardTitle className="text-lg">What&apos;s Included</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {LICENSE_PLAN.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-foreground/90">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* CTA */}
+            <div className="text-center">
+              <Button
+                size="lg"
+                disabled={!selectedSeats}
+                onClick={handleLicensePurchase}
+                className="bg-accent hover:bg-accent/90 text-accent-foreground px-8"
+              >
+                Purchase License
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-      <p className="text-center text-sm text-muted-foreground mt-12">
-        Note: This is a conceptual pricing page for an educational project. No actual payments are processed.
-        {tiers.find(t => t.href === '#') && <span> The "Go Premium" button is a placeholder.</span>}
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      <p className="text-center text-sm text-muted-foreground mt-12 max-w-lg mx-auto">
+        Payment processing coming soon. Plans are currently simulated.
       </p>
     </div>
   );

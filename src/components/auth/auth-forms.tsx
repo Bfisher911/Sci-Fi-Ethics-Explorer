@@ -21,12 +21,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/hooks/use-toast';
 import { AlertCircle, Mail, Lock, User, ChromeIcon } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { RoleSelector } from '@/components/auth/role-selector';
+import type { AccountRole } from '@/types';
 
 export function AuthForms() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [selectedRole, setSelectedRole] = useState<AccountRole | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +40,10 @@ export function AuthForms() {
     e.preventDefault();
     setError(null);
     setMessage(null);
+    if (!selectedRole) {
+      setError("Please select a role to continue.");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
@@ -45,7 +52,7 @@ export function AuthForms() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      const profileResult = await createUserProfile(user.uid, user.email, displayName || user.displayName, user.photoURL || '');
+      const profileResult = await createUserProfile(user.uid, user.email, displayName || user.displayName, undefined, undefined, user.photoURL || '', selectedRole);
       if (!profileResult.success) {
         // If profile creation failed, we should probably inform the user or retry.
         // For now, we'll log the error and still proceed to redirect,
@@ -56,7 +63,7 @@ export function AuthForms() {
       } else {
         toast({ title: "Account Created", description: "Welcome to Sci-Fi Ethics Explorer!" });
       }
-      router.push('/stories');
+      router.push('/onboarding');
     } catch (err: any) {
       setError(err.message);
       toast({ title: "Sign Up Error", description: err.message, variant: "destructive" });
@@ -180,6 +187,10 @@ export function AuthForms() {
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input id="signup-name" type="text" placeholder="Your Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="pl-10" />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>I am a...</Label>
+                  <RoleSelector selectedRole={selectedRole} onSelect={setSelectedRole} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>

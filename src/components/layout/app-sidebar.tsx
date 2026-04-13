@@ -58,13 +58,12 @@ const communityNavItems = [
   { href: '/debate-arena', label: 'Debate Arena', icon: Scale },
   { href: '/workshops', label: 'Workshops', icon: Presentation },
   { href: '/create-story', label: 'Create Story', icon: PenTool },
-  { href: '/create-organization', label: 'Create Organization', icon: Building },
 ];
 
 const learningNavItems = [
   { href: '/curriculum', label: 'Learning Paths', icon: GraduationCap },
   { href: '/philosophers', label: 'Philosophers', icon: ScrollText },
-  { href: '/classroom', label: 'Classroom', icon: Presentation },
+  { href: '/communities', label: 'Communities', icon: Users },
 ];
 
 const footerNavItems = [

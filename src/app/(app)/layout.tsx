@@ -3,7 +3,9 @@
 
 import { useEffect, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
+import { useSubscription } from '@/hooks/use-subscription';
 import { AppHeader } from '@/components/layout/app-header';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
@@ -11,8 +13,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
+  const { subscriptionStatus, loading: subLoading } = useSubscription();
   const router = useRouter();
   const pathname = usePathname();
+
+  const showOnboardingBanner =
+    !subLoading &&
+    user &&
+    subscriptionStatus === 'none' &&
+    pathname !== '/onboarding';
 
   useEffect(() => {
     // 🔁 PATCH: Redirect to new /login page if unauthenticated (BF 2025-06-06)
@@ -67,6 +76,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <SidebarInset className="flex flex-col">
         <AppHeader />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+          {showOnboardingBanner && (
+            <div className="mb-4 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+              <span>
+                Complete your setup to unlock all features.
+              </span>
+              <Link
+                href="/onboarding"
+                className="ml-4 shrink-0 font-medium text-primary hover:underline"
+              >
+                Finish setup
+              </Link>
+            </div>
+          )}
           {children}
         </main>
       </SidebarInset>

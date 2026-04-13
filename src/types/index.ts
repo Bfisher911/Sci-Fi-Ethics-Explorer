@@ -3,6 +3,9 @@ import type { User as FirebaseUser } from 'firebase/auth';
 
 // ─── User ───────────────────────────────────────────────────────────
 
+export type AccountRole = 'student' | 'instructor';
+export type SubscriptionStatus = 'none' | 'trial' | 'active' | 'past_due' | 'canceled';
+
 export interface UserProfile {
   uid: string;
   email: string | null;
@@ -16,6 +19,11 @@ export interface UserProfile {
   dilemmasAnalyzed?: number;
   communitySubmissions?: number;
   role?: string;
+  accountRole?: AccountRole;
+  subscriptionId?: string;
+  subscriptionStatus?: SubscriptionStatus;
+  activeLicenseId?: string;
+  onboardingComplete?: boolean;
   isAdmin?: boolean;
   createdAt?: Date | any;
   lastUpdated?: Date | any;
@@ -386,4 +394,123 @@ export interface OrganizationInvite {
   status: 'pending' | 'accepted' | 'declined';
   invitedBy: string;
   createdAt: Date | any;
+}
+
+// ─── Communities ────────────────────────────────────────────────────
+
+export type CommunityMemberRole = 'instructor' | 'member';
+
+export interface Community {
+  id: string;
+  name: string;
+  description?: string;
+  ownerId: string;
+  ownerName?: string;
+  instructorIds: string[];
+  memberIds: string[];
+  licenseId?: string;
+  inviteCode: string;
+  curriculumPathId?: string;
+  settings?: {
+    maxMembers?: number;
+    allowSelfJoin?: boolean;
+  };
+  createdAt: Date | any;
+  updatedAt?: Date | any;
+}
+
+export interface CommunityInvite {
+  id: string;
+  communityId: string;
+  communityName?: string;
+  email: string;
+  role: CommunityMemberRole;
+  status: 'pending' | 'accepted' | 'declined';
+  invitedBy: string;
+  invitedByName?: string;
+  createdAt: Date | any;
+}
+
+export interface CommunityMemberInfo {
+  uid: string;
+  displayName: string;
+  email: string;
+  role: CommunityMemberRole;
+  subscriptionStatus?: SubscriptionStatus;
+  activeLicenseId?: string;
+  joinedAt?: Date | any;
+}
+
+// ─── Subscriptions & Billing ────────────────────────────────────────
+
+export type BillingPeriodId = 'monthly' | 'annual' | 'semester';
+
+export interface BillingPeriod {
+  id: BillingPeriodId;
+  label: string;
+  months: number;
+  priceTotal: number;
+  pricePerMonth: number;
+  savings?: string;
+}
+
+export interface PlanConfig {
+  id: string;
+  name: string;
+  type: 'individual' | 'license';
+  role: 'student' | 'instructor' | 'any';
+  description: string;
+  billingPeriods: BillingPeriod[];
+  features: string[];
+  highlighted?: boolean;
+}
+
+export interface Subscription {
+  id: string;
+  userId: string;
+  planId: string;
+  billingPeriod: BillingPeriodId;
+  status: SubscriptionStatus;
+  currentPeriodStart: Date | any;
+  currentPeriodEnd: Date | any;
+  cancelAtPeriodEnd?: boolean;
+  createdAt: Date | any;
+  updatedAt?: Date | any;
+}
+
+// ─── Seat Licensing ─────────────────────────────────────────────────
+
+export type LicenseTerm = 'semester' | 'annual';
+export type LicenseStatus = 'active' | 'expired' | 'canceled';
+
+export interface SeatTier {
+  seats: number;
+  pricePerSeat: number;
+  totalPrice: number;
+}
+
+export interface License {
+  id: string;
+  organizationName: string;
+  purchaserId: string;
+  purchaserName?: string;
+  planId: string;
+  totalSeats: number;
+  usedSeats: number;
+  term: LicenseTerm;
+  startDate: Date | any;
+  endDate: Date | any;
+  status: LicenseStatus;
+  createdAt: Date | any;
+  updatedAt?: Date | any;
+}
+
+export interface SeatAssignment {
+  id: string;
+  licenseId: string;
+  userId: string;
+  userEmail?: string;
+  communityId?: string;
+  assignedAt: Date | any;
+  status: 'active' | 'revoked';
 }

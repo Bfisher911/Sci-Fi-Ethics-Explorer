@@ -188,5 +188,53 @@ service cloud.firestore {
         allow create, update: if request.auth != null && request.auth.uid == studentId;
       }
     }
+
+    // ─── Communities ────────────────────────────────────────────
+    match /communities/{communityId} {
+      allow read: if request.auth != null && (
+        request.auth.uid in resource.data.instructorIds ||
+        request.auth.uid in resource.data.memberIds ||
+        isAdmin()
+      );
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (
+        request.auth.uid in resource.data.instructorIds || isAdmin()
+      );
+      allow delete: if request.auth != null && (
+        resource.data.ownerId == request.auth.uid || isAdmin()
+      );
+    }
+
+    // ─── Community Invites ──────────────────────────────────────
+    match /communityInvites/{inviteId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+    }
+
+    // ─── Subscriptions ──────────────────────────────────────────
+    match /subscriptions/{subscriptionId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // ─── Licenses ───────────────────────────────────────────────
+    match /licenses/{licenseId} {
+      allow read: if request.auth != null && (
+        resource.data.purchaserId == request.auth.uid || isAdmin()
+      );
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (
+        resource.data.purchaserId == request.auth.uid || isAdmin()
+      );
+    }
+
+    // ─── Seat Assignments ───────────────────────────────────────
+    match /seatAssignments/{seatId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+    }
   }
 }

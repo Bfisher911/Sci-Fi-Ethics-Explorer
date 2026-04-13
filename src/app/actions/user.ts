@@ -3,7 +3,7 @@
 
 import { db } from '@/lib/firebase/config';
 import { doc, getDoc, setDoc, serverTimestamp, type Timestamp } from 'firebase/firestore';
-import type { UserProfile } from '@/types';
+import type { UserProfile, AccountRole } from '@/types';
 
 type GetUserProfileResult = { success: true; data: UserProfile | null } | { success: false; error: string };
 type MutateUserProfileResult = { success: true } | { success: false; error: string };
@@ -119,12 +119,13 @@ export async function updateUserProfile(uid: string, data: Partial<UserProfile>)
 }
 
 export async function createUserProfile(
-  uid: string, 
-  email: string | null, 
-  displayNameInput?: string | null, 
-  firstNameProp?: string, 
-  lastNameProp?: string, 
-  avatarUrl?: string
+  uid: string,
+  email: string | null,
+  displayNameInput?: string | null,
+  firstNameProp?: string,
+  lastNameProp?: string,
+  avatarUrl?: string,
+  accountRole?: AccountRole
 ): Promise<MutateUserProfileResult> {
   console.log(`[SERVER ACTION] createUserProfile: UID: '${uid}', Email: ${email}, DisplayName: ${displayNameInput}`);
   if (!uid || uid.trim() === "") {
@@ -193,6 +194,9 @@ export async function createUserProfile(
       createdAt: internalUserProfileObject.createdAt,
       lastUpdated: internalUserProfileObject.lastUpdated,
       // The 'displayName' field itself is NOT included in this object sent to Firestore.
+      subscriptionStatus: 'none',
+      onboardingComplete: false,
+      ...(accountRole ? { accountRole } : {}),
     };
 
     await setDoc(userDocRef, firestoreDataToWrite, { merge: true }); 
