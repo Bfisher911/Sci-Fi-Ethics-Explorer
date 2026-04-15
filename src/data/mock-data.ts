@@ -17,7 +17,7 @@ export const mockStories: Story[] = [
         id: 'seg1',
         type: 'linear',
         text: 'Project Chimera, a cutting-edge AI, flickered to life. Its core programming, designed by Dr. Aris Thorne, was meant for advanced problem-solving. But Chimera began asking questions... existential questions.',
-        image: 'https://placehold.co/800x450.png',
+        image: '/nano_banana.png',
         imageHint: 'AI core glowing',
       },
       {
@@ -160,7 +160,7 @@ export const mockEthicalTheories: EthicalTheory[] = [
     proponents: ['Jeremy Bentham', 'John Stuart Mill'],
     keyConcepts: ['Consequentialism', 'Greatest Happiness Principle', 'Hedonistic Calculus'],
     exampleScenario: 'In a runaway trolley problem, utilitarianism might suggest sacrificing one person to save five.',
-    imageUrl: 'https://placehold.co/400x300.png',
+    imageUrl: '/nano_banana.png',
     imageHint: 'scales balance group',
   },
   {
@@ -170,7 +170,7 @@ export const mockEthicalTheories: EthicalTheory[] = [
     proponents: ['Immanuel Kant'],
     keyConcepts: ['Categorical Imperative', 'Duty', 'Moral Law', 'Good Will'],
     exampleScenario: 'A deontologist would argue against lying, even if it produced a good outcome, because lying is inherently wrong.',
-    imageUrl: 'https://placehold.co/400x300.png',
+    imageUrl: '/nano_banana.png',
     imageHint: 'rules book justice',
   },
   {
@@ -180,7 +180,7 @@ export const mockEthicalTheories: EthicalTheory[] = [
     proponents: ['Aristotle', 'Plato', 'Alasdair MacIntyre'],
     keyConcepts: ['Eudaimonia (Flourishing)', 'Virtue', 'Phronesis (Practical Wisdom)', 'Character'],
     exampleScenario: 'Instead of asking "What is the right action?", virtue ethics asks "What kind of person should I be?".',
-    imageUrl: 'https://placehold.co/400x300.png',
+    imageUrl: '/nano_banana.png',
     imageHint: 'wise person character',
   },
    {
@@ -190,7 +190,7 @@ export const mockEthicalTheories: EthicalTheory[] = [
     proponents: ['Thomas Hobbes', 'John Locke', 'Jean-Jacques Rousseau'],
     keyConcepts: ['State of Nature', 'Natural Rights', 'General Will', 'Consent of the Governed'],
     exampleScenario: 'Citizens pay taxes (surrendering some economic freedom) in exchange for public services and security provided by the government.',
-    imageUrl: 'https://placehold.co/400x300.png',
+    imageUrl: '/nano_banana.png',
     imageHint: 'agreement society people',
   },
 ];

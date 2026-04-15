@@ -31,7 +31,7 @@ export function CommunityDilemmaCard({ dilemma }: CommunityDilemmaCardProps) {
       {!dilemma.imageUrl && (
          <div className="relative w-full h-48 bg-muted flex items-center justify-center">
            <Image 
-            src={`https://placehold.co/600x400.png?text=${encodeURIComponent(dilemma.title.substring(0,20))}`} 
+            src="/nano_banana.png"
             alt={dilemma.title} 
             layout="fill"
             objectFit="cover"

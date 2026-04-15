@@ -75,7 +75,15 @@ export function AICounselorChat() {
 
     } catch (err: any) {
       console.error("Error chatting with counselor:", err);
-      setError(err.message || "Failed to get response from AI counselor. Please try again.");
+      const rawMessage: string = err?.message ?? '';
+      const isSanitizedServerError =
+        rawMessage.includes('Server Components render') ||
+        rawMessage.includes('digest property') ||
+        rawMessage.includes('omitted in production');
+      const friendlyMessage = isSanitizedServerError
+        ? "The AI counselor is temporarily unavailable. Please try again in a moment."
+        : rawMessage || "Failed to get response from AI counselor. Please try again.";
+      setError(friendlyMessage);
       const errorResponse: ChatMessage = {
         id: Date.now().toString() + '-error',
         role: 'assistant',

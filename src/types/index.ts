@@ -15,8 +15,34 @@ export interface UserProfile {
   communitySubmissions?: number;
   role?: string; // User's role within the platform (e.g., 'Explorer', 'Contributor')
   isAdmin?: boolean;
+  // Stripe mapping — one-way link so the webhook can find this user by customer
+  stripeCustomerId?: string;
   createdAt?: Date | any; // Allow 'any' for Firebase ServerTimestamp
   lastUpdated?: Date | any; // Allow 'any' for Firebase ServerTimestamp
+}
+
+// Stored at subscriptions/{uid}. Mirrored from Stripe by the webhook.
+export type SubscriptionPlan = 'monthly' | 'semester' | 'annual' | 'free';
+export type SubscriptionStatus =
+  | 'active'
+  | 'trialing'
+  | 'past_due'
+  | 'canceled'
+  | 'incomplete'
+  | 'incomplete_expired'
+  | 'unpaid'
+  | 'none';
+
+export interface Subscription {
+  uid: string;
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  stripePriceId?: string;
+  currentPeriodEnd?: Date | any; // ISO date or Firestore timestamp
+  cancelAtPeriodEnd?: boolean;
+  updatedAt?: Date | any;
 }
 
 export interface StoryChoice {
