@@ -12,6 +12,11 @@ interface PhilosopherDetailProps {
 }
 
 export function PhilosopherDetail({ philosopher }: PhilosopherDetailProps) {
+  const bioParagraphs = philosopher.bio
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
   return (
     <div className="space-y-6">
       <Card className="bg-card/80 backdrop-blur-sm">
@@ -23,7 +28,11 @@ export function PhilosopherDetail({ philosopher }: PhilosopherDetailProps) {
             <p className="text-lg text-muted-foreground">{philosopher.era}</p>
           </div>
           <Separator />
-          <p className="text-foreground leading-relaxed">{philosopher.bio}</p>
+          <div className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-relaxed">
+            {bioParagraphs.map((p, i) => (
+              <p key={i} className="mb-4">{p}</p>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
@@ -76,10 +85,10 @@ export function PhilosopherDetail({ philosopher }: PhilosopherDetailProps) {
           </div>
           <div className="flex flex-wrap gap-2">
             {philosopher.relatedFrameworks.map((fw) => (
-              <Link key={fw} href={`/glossary`}>
+              <Link key={fw} href={`/glossary/${fw}`}>
                 <Badge
                   variant="secondary"
-                  className="cursor-pointer hover:bg-secondary/80 text-sm"
+                  className="cursor-pointer hover:bg-primary/20 hover:text-primary transition-colors text-sm capitalize"
                 >
                   {fw.replace(/-/g, ' ')}
                 </Badge>
