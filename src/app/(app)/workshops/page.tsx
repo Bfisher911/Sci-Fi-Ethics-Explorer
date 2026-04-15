@@ -10,11 +10,20 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { PremiumGate } from '@/components/gating/premium-gate';
 
 /**
  * Workshop listing page with ability to create new workshops.
  */
 export default function WorkshopsPage() {
+  return (
+    <PremiumGate featureName="Workshops">
+      <WorkshopsPageInner />
+    </PremiumGate>
+  );
+}
+
+function WorkshopsPageInner() {
   const { user } = useAuth();
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [loading, setLoading] = useState(true);

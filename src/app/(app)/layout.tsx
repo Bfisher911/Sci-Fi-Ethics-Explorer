@@ -10,12 +10,28 @@ import { AppHeader } from '@/components/layout/app-header';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Sparkles } from 'lucide-react';
+
+/**
+ * Path prefixes that are readable without authentication. Anonymous users
+ * land here from the marketing site (Explore / Archive footer links) and
+ * see a slim public shell rather than getting bounced to /login.
+ */
+const PUBLIC_PATH_PREFIXES = ['/stories', '/philosophers', '/glossary'];
+
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATH_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p + '/')
+  );
+}
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const { subscriptionStatus, loading: subLoading } = useSubscription();
   const router = useRouter();
   const pathname = usePathname();
+  const publicPath = isPublicPath(pathname);
 
   const showOnboardingBanner =
     !subLoading &&
@@ -24,13 +40,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     pathname !== '/onboarding';
 
   useEffect(() => {
-    // 🔁 PATCH: Redirect to new /login page if unauthenticated (BF 2025-06-06)
-    // Also ensure /auth (old page) is not accessible within this layout
-    if (!loading && !user && pathname !== '/login' && pathname !== '/signup') {
-      router.push('/login'); 
+    // Redirect unauthenticated users to /login UNLESS they are visiting a
+    // public-readable path (stories/philosophers/glossary) — those render
+    // in a slim anonymous shell instead.
+    if (
+      !loading &&
+      !user &&
+      pathname !== '/login' &&
+      pathname !== '/signup' &&
+      !publicPath
+    ) {
+      router.push('/login');
     }
-    // 🔁 END PATCH
-  }, [user, loading, router, pathname]);
+  }, [user, loading, router, pathname, publicPath]);
 
   if (loading) {
     return (
@@ -46,10 +68,47 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  // 🔁 PATCH: Condition to redirect to /login if unauthenticated (BF 2025-06-06)
+  // Anonymous user on a public-readable path: render a slim public shell
+  // instead of the full app sidebar. No auth required.
+  if (!user && publicPath) {
+    return (
+      <div className="flex flex-col min-h-screen bg-background">
+        <header className="border-b border-border/60 bg-card/40 backdrop-blur-sm">
+          <div className="container mx-auto flex items-center justify-between px-4 py-3">
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="h-6 w-1 bg-primary rounded-full group-hover:h-8 transition-all" />
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="font-headline font-bold text-base tracking-tight">
+                Sci-Fi Ethics Explorer
+              </span>
+            </Link>
+            <div className="flex items-center gap-2">
+              <Button asChild variant="ghost" size="sm">
+                <Link href={`/login?next=${encodeURIComponent(pathname)}`}>
+                  Login
+                </Link>
+              </Button>
+              <Button asChild size="sm" className="bg-primary hover:bg-primary/90">
+                <Link href={`/signup?next=${encodeURIComponent(pathname)}`}>
+                  Sign Up
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto">{children}</main>
+        <footer className="border-t border-border/60 bg-card/30 py-4">
+          <div className="container mx-auto px-4 text-center text-xs text-muted-foreground">
+            Free reading • <Link href="/pricing" className="text-primary hover:underline">Subscribe</Link> to unlock interactive tools, communities, and more.
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
+  // Authenticated check: anyone hitting a non-public path without a session
+  // gets the loader while the redirect takes effect.
   if (!user && pathname !== '/login' && pathname !== '/signup') {
-  // 🔁 END PATCH
-    // Still loading or redirecting, show loader
      return (
        <div className="flex h-screen w-full items-center justify-center bg-background">
          <div className="flex flex-col items-center space-y-4">

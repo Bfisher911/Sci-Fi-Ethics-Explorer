@@ -12,11 +12,20 @@ import { CommunityCard } from '@/components/communities/community-card';
 import { useToast } from '@/hooks/use-toast';
 import type { Community, CommunityMemberRole } from '@/types';
 import Link from 'next/link';
+import { PremiumGate } from '@/components/gating/premium-gate';
 
 /**
  * Communities list page showing all communities the current user belongs to.
  */
 export default function CommunitiesPage() {
+  return (
+    <PremiumGate featureName="Communities">
+      <CommunitiesPageInner />
+    </PremiumGate>
+  );
+}
+
+function CommunitiesPageInner() {
   const { user } = useAuth();
   const { toast } = useToast();
 

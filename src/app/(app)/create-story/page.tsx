@@ -17,12 +17,21 @@ import type { Story } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ArrowLeft, LogIn } from 'lucide-react';
+import { PremiumGate } from '@/components/gating/premium-gate';
 
 /**
  * Page for creating and editing user-generated stories via a multi-step form.
  * Supports `?edit={id}` to pre-populate the editor.
  */
 export default function CreateStoryPage(): JSX.Element {
+  return (
+    <PremiumGate featureName="Create Story">
+      <CreateStoryPageInner />
+    </PremiumGate>
+  );
+}
+
+function CreateStoryPageInner(): JSX.Element {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams?.get('edit') ?? null;

@@ -9,8 +9,17 @@ import { getCurricula } from '@/app/actions/curriculum';
 import { CurriculumCard } from '@/components/curriculum/curriculum-card';
 import { CurriculumBuilder } from '@/components/curriculum/curriculum-builder';
 import type { CurriculumPath } from '@/types';
+import { PremiumGate } from '@/components/gating/premium-gate';
 
 export default function CurriculumPage() {
+  return (
+    <PremiumGate featureName="Learning Paths">
+      <CurriculumPageInner />
+    </PremiumGate>
+  );
+}
+
+function CurriculumPageInner() {
   const [curricula, setCurricula] = useState<CurriculumPath[]>([]);
   const [loading, setLoading] = useState(true);
   const [showBuilder, setShowBuilder] = useState(false);
