@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
 import { recordStoryCompletion, recordStoryChoice } from '@/app/actions/progress';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
+import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
 
 export default function StoryDetailPage() {
   const params = useParams();
@@ -192,6 +193,9 @@ export default function StoryDetailPage() {
           itemId={story.id}
           itemType="story"
           title={story.title}
+        />
+        <ShareToMessageDialog
+          artifact={{ type: 'story', id: story.id, title: story.title }}
         />
       </div>
 

@@ -18,6 +18,8 @@ import {
   ShieldCheck,
   Shield,
   History,
+  Brain,
+  Award,
 } from 'lucide-react';
 
 /**
@@ -97,6 +99,20 @@ export default function AdminDashboardPage() {
       icon: History,
       href: '/admin/audit-log',
       description: 'Review every admin action',
+    },
+    {
+      title: 'Quiz Library',
+      count: null,
+      icon: Brain,
+      href: '/admin/quizzes',
+      description: 'Generate and manage philosopher/theory quizzes',
+    },
+    {
+      title: 'Certificates',
+      count: null,
+      icon: Award,
+      href: '/admin/certificates',
+      description: 'Review and revoke issued certificates',
     },
   ];
 

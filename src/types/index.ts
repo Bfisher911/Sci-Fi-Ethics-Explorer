@@ -27,6 +27,18 @@ export interface UserProfile {
   isAdmin?: boolean;
   /** When true, user appears as "Anonymous Explorer" on public leaderboards. */
   anonymousOnLeaderboard?: boolean;
+  /**
+   * When explicitly false, the user is hidden from the People Directory and
+   * their public profile link returns "Profile Private". If undefined, treat
+   * as public (default true).
+   */
+  isPublicProfile?: boolean;
+  /**
+   * Cached dominant ethical framework name from the user's most recent
+   * framework-explorer quiz, used for directory filtering. Populated when the
+   * user completes the quiz.
+   */
+  dominantFramework?: string;
   createdAt?: Date | any;
   lastUpdated?: Date | any;
 }
@@ -192,6 +204,122 @@ export interface ContentVersion {
   snapshot: Record<string, any>;
   createdAt: Date | any;
   note?: string;
+}
+
+// ─── Quizzes (per-philosopher / per-theory comprehension quizzes) ──
+
+export type QuizSubjectType = 'philosopher' | 'theory';
+export type QuizDifficulty = 'recall' | 'conceptual' | 'applied';
+
+export interface QuizQuestion {
+  id: string;
+  prompt: string;
+  options: string[];
+  correctAnswerIndex: number;
+  explanation: string;
+  difficulty: QuizDifficulty;
+}
+
+export interface Quiz {
+  id: string;
+  subjectType: QuizSubjectType;
+  /** ID of the philosopher or theory this quiz tests. */
+  subjectId: string;
+  subjectName: string;
+  title: string;
+  description?: string;
+  questions: QuizQuestion[];
+  /** Average minutes to complete. */
+  estimatedMinutes?: number;
+  passingScorePercent: number;
+  createdAt: Date | any;
+  updatedAt?: Date | any;
+}
+
+export interface QuizAttempt {
+  id: string;
+  quizId: string;
+  userId: string;
+  subjectType: QuizSubjectType;
+  subjectId: string;
+  /** Index chosen for each question, in order. -1 = skipped. */
+  answers: number[];
+  scorePercent: number;
+  passed: boolean;
+  xpAwarded?: number;
+  completedAt: Date | any;
+}
+
+// ─── Curriculum extensions ──────────────────────────────────────────
+
+export interface CurriculumProgress {
+  userId: string;
+  curriculumId: string;
+  completedItemIds: string[];
+  /** Map of itemId -> completion timestamp. */
+  itemCompletedAt?: Record<string, Date | any>;
+  /** Map of itemId -> seconds spent (best-effort). */
+  itemTimeSpent?: Record<string, number>;
+  startedAt: Date | any;
+  completedAt?: Date | any;
+  certificateId?: string;
+}
+
+// ─── Certificates ───────────────────────────────────────────────────
+
+export interface Certificate {
+  id: string;
+  userId: string;
+  userName: string;
+  curriculumId: string;
+  curriculumTitle: string;
+  /** Short hash for verification. */
+  verificationHash: string;
+  issuedAt: Date | any;
+  revokedAt?: Date | any;
+  revokedBy?: string;
+  revokeReason?: string;
+}
+
+// ─── Direct Messages ────────────────────────────────────────────────
+
+export interface MessageThread {
+  id: string;
+  /** Sorted UIDs of participants (always 2 for 1:1). */
+  participantIds: string[];
+  /** Map of uid -> display info for each participant. */
+  participants: Record<string, { name: string; avatarUrl?: string }>;
+  /** Last message preview, for inbox display. */
+  lastMessage?: string;
+  lastMessageAt?: Date | any;
+  lastMessageFrom?: string;
+  /** Map of uid -> count of unread messages. */
+  unreadCounts?: Record<string, number>;
+  createdAt: Date | any;
+}
+
+export interface DirectMessage {
+  id: string;
+  threadId: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+  /** Optional attachment to a site artifact. */
+  attachedArtifact?: {
+    type: 'story' | 'dilemma' | 'debate' | 'analysis' | 'perspective' | 'philosopher' | 'theory';
+    id: string;
+    title: string;
+  };
+  createdAt: Date | any;
+}
+
+// ─── User blocking & message requests ───────────────────────────────
+
+export interface UserBlock {
+  /** Blocker UID is the document ID. */
+  blockerId: string;
+  blockedIds: string[];
+  updatedAt?: Date | any;
 }
 
 // ─── Audit Log (admin actions) ──────────────────────────────────────
@@ -451,6 +579,10 @@ export interface CurriculumPath {
   creatorId: string;
   creatorName?: string;
   isPublic: boolean;
+  /** True if this path can be cloned as a template. */
+  isTemplate?: boolean;
+  /** Stable reference back to the source curriculum if this was cloned. */
+  clonedFrom?: string;
   modules: CurriculumModule[];
   enrollmentCount?: number;
   createdAt: Date | any;

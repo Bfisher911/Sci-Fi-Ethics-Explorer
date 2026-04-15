@@ -12,6 +12,10 @@ import {
   Microscope,
   Star,
   Flame,
+  Compass,
+  GraduationCap,
+  Crown,
+  BadgeCheck,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -33,6 +37,10 @@ const iconMap: Record<string, LucideIcon> = {
   Microscope,
   Star,
   Flame,
+  Compass,
+  GraduationCap,
+  Crown,
+  BadgeCheck,
 };
 
 interface EarnedBadgesProps {

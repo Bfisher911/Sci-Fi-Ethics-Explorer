@@ -14,6 +14,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 import { ArrowRight, RotateCcw, Check, Lightbulb } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { recordQuizResult } from '@/app/actions/progress';
+import { updateUserProfile } from '@/app/actions/user';
 import type { QuizResult } from '@/types';
 import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
 
@@ -294,10 +295,13 @@ export function EthicalFrameworkQuiz() {
     setFinalScores(scores);
 
     // Find dominant framework
-    const dominantFramework = Object.entries(scores).reduce(
+    const dominantFrameworkId = Object.entries(scores).reduce(
       (best, [id, score]) => (score > best.score ? { id, score } : best),
       { id: '', score: -1 }
     ).id;
+    const dominantFrameworkName =
+      mockEthicalTheories.find((t) => t.id === dominantFrameworkId)?.name ||
+      dominantFrameworkId;
 
     // Record quiz result in user progress
     if (user?.uid) {
@@ -305,11 +309,21 @@ export function EthicalFrameworkQuiz() {
         id: `quiz-${Date.now()}`,
         completedAt: new Date(),
         scores,
-        dominantFramework,
+        dominantFramework: dominantFrameworkId,
       };
       recordQuizResult(user.uid, quizResult).catch((err) => {
         console.error('Failed to record quiz result:', err);
       });
+
+      // Cache the dominant framework on the user profile so the People Directory
+      // can filter/display it without re-reading progress.
+      if (dominantFrameworkName) {
+        updateUserProfile(user.uid, {
+          dominantFramework: dominantFrameworkName,
+        }).catch((err) => {
+          console.error('Failed to update dominant framework on profile:', err);
+        });
+      }
     }
   };
 

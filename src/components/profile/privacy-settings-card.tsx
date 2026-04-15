@@ -32,8 +32,11 @@ export function PrivacySettingsCard() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingDirectory, setIsSavingDirectory] = useState(false);
   // "visible" = user wants to be shown on public leaderboards (default true).
   const [visible, setVisible] = useState(true);
+  // "directoryVisible" = user wants to appear in the People Directory. Default true.
+  const [directoryVisible, setDirectoryVisible] = useState(true);
 
   useEffect(() => {
     if (authLoading) return;
@@ -49,6 +52,8 @@ export function PrivacySettingsCard() {
         const data = snapshot.data();
         // Default to visible (true) if the field is unset.
         setVisible(data?.anonymousOnLeaderboard !== true);
+        // isPublicProfile defaults to true — only hidden if explicitly false.
+        setDirectoryVisible(data?.isPublicProfile !== false);
         setIsLoading(false);
       },
       (error) => {
@@ -97,6 +102,43 @@ export function PrivacySettingsCard() {
     }
   };
 
+  const handleDirectoryToggle = async (checked: boolean) => {
+    if (!user) return;
+    const previous = directoryVisible;
+    setDirectoryVisible(checked);
+    setIsSavingDirectory(true);
+    try {
+      const result = await updateUserProfile(user.uid, {
+        isPublicProfile: checked,
+      });
+      if (!result.success) {
+        setDirectoryVisible(previous);
+        toast({
+          title: 'Could not update directory setting',
+          description: result.error,
+          variant: 'destructive',
+        });
+        return;
+      }
+      toast({
+        title: 'Directory preference saved',
+        description: checked
+          ? 'You will appear in the People Directory.'
+          : 'Your profile is now hidden from the People Directory.',
+      });
+    } catch (error) {
+      setDirectoryVisible(previous);
+      const message = error instanceof Error ? error.message : String(error);
+      toast({
+        title: 'Could not update directory setting',
+        description: message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSavingDirectory(false);
+    }
+  };
+
   if (authLoading || isLoading) {
     return (
       <Card className="max-w-2xl mx-auto mt-8 bg-card/80 backdrop-blur-sm">
@@ -123,7 +165,7 @@ export function PrivacySettingsCard() {
         </CardTitle>
         <CardDescription>Control how your profile appears to others.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <div className="flex items-start justify-between gap-4 rounded-lg border border-border p-4">
           <div className="space-y-1">
             <Label
@@ -144,6 +186,32 @@ export function PrivacySettingsCard() {
               checked={visible}
               onCheckedChange={handleToggle}
               disabled={isSaving}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-start justify-between gap-4 rounded-lg border border-border p-4">
+          <div className="space-y-1">
+            <Label
+              htmlFor="directory-visibility"
+              className="text-base font-medium"
+            >
+              Show my profile in the People Directory
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              When off, your profile is hidden from the directory and direct
+              profile links return &quot;Profile Private&quot;.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 pt-1">
+            {isSavingDirectory && (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            )}
+            <Switch
+              id="directory-visibility"
+              checked={directoryVisible}
+              onCheckedChange={handleDirectoryToggle}
+              disabled={isSavingDirectory}
             />
           </div>
         </div>

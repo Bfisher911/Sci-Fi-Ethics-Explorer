@@ -11,4 +11,14 @@ export const allBadges: Badge[] = [
   { id: 'ten_analyses', name: 'Deep Thinker', description: 'Analyze 10 scenarios', icon: 'Microscope', criteria: 'Analyze 10 scenarios', category: 'analysis' },
   { id: 'community_star', name: 'Community Star', description: 'Submit 5 dilemmas', icon: 'Star', criteria: 'Submit 5 dilemmas', category: 'community' },
   { id: 'devil_advocate', name: "Devil's Advocate", description: 'Use the Devil\'s Advocate feature 5 times', icon: 'Flame', criteria: 'Use Devil\'s Advocate 5 times', category: 'analysis' },
+  // Curriculum tier badges
+  { id: 'novice_navigator', name: 'Novice Navigator', description: 'Complete your first curriculum', icon: 'Compass', criteria: 'Complete 1 curriculum', category: 'learning' },
+  { id: 'path_finder', name: 'Path Finder', description: 'Complete 3 curricula', icon: 'GraduationCap', criteria: 'Complete 3 curricula', category: 'learning' },
+  { id: 'moral_architect', name: 'Moral Architect', description: 'Complete 5 curricula', icon: 'Award', criteria: 'Complete 5 curricula', category: 'learning' },
+  { id: 'grand_philosopher', name: 'Grand Philosopher', description: 'Complete 10 curricula', icon: 'Crown', criteria: 'Complete 10 curricula', category: 'learning' },
+  // Quiz tier badges
+  { id: 'quiz_apprentice', name: 'Quiz Apprentice', description: 'Pass 3 subject quizzes', icon: 'Brain', criteria: 'Pass 3 quizzes', category: 'learning' },
+  { id: 'quiz_master_v2', name: 'Quiz Virtuoso', description: 'Pass 10 subject quizzes', icon: 'Trophy', criteria: 'Pass 10 quizzes', category: 'learning' },
+  // Certificate badge
+  { id: 'certified', name: 'Certified Explorer', description: 'Earn your first completion certificate', icon: 'BadgeCheck', criteria: 'Earn 1 certificate', category: 'learning' },
 ];

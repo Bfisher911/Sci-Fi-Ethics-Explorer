@@ -55,6 +55,12 @@ export async function getUserProfile(uid: string): Promise<GetUserProfileResult>
         communitySubmissions: data.communitySubmissions || 0,
         role: data.role || 'Explorer',
         isAdmin: data.isAdmin || false,
+        anonymousOnLeaderboard: data.anonymousOnLeaderboard === true,
+        // Preserve the raw value (including undefined) so consumers can tell the
+        // difference between "unset" (treat as public) and "explicitly false".
+        isPublicProfile:
+          data.isPublicProfile === undefined ? undefined : data.isPublicProfile !== false,
+        dominantFramework: data.dominantFramework || undefined,
         createdAt: toDate(data.createdAt as Timestamp | Date | undefined),
         lastUpdated: toDate(data.lastUpdated as Timestamp | Date | undefined),
       };

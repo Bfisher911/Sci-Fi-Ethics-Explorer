@@ -9,6 +9,7 @@ import {
   BookText,
   Compass,
   MessageSquare,
+  MessageCircle,
   FilePlus2,
   FileCheck,
   Users,
@@ -59,6 +60,7 @@ const communityNavItems = [
   { href: '/community-dilemmas', label: 'Community Dilemmas', icon: Users },
   { href: '/debate-arena', label: 'Debate Arena', icon: Scale },
   { href: '/workshops', label: 'Workshops', icon: Presentation },
+  { href: '/messages', label: 'Messages', icon: MessageCircle },
   { href: '/create-story', label: 'Create Story', icon: PenTool },
 ];
 
@@ -66,6 +68,7 @@ const learningNavItems = [
   { href: '/curriculum', label: 'Learning Paths', icon: GraduationCap },
   { href: '/philosophers', label: 'Philosophers', icon: ScrollText },
   { href: '/communities', label: 'Communities', icon: Users },
+  { href: '/directory', label: 'Directory', icon: Users },
 ];
 
 const footerNavItems = [

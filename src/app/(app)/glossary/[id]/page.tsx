@@ -21,6 +21,7 @@ import {
   getEthicalTheoryById,
   getPhilosophersForTheory,
 } from '@/app/actions/ethical-theories';
+import { QuizCta } from '@/components/quiz/quiz-cta';
 import type { EthicalTheory, Philosopher } from '@/types';
 
 export default function TheoryDetailPage() {
@@ -181,6 +182,15 @@ export default function TheoryDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Test Your Knowledge */}
+      <div className="mb-6">
+        <QuizCta
+          subjectType="theory"
+          subjectId={theory.id}
+          href={`/glossary/${theory.id}/quiz`}
+        />
+      </div>
 
       {/* Related philosophers */}
       {philosophers.length > 0 && (

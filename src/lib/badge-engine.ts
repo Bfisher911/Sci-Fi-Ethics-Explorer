@@ -1,10 +1,28 @@
 import type { UserProgress, BadgeId } from '@/types';
 
 /**
+ * Extra metrics that aren't on the base UserProgress document but that may
+ * have been fetched from other server sources (quizzes, certificates). These
+ * are optional — callers can pass a subset and those badges will simply not
+ * be awarded if data is missing.
+ */
+export interface BadgeEvaluationExtras {
+  /** Number of curricula the user has fully completed. */
+  curriculaCompleted?: number;
+  /** Number of distinct subject quizzes the user has passed. */
+  quizzesPassed?: number;
+  /** Number of active (non-revoked) certificates the user holds. */
+  certificatesEarned?: number;
+}
+
+/**
  * Evaluates a user's progress against badge criteria and returns the list
  * of badge IDs the user has earned.
  */
-export function evaluateBadges(progress: UserProgress): BadgeId[] {
+export function evaluateBadges(
+  progress: UserProgress,
+  extras: BadgeEvaluationExtras = {}
+): BadgeId[] {
   const earned: BadgeId[] = [];
 
   // Stories badges
@@ -41,6 +59,22 @@ export function evaluateBadges(progress: UserProgress): BadgeId[] {
   if ((extendedProgress.devilsAdvocateUsages ?? 0) >= 5) {
     earned.push('devil_advocate');
   }
+
+  // Curriculum tier badges
+  const curriculaCompleted = extras.curriculaCompleted ?? 0;
+  if (curriculaCompleted >= 1) earned.push('novice_navigator');
+  if (curriculaCompleted >= 3) earned.push('path_finder');
+  if (curriculaCompleted >= 5) earned.push('moral_architect');
+  if (curriculaCompleted >= 10) earned.push('grand_philosopher');
+
+  // Quiz tier badges (distinct subjects passed)
+  const quizzesPassed = extras.quizzesPassed ?? 0;
+  if (quizzesPassed >= 3) earned.push('quiz_apprentice');
+  if (quizzesPassed >= 10) earned.push('quiz_master_v2');
+
+  // Certificate badge
+  const certificatesEarned = extras.certificatesEarned ?? 0;
+  if (certificatesEarned >= 1) earned.push('certified');
 
   return earned;
 }

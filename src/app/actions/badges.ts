@@ -8,6 +8,7 @@ import {
   collection,
   getDocs,
   query,
+  where,
   orderBy,
   limit,
   serverTimestamp,
@@ -43,7 +44,67 @@ export async function checkAndAwardBadges(
     }
 
     const progressData = progressSnap.data() as UserProgress;
-    const earnedIds = evaluateBadges(progressData);
+
+    // Gather extra metrics needed for curriculum/quiz/certificate badges.
+    let curriculaCompleted = 0;
+    let quizzesPassed = 0;
+    let certificatesEarned = 0;
+
+    try {
+      // Count fully-completed curricula from top-level curriculumProgress.
+      const progressSnap2 = await getDocs(
+        query(
+          collection(db, 'curriculumProgress'),
+          where('userId', '==', userId)
+        )
+      );
+      for (const p of progressSnap2.docs) {
+        const pd = p.data();
+        const cid = pd.curriculumId;
+        if (!cid) continue;
+        const cSnap = await getDoc(doc(db, 'curricula', cid));
+        if (!cSnap.exists()) continue;
+        const modules = (cSnap.data().modules || []) as Array<{
+          items?: unknown[];
+        }>;
+        const total = modules.reduce(
+          (s, m) => s + (m.items?.length || 0),
+          0
+        );
+        const completed: string[] = pd.completedItemIds || [];
+        if (total > 0 && completed.length >= total) curriculaCompleted++;
+      }
+
+      // Count distinct subject quizzes passed
+      const attemptsSnap = await getDocs(
+        query(collection(db, 'quizAttempts'), where('userId', '==', userId))
+      );
+      const passedSubjects = new Set<string>();
+      attemptsSnap.docs.forEach((d) => {
+        const data = d.data();
+        if (data.passed === true && data.subjectId) {
+          passedSubjects.add(data.subjectId);
+        }
+      });
+      quizzesPassed = passedSubjects.size;
+
+      // Count active (non-revoked) certificates
+      const certsSnap = await getDocs(
+        query(collection(db, 'certificates'), where('userId', '==', userId))
+      );
+      certsSnap.docs.forEach((d) => {
+        if (!d.data().revokedAt) certificatesEarned++;
+      });
+    } catch (err) {
+      // Non-fatal: tier badges just won't be awarded this pass
+      console.warn('[badges] extras fetch failed:', err);
+    }
+
+    const earnedIds = evaluateBadges(progressData, {
+      curriculaCompleted,
+      quizzesPassed,
+      certificatesEarned,
+    });
 
     // Fetch existing badges
     const badgesRef = doc(db, 'userBadges', userId);

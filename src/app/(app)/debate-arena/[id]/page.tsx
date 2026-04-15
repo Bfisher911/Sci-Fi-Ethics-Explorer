@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import type { Debate, DebateArgument } from '@/types';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
+import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
 
 const statusVariants: Record<string, { label: string; className: string }> = {
   open: { label: 'Open', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
@@ -180,6 +181,13 @@ export default function DebateDetailPage() {
                 itemId={debate.id}
                 itemType="debate"
                 title={debate.title}
+              />
+              <ShareToMessageDialog
+                artifact={{
+                  type: 'debate',
+                  id: debate.id,
+                  title: debate.title,
+                }}
               />
               {isCreator && debate.status !== 'closed' && (
                 <Button

@@ -210,6 +210,49 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // ─── Quizzes ───────────────────────────────────────────────
+    match /quizzes/{quizId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // ─── Quiz Attempts ─────────────────────────────────────────
+    match /quizAttempts/{attemptId} {
+      allow read: if true;
+      allow create, update: if true;
+    }
+
+    // ─── Curriculum Progress ───────────────────────────────────
+    // Composite ID: {userId}_{curriculumId}
+    match /curriculumProgress/{progressId} {
+      allow read: if true;
+      allow create, update: if true;
+    }
+
+    // ─── Certificates ──────────────────────────────────────────
+    match /certificates/{certId} {
+      allow read: if true;
+      allow create, update: if true;
+    }
+
+    // ─── Message Threads ───────────────────────────────────────
+    match /messageThreads/{threadId} {
+      allow read: if true;
+      allow create, update: if true;
+
+      match /messages/{messageId} {
+        allow read: if true;
+        allow create, update: if true;
+      }
+    }
+
+    // ─── User Blocks ───────────────────────────────────────────
+    // Document ID is the blocker's UID.
+    match /userBlocks/{userId} {
+      allow read: if true;
+      allow create, update: if true;
+    }
+
     // ─── Community Contributions ───────────────────────────────
     // Server actions enforce community membership in app code.
     match /communityContributions/{contributionId} {

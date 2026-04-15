@@ -12,15 +12,77 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Moon, Sun, User as UserIcon, LogOut, Search as SearchIcon, PanelLeft } from 'lucide-react';
+import { Moon, Sun, User as UserIcon, LogOut, Search as SearchIcon, PanelLeft, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { auth } from '@/lib/firebase/config';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useSidebar } from '@/components/ui/sidebar';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { GlobalSearch } from '@/components/search/global-search';
 import { NotificationBell } from '@/components/notifications/notification-bell';
+import { Badge } from '@/components/ui/badge';
+import { getUnreadMessageCount } from '@/app/actions/messages';
+
+const UNREAD_MESSAGES_POLL_MS = 30_000;
+
+function MessagesIndicator(): React.ReactElement | null {
+  const { user, loading } = useAuth();
+  const [count, setCount] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (loading || !user) return;
+    const uid = user.uid;
+    let cancelled = false;
+
+    const fetchCount = async () => {
+      try {
+        const result = await getUnreadMessageCount(uid);
+        if (!cancelled && result.success) {
+          setCount(result.data);
+        }
+      } catch (err) {
+        // non-fatal; another poll will try again
+        console.error('[MessagesIndicator] getUnreadMessageCount failed:', err);
+      }
+    };
+
+    void fetchCount();
+    timerRef.current = setInterval(fetchCount, UNREAD_MESSAGES_POLL_MS);
+    return () => {
+      cancelled = true;
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [loading, user]);
+
+  if (loading || !user) return null;
+
+  return (
+    <Button
+      asChild
+      variant="ghost"
+      size="icon"
+      className="relative"
+      aria-label={count > 0 ? `Messages, ${count} unread` : 'Messages'}
+    >
+      <Link href="/messages">
+        <MessageCircle className="h-5 w-5" />
+        {count > 0 && (
+          <Badge
+            variant="destructive"
+            className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-semibold"
+          >
+            {count > 99 ? '99+' : count}
+          </Badge>
+        )}
+      </Link>
+    </Button>
+  );
+}
 
 export function AppHeader() {
   const { user } = useAuth();
@@ -86,6 +148,7 @@ export function AppHeader() {
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
             {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
+          <MessagesIndicator />
           <NotificationBell />
           {user ? (
             <DropdownMenu>

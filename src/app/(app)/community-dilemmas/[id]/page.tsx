@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
+import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
 
 import {
   ArrowLeft,
@@ -224,13 +225,22 @@ export default function CommunityDilemmaDetailPage() {
 
         <CardFooter className="border-t pt-4 flex flex-wrap gap-3">
           {dilemma.id && (
-            <ShareToCommunityDialog
-              type="dilemma"
-              defaultTitle={dilemma.title}
-              defaultSummary={dilemma.description?.substring(0, 200) ?? ''}
-              sourceCollection="submittedDilemmas"
-              sourceId={dilemma.id}
-            />
+            <>
+              <ShareToCommunityDialog
+                type="dilemma"
+                defaultTitle={dilemma.title}
+                defaultSummary={dilemma.description?.substring(0, 200) ?? ''}
+                sourceCollection="submittedDilemmas"
+                sourceId={dilemma.id}
+              />
+              <ShareToMessageDialog
+                artifact={{
+                  type: 'dilemma',
+                  id: dilemma.id,
+                  title: dilemma.title,
+                }}
+              />
+            </>
           )}
         </CardFooter>
       </Card>

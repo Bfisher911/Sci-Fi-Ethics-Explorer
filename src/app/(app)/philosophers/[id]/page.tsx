@@ -9,6 +9,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { getPhilosopherById } from '@/app/actions/philosophers';
 import { PhilosopherDetail } from '@/components/philosophers/philosopher-detail';
+import { QuizCta } from '@/components/quiz/quiz-cta';
 import type { Philosopher } from '@/types';
 
 export default function PhilosopherDetailPage() {
@@ -66,6 +67,13 @@ export default function PhilosopherDetailPage() {
         </Link>
       </Button>
       <PhilosopherDetail philosopher={philosopher} />
+      <div className="mt-6">
+        <QuizCta
+          subjectType="philosopher"
+          subjectId={philosopher.id}
+          href={`/philosophers/${philosopher.id}/quiz`}
+        />
+      </div>
     </div>
   );
 }

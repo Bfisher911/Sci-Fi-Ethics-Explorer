@@ -34,12 +34,17 @@ function curriculumFromDoc(
     creatorId: data.creatorId || '',
     creatorName: data.creatorName || '',
     isPublic: data.isPublic ?? true,
+    isTemplate: data.isTemplate ?? false,
+    clonedFrom: data.clonedFrom,
     modules: data.modules || [],
     enrollmentCount: data.enrollmentCount || 0,
     createdAt: timestampToDate(data.createdAt),
     updatedAt: timestampToDate(data.updatedAt),
   };
 }
+
+// validateCurriculum moved to src/lib/curriculum-validation.ts so it can be
+// imported by client components without requiring a server-action context.
 
 /**
  * Fetch all public curricula ordered by creation date.
@@ -188,28 +193,154 @@ export async function getEnrollment(
 }
 
 /**
- * Mark an item as completed in a user's enrollment.
+ * Mark an item as completed in a user's enrollment. Also writes to the
+ * top-level `curriculumProgress` collection (composite ID) for analytics.
  */
 export async function updateEnrollmentProgress(
   curriculumId: string,
   userId: string,
-  completedItemId: string
+  completedItemId: string,
+  options: { secondsSpent?: number } = {}
 ): Promise<ActionResult<undefined>> {
   try {
-    const enrollRef = doc(
-      db,
-      'curricula',
-      curriculumId,
-      'enrollments',
-      userId
-    );
-    await updateDoc(enrollRef, {
+    const enrollRef = doc(db, 'curricula', curriculumId, 'enrollments', userId);
+    await setDoc(enrollRef, {
+      userId, curriculumId,
       completedItemIds: arrayUnion(completedItemId),
       lastActivity: serverTimestamp(),
-    });
+    }, { merge: true });
+
+    // Also append to top-level curriculumProgress for the dashboard
+    const progressId = `${userId}_${curriculumId}`;
+    const progressRef = doc(db, 'curriculumProgress', progressId);
+    const updates: Record<string, any> = {
+      userId, curriculumId,
+      completedItemIds: arrayUnion(completedItemId),
+      [`itemCompletedAt.${completedItemId}`]: serverTimestamp(),
+    };
+    if (options.secondsSpent !== undefined) {
+      updates[`itemTimeSpent.${completedItemId}`] = options.secondsSpent;
+    }
+    await setDoc(progressRef, {
+      startedAt: serverTimestamp(),
+      ...updates,
+    }, { merge: true });
+
     return { success: true, data: undefined };
   } catch (error) {
     console.error('[curriculum] updateEnrollmentProgress error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Clone an existing curriculum into a new one owned by the cloner.
+ * Useful for "Save as Template" / "Duplicate" workflows.
+ */
+export async function cloneCurriculum(
+  sourceId: string,
+  newOwnerId: string,
+  newOwnerName: string
+): Promise<ActionResult<string>> {
+  try {
+    const snap = await getDoc(doc(db, 'curricula', sourceId));
+    if (!snap.exists()) return { success: false, error: 'Source curriculum not found.' };
+
+    const source = snap.data();
+    const cloned = await addDoc(collection(db, 'curricula'), {
+      title: `${source.title} (Copy)`,
+      description: source.description || '',
+      creatorId: newOwnerId,
+      creatorName: newOwnerName,
+      isPublic: false,
+      isTemplate: false,
+      clonedFrom: sourceId,
+      modules: source.modules || [],
+      enrollmentCount: 0,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    return { success: true, data: cloned.id };
+  } catch (error) {
+    console.error('[curriculum] cloneCurriculum error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Get aggregate progress across all enrolled users for a curriculum.
+ * Used by the creator's progress dashboard.
+ */
+export async function getCurriculumProgressAggregate(
+  curriculumId: string
+): Promise<ActionResult<{
+  enrolled: number;
+  completed: number;
+  averageItemsCompleted: number;
+  itemCompletionCounts: Record<string, number>;
+  perUser: { userId: string; itemsCompleted: number }[];
+}>> {
+  try {
+    const enrollSnap = await getDocs(collection(db, 'curricula', curriculumId, 'enrollments'));
+    const curriculumSnap = await getDoc(doc(db, 'curricula', curriculumId));
+    const curriculum = curriculumSnap.exists() ? curriculumFromDoc(curriculumSnap.id, curriculumSnap.data()) : null;
+    const totalItems = curriculum?.modules.reduce((s, m) => s + (m.items?.length || 0), 0) || 0;
+
+    const itemCompletionCounts: Record<string, number> = {};
+    const perUser: { userId: string; itemsCompleted: number }[] = [];
+    let completed = 0;
+    let totalCompletedItems = 0;
+
+    enrollSnap.docs.forEach((d) => {
+      const data = d.data();
+      const items: string[] = data.completedItemIds || [];
+      perUser.push({ userId: data.userId, itemsCompleted: items.length });
+      totalCompletedItems += items.length;
+      items.forEach((id) => {
+        itemCompletionCounts[id] = (itemCompletionCounts[id] || 0) + 1;
+      });
+      if (totalItems > 0 && items.length >= totalItems) completed++;
+    });
+
+    return {
+      success: true,
+      data: {
+        enrolled: enrollSnap.size,
+        completed,
+        averageItemsCompleted: enrollSnap.size > 0 ? totalCompletedItems / enrollSnap.size : 0,
+        itemCompletionCounts,
+        perUser,
+      },
+    };
+  } catch (error) {
+    console.error('[curriculum] getCurriculumProgressAggregate error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Delete a curriculum (creator or admin).
+ */
+export async function deleteCurriculum(
+  curriculumId: string,
+  requesterId: string
+): Promise<ActionResult<void>> {
+  try {
+    const ref = doc(db, 'curricula', curriculumId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return { success: false, error: 'Curriculum not found.' };
+    const current = snap.data();
+    const { isUserAdmin } = await import('@/lib/admin');
+    const admin = await isUserAdmin(requesterId);
+    if (current.creatorId !== requesterId && !admin) {
+      return { success: false, error: 'Not authorized.' };
+    }
+    const { deleteDoc } = await import('firebase/firestore');
+    await deleteDoc(ref);
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error('[curriculum] deleteCurriculum error:', error);
     return { success: false, error: String(error) };
   }
 }
