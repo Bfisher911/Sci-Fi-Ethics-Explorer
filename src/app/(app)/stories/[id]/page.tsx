@@ -17,13 +17,15 @@ import { ChoiceImpactIndicator } from '@/components/stories/choice-impact-indica
 import { EpilogueViewer } from '@/components/stories/epilogue-viewer';
 import { generateEndingReflection } from '@/ai/flows/generate-ending-reflection';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowLeft, CheckSquare, Loader2, MessageSquare, Map, Clock, Sparkles } from 'lucide-react';
+import { ArrowLeft, CheckSquare, Loader2, MessageSquare, Map, Clock, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
 import { recordStoryCompletion, recordStoryChoice } from '@/app/actions/progress';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
 import { classifyChoice, FRAMEWORK_INFO } from '@/lib/choice-frameworks';
+import { getMoodTheme } from '@/lib/story-atmosphere';
+import { useAmbientTone } from '@/hooks/use-ambient-tone';
 import { cn } from '@/lib/utils';
 
 export default function StoryDetailPage() {
@@ -43,8 +45,18 @@ export default function StoryDetailPage() {
   const [showEpilogue, setShowEpilogue] = useState(false);
   const [lastAlignedFramework, setLastAlignedFramework] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [atmosphereOn, setAtmosphereOn] = useState(false);
   const segmentRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+
+  const mood = getMoodTheme(
+    story?.theme,
+    story?.genre,
+    story?.title,
+    currentSegment?.text?.slice(0, 400)
+  );
+
+  useAmbientTone(atmosphereOn, mood.ambientFreq);
 
   useEffect(() => {
     async function loadStory() {
@@ -210,6 +222,20 @@ export default function StoryDetailPage() {
           <Map className="mr-2 h-4 w-4" />
           {showStoryMap ? 'Hide' : 'View'} Story Map
         </Button>
+        <Button
+          variant={atmosphereOn ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setAtmosphereOn((v) => !v)}
+          title={atmosphereOn ? `Atmosphere on — ${mood.label}` : 'Enable atmospheric background + ambient audio'}
+          aria-pressed={atmosphereOn}
+        >
+          {atmosphereOn ? (
+            <Volume2 className="mr-2 h-4 w-4" />
+          ) : (
+            <VolumeX className="mr-2 h-4 w-4" />
+          )}
+          Atmosphere{atmosphereOn ? `: ${mood.label}` : ''}
+        </Button>
         <BookmarkButton
           itemId={story.id}
           itemType="story"
@@ -245,13 +271,18 @@ export default function StoryDetailPage() {
       )}
 
       <Card className="shadow-xl bg-card/80 backdrop-blur-sm relative overflow-hidden">
-        {/* Backlit-terminal glow behind content */}
+        {/* Backlit-terminal glow behind content. When Atmosphere is on, the
+            glow shifts to a mood-derived palette keyed to the story's theme. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-40"
+          className={cn(
+            'pointer-events-none absolute inset-0 transition-opacity duration-700',
+            atmosphereOn ? 'opacity-100' : 'opacity-40'
+          )}
           style={{
-            background:
-              'radial-gradient(ellipse at 50% 0%, rgba(125,249,255,0.08), transparent 60%)',
+            background: atmosphereOn
+              ? mood.gradient
+              : 'radial-gradient(ellipse at 50% 0%, rgba(125,249,255,0.08), transparent 60%)',
           }}
         />
 
