@@ -28,6 +28,11 @@ import { SegmentEditor } from '@/components/stories/segment-editor';
 import { StoryFlowMap } from '@/components/stories/story-flow-map';
 import { StoryPreview } from '@/components/stories/story-preview';
 import { StoryVersionHistory } from '@/components/stories/story-version-history';
+import { StoryWalkthrough } from '@/components/stories/story-walkthrough';
+import { TemplatePicker } from '@/components/stories/template-picker';
+import { WritingAssistant } from '@/components/stories/writing-assistant';
+import { InfoIcon } from '@/components/ui/info-icon';
+import type { StoryTemplate } from '@/data/story-templates';
 import { getUserCommunities } from '@/app/actions/communities';
 import {
   getStoryById,
@@ -400,6 +405,17 @@ export function StoryEditor({
     setSegments(next);
   };
 
+  const applyTemplate = (template: StoryTemplate): void => {
+    if (template.suggestedGenre && !genre) setGenre(template.suggestedGenre);
+    if (template.suggestedTheme && !theme) setTheme(template.suggestedTheme);
+    setSegments(template.segments);
+    setActiveSegmentId(template.segments[0]?.id ?? null);
+    toast({
+      title: `Template loaded: ${template.name}`,
+      description: 'Replace the placeholder text with your own story.',
+    });
+  };
+
   const deleteSegment = (index: number): void => {
     if (segments.length <= 1) return;
     setSegments(segments.filter((_, i) => i !== index));
@@ -502,12 +518,16 @@ export function StoryEditor({
 
   return (
     <div className="space-y-6">
-      {/* Editor toolbar: auto-save status + history */}
+      {/* Editor toolbar: auto-save status + history + walkthrough */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3 min-h-[1.5rem]">
           {renderAutoSaveIndicator()}
         </div>
         <div className="flex items-center gap-2">
+          <span data-tour="template-picker">
+            <TemplatePicker onPick={applyTemplate} />
+          </span>
+          <StoryWalkthrough disableAutoStart={Boolean(initialStory || editingStoryId)} />
           {storyId && authorId && (
             <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
               <SheetTrigger asChild>
@@ -537,7 +557,7 @@ export function StoryEditor({
       </div>
 
       {/* Step indicator */}
-      <div className="space-y-3">
+      <div className="space-y-3" data-tour="step-tabs">
         <div className="flex items-center justify-between text-sm">
           {STEPS.map((step, idx) => {
             const Icon = step.icon;
@@ -569,13 +589,16 @@ export function StoryEditor({
 
       {/* Step 1: Metadata */}
       {currentStep === 'metadata' && (
-        <Card className="bg-card/80 backdrop-blur-sm">
+        <Card className="bg-card/80 backdrop-blur-sm" data-tour="metadata-form">
           <CardHeader>
             <CardTitle>Story Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1">
-              <Label htmlFor="story-title">Title *</Label>
+              <Label htmlFor="story-title" className="flex items-center gap-1.5">
+                Title *
+                <InfoIcon content="The title appears on the story card and in your byline. Aim for evocative over descriptive — readers will judge the click on the first six words." />
+              </Label>
               <Input
                 id="story-title"
                 value={title}
@@ -640,41 +663,59 @@ export function StoryEditor({
 
       {/* Step 2: Segments */}
       {currentStep === 'segments' && (
-        <div className="space-y-4">
-          <StoryFlowMap
-            segments={segments}
-            currentSegmentId={activeSegmentId || undefined}
-            onSelect={focusSegment}
-          />
-          {segments.map((seg, idx) => (
-            <SegmentEditor
-              key={seg.id}
-              segment={seg}
-              allSegmentIds={allSegmentIds}
-              allSegments={segments}
-              onChange={(updated) => updateSegment(idx, updated)}
-              onDelete={() => deleteSegment(idx)}
-              onMoveUp={() => moveSegment(idx, 'up')}
-              onMoveDown={() => moveSegment(idx, 'down')}
-              canMoveUp={idx > 0}
-              canMoveDown={idx < segments.length - 1}
-              onCreateBranch={() => createBranchAfter(idx)}
-              onFocusSegment={focusSegment}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4" data-tour="segment-editor">
+          <div className="space-y-4 min-w-0">
+            <div data-tour="story-flow-map">
+              <StoryFlowMap
+                segments={segments}
+                currentSegmentId={activeSegmentId || undefined}
+                onSelect={focusSegment}
+              />
+            </div>
+            {segments.map((seg, idx) => (
+              <SegmentEditor
+                key={seg.id}
+                segment={seg}
+                allSegmentIds={allSegmentIds}
+                allSegments={segments}
+                onChange={(updated) => updateSegment(idx, updated)}
+                onDelete={() => deleteSegment(idx)}
+                onMoveUp={() => moveSegment(idx, 'up')}
+                onMoveDown={() => moveSegment(idx, 'down')}
+                canMoveUp={idx > 0}
+                canMoveDown={idx < segments.length - 1}
+                onCreateBranch={() => createBranchAfter(idx)}
+                onFocusSegment={focusSegment}
+              />
+            ))}
+            <Button
+              variant="outline"
+              onClick={() => addSegment()}
+              className="w-full"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Segment
+            </Button>
+          </div>
+          <aside className="space-y-3 lg:sticky lg:top-4 lg:self-start">
+            <WritingAssistant
+              segmentType={
+                (segments.find((s) => s.id === activeSegmentId)?.type) ?? 'linear'
+              }
+              isEmpty={
+                !(segments.find((s) => s.id === activeSegmentId)?.text || '').trim()
+              }
             />
-          ))}
-          <Button
-            variant="outline"
-            onClick={() => addSegment()}
-            className="w-full"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Segment
-          </Button>
+          </aside>
         </div>
       )}
 
       {/* Step 3: Preview */}
-      {currentStep === 'preview' && <StoryPreview story={buildStoryData()} />}
+      {currentStep === 'preview' && (
+        <div data-tour="preview">
+          <StoryPreview story={buildStoryData()} />
+        </div>
+      )}
 
       {/* Step 4: Submit */}
       {currentStep === 'submit' && (
@@ -782,7 +823,7 @@ export function StoryEditor({
                 {submitError && (
                   <p className="text-destructive text-sm">{submitError}</p>
                 )}
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex flex-col sm:flex-row gap-2" data-tour="save-draft">
                   {authorId && (
                     <Button
                       onClick={handleSaveDraft}

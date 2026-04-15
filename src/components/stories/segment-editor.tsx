@@ -227,8 +227,24 @@ export function SegmentEditor({
         <CardContent className="space-y-4">
           {/* Segment ID */}
           <div className="space-y-1">
-            <Label htmlFor={`seg-id-${segment.id}`} className="text-xs">
+            <Label htmlFor={`seg-id-${segment.id}`} className="text-xs flex items-center gap-1.5">
               Segment ID
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="About segment IDs"
+                    className="inline-flex h-4 w-4 items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
+                  >
+                    <HelpCircle className="h-3 w-3" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs text-xs leading-relaxed">
+                  Think of this as a bookmark name. Choices in other segments
+                  use this ID to link back to this scene. Keep it short and
+                  recognizable (e.g., <code>opening</code>, <code>verdict</code>).
+                </TooltipContent>
+              </Tooltip>
             </Label>
             <Input
               id={`seg-id-${segment.id}`}
@@ -306,6 +322,16 @@ export function SegmentEditor({
                 textFocused ? 'min-h-[400px]' : 'min-h-[250px]'
               )}
             />
+            {!segment.text.trim() && (
+              <div className="flex items-start gap-2 rounded-md border border-accent/30 bg-accent/5 px-3 py-2 mt-1">
+                <span className="text-xs text-accent font-semibold mt-0.5">Tip:</span>
+                <p className="text-xs text-foreground/80 leading-relaxed">
+                  Open with a sensory detail or a moment of action.
+                  &ldquo;The smell of ozone&rdquo; beats &ldquo;She was scared.&rdquo;
+                  Use the Writing Assistant on the right for more ideas.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Linear: continues-to */}
@@ -454,9 +480,13 @@ export function SegmentEditor({
                         </Tooltip>
                       </div>
                       {leadsNowhere && (
-                        <div className="flex items-center gap-1 text-[11px] text-amber-400">
-                          <AlertTriangle className="h-3 w-3" />
-                          This choice leads nowhere
+                        <div className="flex items-start gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/5 px-2 py-1.5 text-[11px] text-amber-400">
+                          <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
+                          <span>
+                            This path currently ends here. Link it to another
+                            segment to keep the story going, or mark this choice
+                            as an ending above.
+                          </span>
                         </div>
                       )}
                     </div>
