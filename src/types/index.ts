@@ -3,7 +3,16 @@ import type { User as FirebaseUser } from 'firebase/auth';
 
 // ─── User ───────────────────────────────────────────────────────────
 
-export type AccountRole = 'student' | 'instructor';
+/**
+ * Account-level role. The platform is now single-tier: every account is a
+ * "member" with the same capabilities. Anyone can create a community (which
+ * makes them an instructor of *that* community — see Community.instructorIds —
+ * but that is a per-community role, not an account-level role).
+ *
+ * Legacy values 'student' and 'instructor' may exist on older user docs and
+ * are accepted at read time; they should be treated equivalent to 'member'.
+ */
+export type AccountRole = 'member' | 'student' | 'instructor';
 export type SubscriptionStatus = 'none' | 'trial' | 'active' | 'past_due' | 'canceled';
 
 export interface UserProfile {

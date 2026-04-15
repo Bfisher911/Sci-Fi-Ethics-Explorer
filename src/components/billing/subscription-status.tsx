@@ -147,7 +147,7 @@ export function SubscriptionStatus({
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
-            {subscription!.planId.includes('instructor') ? 'Instructor' : 'Student'} Plan
+            Member Plan
           </CardTitle>
           <Badge variant={statusVariant(subscription!.status)}>
             {subscription!.status}

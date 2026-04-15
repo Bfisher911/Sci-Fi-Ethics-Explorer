@@ -80,20 +80,22 @@ export default function PricingPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* ─── Individual Plans ──────────────────────────────────── */}
+        {/* ─── Individual Plan ───────────────────────────────────── */}
         <TabsContent value="individual">
           <div className="text-center mb-8">
             <p className="text-muted-foreground flex items-center justify-center gap-1.5">
               <Info className="h-4 w-4" />
-              Both roles have the same base rate. Choose the role that fits your needs.
+              One member tier. Anyone can create a community, join others, and use every tool.
             </p>
           </div>
 
-          <PlanSelector
-            plans={ALL_INDIVIDUAL_PLANS}
-            accountRole={accountRole}
-            onSelect={handleIndividualSelect}
-          />
+          <div className="max-w-2xl mx-auto">
+            <PlanSelector
+              plans={ALL_INDIVIDUAL_PLANS}
+              accountRole={accountRole}
+              onSelect={handleIndividualSelect}
+            />
+          </div>
         </TabsContent>
 
         {/* ─── Organization License ─────────────────────────────── */}

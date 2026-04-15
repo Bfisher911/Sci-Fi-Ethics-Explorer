@@ -46,7 +46,9 @@ export function PlanCard({
     onSelect?.(plan.id, activePeriod);
   }
 
-  const RoleIcon = plan.role === 'instructor' ? Crown : Gem;
+  // The single Member plan uses the Gem icon; Crown is reserved for any
+  // future tier we might introduce above it.
+  const RoleIcon = Gem;
 
   return (
     <Card

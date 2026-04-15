@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useSubscription } from '@/hooks/use-subscription';
-import { getPlanForRole } from '@/config/plans';
+import { MEMBER_PLAN } from '@/config/plans';
 import { createSubscription } from '@/app/actions/subscriptions';
 import { joinCommunityByCode } from '@/app/actions/communities';
 import type { BillingPeriod, BillingPeriodId } from '@/types';
@@ -29,11 +29,12 @@ import { cn } from '@/lib/utils';
  */
 export default function OnboardingPage() {
   const { user } = useAuth();
-  const { accountRole, loading: subLoading } = useSubscription();
+  const { loading: subLoading } = useSubscription();
   const router = useRouter();
   const { toast } = useToast();
 
-  const plan = accountRole ? getPlanForRole(accountRole) : null;
+  // Single-tier platform: every account uses the unified Member plan.
+  const plan = MEMBER_PLAN;
 
   const [selectedPeriod, setSelectedPeriod] = useState<BillingPeriodId | null>(
     null
@@ -50,11 +51,11 @@ export default function OnboardingPage() {
     );
   }
 
-  if (!user || !plan) {
+  if (!user) {
     return (
       <div className="flex h-full items-center justify-center">
         <p className="text-muted-foreground">
-          Unable to load your plan. Please try again.
+          Please sign in to continue.
         </p>
       </div>
     );
@@ -84,7 +85,7 @@ export default function OnboardingPage() {
         title: 'Plan activated',
         description: 'You now have full access. Welcome!',
       });
-      router.push(accountRole === 'instructor' ? '/communities' : '/stories');
+      router.push('/communities');
     } else {
       toast({
         title: 'Something went wrong',

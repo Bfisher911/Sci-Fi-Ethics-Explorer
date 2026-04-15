@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, LogIn, Users, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { useSubscription } from '@/hooks/use-subscription';
 import { getUserCommunities, joinCommunityByCode } from '@/app/actions/communities';
 import { CommunityCard } from '@/components/communities/community-card';
 import { useToast } from '@/hooks/use-toast';
@@ -19,7 +18,6 @@ import Link from 'next/link';
  */
 export default function CommunitiesPage() {
   const { user } = useAuth();
-  const { accountRole } = useSubscription();
   const { toast } = useToast();
 
   const [communities, setCommunities] = useState<Community[]>([]);
@@ -79,7 +77,9 @@ export default function CommunitiesPage() {
     );
   }
 
-  const isInstructor = accountRole === 'instructor';
+  // Single-tier platform: anyone can create a community. The "Create"
+  // button is shown to all signed-in members.
+  const canCreate = Boolean(user);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -93,7 +93,7 @@ export default function CommunitiesPage() {
             Collaborate, learn, and explore ethics together.
           </p>
           <div className="flex flex-wrap gap-3 mt-4">
-            {isInstructor && (
+            {canCreate && (
               <Button asChild>
                 <Link href="/communities/create">
                   <Plus className="h-4 w-4 mr-2" />
@@ -134,9 +134,7 @@ export default function CommunitiesPage() {
             No communities yet.
           </p>
           <p className="text-muted-foreground/80 mt-2">
-            {isInstructor
-              ? 'Create a community to get started, or join one with an invite code.'
-              : 'Join a community with an invite code from your instructor.'}
+            Create a community to get started, or join one with an invite code.
           </p>
         </div>
       ) : (

@@ -29,69 +29,46 @@ export function hasActiveAccess(
 }
 
 /**
- * Whether a user can access a specific feature based on their role,
- * subscription status, and license status.
+ * Whether a user can access a specific feature.
+ *
+ * The platform is single-tier: every paid member has the same capabilities,
+ * including community creation. (Whether a user can manage a *specific*
+ * community is determined by membership in that community's instructorIds —
+ * a separate, per-community check enforced in app code.)
+ *
+ * `accountRole` is accepted for backward compatibility but is no longer
+ * consulted for gating — anyone with an active subscription or license
+ * can use any non-free feature.
  */
 export function canAccess(
   feature: Feature,
-  accountRole?: AccountRole,
+  _accountRole?: AccountRole,
   subscriptionStatus?: SubscriptionStatus,
   activeLicenseId?: string
 ): boolean {
-  const paid = hasActiveAccess(subscriptionStatus, activeLicenseId);
-
-  // Free-tier features available to everyone
+  // Free-tier features available to everyone, signed in or not.
   const freeFeatures: Feature[] = [
     'browse_stories',
     'use_ai_limited',
     'view_own_progress',
   ];
-
   if (freeFeatures.includes(feature)) return true;
 
-  // Everything else requires payment
-  if (!paid) return false;
-
-  // Instructor-only features
-  const instructorOnly: Feature[] = [
-    'create_community',
-    'manage_community',
-    'community_analytics',
-    'assign_work',
-  ];
-
-  if (instructorOnly.includes(feature)) {
-    return accountRole === 'instructor';
-  }
-
-  // Paid features available to both roles
-  return true;
+  // Everything else requires an active subscription or license.
+  return hasActiveAccess(subscriptionStatus, activeLicenseId);
 }
 
 /**
  * Returns a human-readable reason why access is denied.
  */
 export function getAccessDeniedReason(
-  feature: Feature,
-  accountRole?: AccountRole,
-  subscriptionStatus?: SubscriptionStatus
+  _feature: Feature,
+  _accountRole?: AccountRole,
+  subscriptionStatus?: SubscriptionStatus,
+  activeLicenseId?: string
 ): string {
-  const paid = subscriptionStatus === 'active' || subscriptionStatus === 'trial';
-
-  if (!paid) {
+  if (!hasActiveAccess(subscriptionStatus, activeLicenseId)) {
     return 'Choose a plan to unlock this feature.';
   }
-
-  const instructorOnly: Feature[] = [
-    'create_community',
-    'manage_community',
-    'community_analytics',
-    'assign_work',
-  ];
-
-  if (instructorOnly.includes(feature) && accountRole !== 'instructor') {
-    return 'This feature is available to Instructors.';
-  }
-
   return 'You do not have access to this feature.';
 }

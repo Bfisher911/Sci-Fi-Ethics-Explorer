@@ -13,11 +13,15 @@ import type { Community } from '@/types';
 import Link from 'next/link';
 
 /**
- * Page for creating a new community. Gated to instructors with create_community access.
+ * Page for creating a new community. Single-tier platform: any signed-in
+ * member with an active subscription or license can create one. Whoever
+ * creates the community becomes the instructor of *that* community
+ * (community.instructorIds), but that's a per-community role, not an
+ * account-level distinction.
  */
 export default function CreateCommunityPage() {
   const { user } = useAuth();
-  const { canAccess, loading: subLoading } = useSubscription();
+  const { isPaid, loading: subLoading } = useSubscription();
   const [created, setCreated] = useState<Community | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -29,12 +33,12 @@ export default function CreateCommunityPage() {
     );
   }
 
-  if (!canAccess('create_community')) {
+  if (!isPaid) {
     return (
       <div className="container mx-auto py-8 px-4 max-w-lg">
         <Card className="bg-card/80 backdrop-blur-sm p-8 text-center">
           <p className="text-lg text-muted-foreground">
-            Only instructors with an active plan can create communities.
+            Choose a plan to create your own community.
           </p>
           <div className="flex gap-3 justify-center mt-4">
             <Button asChild variant="outline">

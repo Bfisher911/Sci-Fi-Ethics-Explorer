@@ -21,15 +21,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/hooks/use-toast';
 import { AlertCircle, Mail, Lock, User, ChromeIcon } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { RoleSelector } from '@/components/auth/role-selector';
-import type { AccountRole } from '@/types';
 
 export function AuthForms() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [selectedRole, setSelectedRole] = useState<AccountRole | null>(null);
+  // Single-tier platform: every signup creates a "member" account.
+  const selectedRole = 'member' as const;
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,10 +39,6 @@ export function AuthForms() {
     e.preventDefault();
     setError(null);
     setMessage(null);
-    if (!selectedRole) {
-      setError("Please select a role to continue.");
-      return;
-    }
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
@@ -187,10 +182,6 @@ export function AuthForms() {
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input id="signup-name" type="text" placeholder="Your Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="pl-10" />
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>I am a...</Label>
-                  <RoleSelector selectedRole={selectedRole} onSelect={setSelectedRole} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
