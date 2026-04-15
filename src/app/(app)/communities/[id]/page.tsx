@@ -463,14 +463,14 @@ export default function CommunityDetailPage() {
               <div>
                 <Label>Assigned Curriculum</Label>
                 <Select
-                  value={editCurriculumId}
-                  onValueChange={setEditCurriculumId}
+                  value={editCurriculumId || '__none__'}
+                  onValueChange={(v) => setEditCurriculumId(v === '__none__' ? '' : v)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a curriculum..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="__none__">None</SelectItem>
                     {curricula.map((c) => (
                       <SelectItem key={c.id} value={c.id}>
                         {c.title}
