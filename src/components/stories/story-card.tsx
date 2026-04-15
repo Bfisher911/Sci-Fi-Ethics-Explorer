@@ -1,10 +1,13 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Story } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, BookOpen, Clock } from 'lucide-react';
+import { ArrowRight, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 
 interface StoryCardProps {
   story: Story;
@@ -12,7 +15,22 @@ interface StoryCardProps {
 
 export function StoryCard({ story }: StoryCardProps) {
   return (
-    <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-primary/30 transition-shadow duration-300 bg-card/80 backdrop-blur-sm">
+    <Card className="relative flex flex-col h-full overflow-hidden shadow-lg hover:shadow-primary/30 transition-shadow duration-300 bg-card/80 backdrop-blur-sm">
+      <div
+        className="absolute top-2 right-2 z-10"
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+        }}
+      >
+        <div className="rounded-full bg-background/70 backdrop-blur-sm">
+          <BookmarkButton
+            itemId={story.id}
+            itemType="story"
+            title={story.title}
+          />
+        </div>
+      </div>
       {story.imageUrl && (
         <div className="relative w-full h-48">
           <Image
@@ -26,7 +44,7 @@ export function StoryCard({ story }: StoryCardProps) {
         </div>
       )}
       <CardHeader>
-        <CardTitle className="text-xl font-semibold text-primary group-hover:text-accent transition-colors">
+        <CardTitle className="text-xl font-semibold text-primary group-hover:text-accent transition-colors pr-10">
           <Link href={`/stories/${story.id}`}>{story.title}</Link>
         </CardTitle>
         <div className="flex flex-wrap gap-2 mt-1">

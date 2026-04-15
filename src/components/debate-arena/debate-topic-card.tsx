@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Users, CalendarDays, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
+import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 
 interface DebateTopicCardProps {
   debate: Debate;
@@ -31,7 +32,22 @@ export function DebateTopicCard({ debate }: DebateTopicCardProps) {
 
   return (
     <Link href={`/debate-arena/${debate.id}`}>
-      <Card className="shadow-xl hover:shadow-primary/20 transition-all duration-300 bg-card/80 backdrop-blur-sm hover:border-primary/30 cursor-pointer">
+      <Card className="relative shadow-xl hover:shadow-primary/20 transition-all duration-300 bg-card/80 backdrop-blur-sm hover:border-primary/30 cursor-pointer">
+        <div
+          className="absolute top-2 right-2 z-10"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+          }}
+        >
+          <div className="rounded-full bg-background/70 backdrop-blur-sm">
+            <BookmarkButton
+              itemId={debate.id}
+              itemType="debate"
+              title={debate.title}
+            />
+          </div>
+        </div>
         <CardHeader>
           <div className="flex justify-between items-start mb-2">
             <Badge variant="outline" className={statusInfo.className}>

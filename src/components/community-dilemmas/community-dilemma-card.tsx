@@ -1,8 +1,11 @@
+'use client';
+
 import Image from 'next/image';
 import type { SubmittedDilemma } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { User, Calendar, ThumbsUp } from 'lucide-react'; // Example icons
+import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 
 interface CommunityDilemmaCardProps {
   dilemma: SubmittedDilemma;
@@ -16,7 +19,24 @@ export function CommunityDilemmaCard({ dilemma }: CommunityDilemmaCardProps) {
 
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden shadow-lg hover:shadow-primary/30 transition-shadow duration-300 bg-card/80 backdrop-blur-sm">
+    <Card className="relative flex flex-col h-full overflow-hidden shadow-lg hover:shadow-primary/30 transition-shadow duration-300 bg-card/80 backdrop-blur-sm">
+      {dilemma.id && (
+        <div
+          className="absolute top-2 right-2 z-10"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+          }}
+        >
+          <div className="rounded-full bg-background/70 backdrop-blur-sm">
+            <BookmarkButton
+              itemId={dilemma.id}
+              itemType="dilemma"
+              title={dilemma.title}
+            />
+          </div>
+        </div>
+      )}
       {dilemma.imageUrl && (
         <div className="relative w-full h-48">
           <Image

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Dialog,
   DialogContent,
@@ -16,12 +17,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, Video, MapPin, Link as LinkIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface CreateWorkshopDialogProps {
   onCreated?: (workshopId: string) => void;
 }
+
+type LocationType = 'online' | 'in_person' | 'hybrid';
 
 /**
  * Dialog for creating a new collaborative workshop.
@@ -33,11 +36,26 @@ export function CreateWorkshopDialog({ onCreated }: CreateWorkshopDialogProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [maxParticipants, setMaxParticipants] = useState(20);
+  const [locationType, setLocationType] = useState<LocationType>('online');
+  const [meetingUrl, setMeetingUrl] = useState('');
+  const [locationAddress, setLocationAddress] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const needsMeetingUrl = locationType === 'online' || locationType === 'hybrid';
+  const needsAddress = locationType === 'in_person' || locationType === 'hybrid';
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!user || !title.trim() || isSubmitting) return;
+
+    if (needsMeetingUrl && meetingUrl.trim() && !meetingUrl.trim().toLowerCase().startsWith('http')) {
+      toast({
+        title: 'Invalid URL',
+        description: 'Meeting URL must start with http or https.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -47,6 +65,9 @@ export function CreateWorkshopDialog({ onCreated }: CreateWorkshopDialogProps) {
         hostId: user.uid,
         hostName: user.displayName ?? 'Anonymous',
         maxParticipants,
+        locationType,
+        meetingUrl: needsMeetingUrl ? meetingUrl.trim() : undefined,
+        locationAddress: needsAddress ? locationAddress.trim() : undefined,
       });
 
       if (result.success) {
@@ -54,6 +75,9 @@ export function CreateWorkshopDialog({ onCreated }: CreateWorkshopDialogProps) {
         setOpen(false);
         setTitle('');
         setDescription('');
+        setMeetingUrl('');
+        setLocationAddress('');
+        setLocationType('online');
         onCreated?.(result.data);
       } else {
         toast({
@@ -82,7 +106,7 @@ export function CreateWorkshopDialog({ onCreated }: CreateWorkshopDialogProps) {
           Create Workshop
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>Create a Workshop</DialogTitle>
           <DialogDescription>
@@ -124,6 +148,65 @@ export function CreateWorkshopDialog({ onCreated }: CreateWorkshopDialogProps) {
               disabled={isSubmitting}
             />
           </div>
+
+          <div className="space-y-2">
+            <Label>Location Type</Label>
+            <RadioGroup
+              value={locationType}
+              onValueChange={(v) => setLocationType(v as LocationType)}
+              className="flex flex-col gap-2 sm:flex-row sm:gap-4"
+            >
+              <Label
+                htmlFor="loc-online"
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <RadioGroupItem value="online" id="loc-online" />
+                <Video className="h-4 w-4" /> Online
+              </Label>
+              <Label
+                htmlFor="loc-in-person"
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <RadioGroupItem value="in_person" id="loc-in-person" />
+                <MapPin className="h-4 w-4" /> In Person
+              </Label>
+              <Label
+                htmlFor="loc-hybrid"
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <RadioGroupItem value="hybrid" id="loc-hybrid" />
+                <LinkIcon className="h-4 w-4" /> Hybrid
+              </Label>
+            </RadioGroup>
+          </div>
+
+          {needsMeetingUrl && (
+            <div className="space-y-2">
+              <Label htmlFor="meeting-url">Meeting URL</Label>
+              <Input
+                id="meeting-url"
+                type="url"
+                placeholder="https://zoom.us/j/..."
+                value={meetingUrl}
+                onChange={(e) => setMeetingUrl(e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div>
+          )}
+
+          {needsAddress && (
+            <div className="space-y-2">
+              <Label htmlFor="location-address">Location / Address</Label>
+              <Input
+                id="location-address"
+                placeholder="Room 302, Main Hall, 123 Main St..."
+                value={locationAddress}
+                onChange={(e) => setLocationAddress(e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div>
+          )}
+
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting || !title.trim()}>
               {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}

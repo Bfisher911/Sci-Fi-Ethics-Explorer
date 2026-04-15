@@ -18,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Loader2, MessageCircle, LogIn } from 'lucide-react';
+import { Send, Loader2, MessageCircle, LogIn, Video, MapPin, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface WorkshopRoomProps {
@@ -131,6 +131,34 @@ export function WorkshopRoom({ workshop }: WorkshopRoomProps) {
           <p className="text-xs text-muted-foreground mt-2">
             Hosted by {workshop.hostName}
           </p>
+
+          {(workshop.meetingUrl || workshop.locationAddress) && (
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              {workshop.meetingUrl && (
+                <Button
+                  asChild
+                  variant="default"
+                  className="gap-2 bg-primary hover:bg-primary/90"
+                >
+                  <a
+                    href={workshop.meetingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Video className="h-4 w-4" /> Join Meeting
+                    <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                  </a>
+                </Button>
+              )}
+              {workshop.locationAddress && (
+                <div className="flex items-center gap-2 text-sm text-foreground/90">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  <span>{workshop.locationAddress}</span>
+                </div>
+              )}
+            </div>
+          )}
+
           {!isParticipant && user && (
             <Button onClick={handleJoin} disabled={joining} className="mt-4 gap-2">
               {joining ? (

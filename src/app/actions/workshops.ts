@@ -30,6 +30,9 @@ export async function createWorkshop(data: {
   maxParticipants?: number;
   dilemmaId?: string;
   storyId?: string;
+  locationType?: 'online' | 'in_person' | 'hybrid';
+  meetingUrl?: string;
+  locationAddress?: string;
 }): Promise<ActionResult<string>> {
   if (!db) {
     return { success: false, error: 'Firestore is not initialized.' };
@@ -50,6 +53,9 @@ export async function createWorkshop(data: {
       dilemmaId: data.dilemmaId || null,
       storyId: data.storyId || null,
       sharedNotes: '',
+      locationType: data.locationType ?? 'online',
+      meetingUrl: data.meetingUrl?.trim() || null,
+      locationAddress: data.locationAddress?.trim() || null,
       createdAt: serverTimestamp(),
     };
 
@@ -125,6 +131,9 @@ export async function getWorkshops(): Promise<ActionResult<Workshop[]>> {
         dilemmaId: d.dilemmaId,
         storyId: d.storyId,
         sharedNotes: d.sharedNotes ?? '',
+        locationType: d.locationType ?? undefined,
+        meetingUrl: d.meetingUrl ?? undefined,
+        locationAddress: d.locationAddress ?? undefined,
         createdAt: d.createdAt?.toDate?.() ?? new Date(),
         startedAt: d.startedAt?.toDate?.() ?? undefined,
         endedAt: d.endedAt?.toDate?.() ?? undefined,
@@ -169,6 +178,9 @@ export async function getWorkshopById(
       dilemmaId: d.dilemmaId,
       storyId: d.storyId,
       sharedNotes: d.sharedNotes ?? '',
+      locationType: d.locationType ?? undefined,
+      meetingUrl: d.meetingUrl ?? undefined,
+      locationAddress: d.locationAddress ?? undefined,
       createdAt: d.createdAt?.toDate?.() ?? new Date(),
       startedAt: d.startedAt?.toDate?.() ?? undefined,
       endedAt: d.endedAt?.toDate?.() ?? undefined,

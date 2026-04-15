@@ -20,6 +20,7 @@ import { ArrowLeft, CheckSquare, Loader2, MessageSquare, Map, Clock, Sparkles, X
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
 import { recordStoryCompletion, recordStoryChoice } from '@/app/actions/progress';
+import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 
 export default function StoryDetailPage() {
   const params = useParams();
@@ -187,6 +188,11 @@ export default function StoryDetailPage() {
           <Map className="mr-2 h-4 w-4" />
           {showStoryMap ? 'Hide' : 'View'} Story Map
         </Button>
+        <BookmarkButton
+          itemId={story.id}
+          itemType="story"
+          title={story.title}
+        />
       </div>
 
       {/* Branching Navigator */}

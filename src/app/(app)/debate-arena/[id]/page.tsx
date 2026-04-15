@@ -24,6 +24,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import type { Debate, DebateArgument } from '@/types';
+import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 
 const statusVariants: Record<string, { label: string; className: string }> = {
   open: { label: 'Open', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
@@ -174,21 +175,27 @@ export default function DebateDetailPage() {
               <h1 className="text-3xl font-bold text-primary mb-3">{debate.title}</h1>
               <p className="text-foreground/80 leading-relaxed">{debate.description}</p>
             </div>
-            {isCreator && debate.status !== 'closed' && (
-              <Button
-                variant="outline"
-                onClick={handleCloseDebate}
-                disabled={isClosing}
-                className="shrink-0"
-              >
-                {isClosing ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Lock className="mr-2 h-4 w-4" />
-                )}
-                Close Debate
-              </Button>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              <BookmarkButton
+                itemId={debate.id}
+                itemType="debate"
+                title={debate.title}
+              />
+              {isCreator && debate.status !== 'closed' && (
+                <Button
+                  variant="outline"
+                  onClick={handleCloseDebate}
+                  disabled={isClosing}
+                >
+                  {isClosing ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Lock className="mr-2 h-4 w-4" />
+                  )}
+                  Close Debate
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">

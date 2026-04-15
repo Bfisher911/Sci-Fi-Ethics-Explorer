@@ -427,6 +427,9 @@ export interface Workshop {
   endedAt?: Date | any;
   createdAt: Date | any;
   sharedNotes?: string;
+  locationType?: 'online' | 'in_person' | 'hybrid';
+  meetingUrl?: string;
+  locationAddress?: string;
 }
 
 export interface WorkshopMessage {
