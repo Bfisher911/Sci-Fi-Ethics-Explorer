@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import { useSidebar } from '@/components/ui/sidebar';
 import React, { useEffect, useState, useCallback } from 'react';
 import { GlobalSearch } from '@/components/search/global-search';
+import { NotificationBell } from '@/components/notifications/notification-bell';
 
 export function AppHeader() {
   const { user } = useAuth();
@@ -85,6 +86,7 @@ export function AppHeader() {
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
             {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
+          <NotificationBell />
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

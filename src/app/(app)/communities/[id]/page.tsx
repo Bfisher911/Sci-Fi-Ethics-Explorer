@@ -33,6 +33,7 @@ import {
   Loader2,
   Save,
   GraduationCap,
+  FileCheck,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useSubscription } from '@/hooks/use-subscription';
@@ -360,6 +361,27 @@ export default function CommunityDetailPage() {
                 </CardContent>
               </Card>
             )}
+
+            <Card className="bg-card/80 backdrop-blur-sm md:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileCheck className="h-4 w-4" />
+                  Moderate Submissions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Review dilemmas that members have submitted to this
+                  community.
+                </p>
+                <Button asChild>
+                  <Link href={`/communities/${community.id}/moderation`}>
+                    <FileCheck className="h-4 w-4 mr-2" />
+                    Open Moderation Queue
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 

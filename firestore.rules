@@ -169,6 +169,15 @@ service cloud.firestore {
       allow create, update: if true;
     }
 
+    // ─── Notifications ─────────────────────────────────────────
+    // Server actions create and query these; queries always filter by userId.
+    match /notifications/{notificationId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if true;
+    }
+
     // ─── Communities ────────────────────────────────────────────
     // Server actions call these; auth enforced in application code.
     match /communities/{communityId} {

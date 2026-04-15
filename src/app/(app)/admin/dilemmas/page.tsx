@@ -59,13 +59,15 @@ export default function AdminDilemmasPage() {
     }
   };
 
-  const handleReject = async (id: string) => {
+  const handleReject = async (id: string, reason?: string) => {
     if (!user) return;
-    const result = await rejectDilemma(id, user.uid);
+    const result = await rejectDilemma(id, user.uid, reason);
     if (result.success) {
       toast({
         title: 'Dilemma Rejected',
-        description: 'The dilemma has been rejected.',
+        description: reason
+          ? 'The dilemma has been rejected with a reason.'
+          : 'The dilemma has been rejected.',
       });
       setDilemmas((prev) => prev.filter((d) => d.id !== id));
     } else {

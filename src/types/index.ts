@@ -112,10 +112,38 @@ export interface SubmittedDilemma {
   theme: string;
   authorName: string;
   authorId?: string;
+  authorEmail?: string;
   imageUrl?: string;
   imageHint?: string;
   submittedAt: Date | any;
   status: 'pending' | 'approved' | 'rejected';
+  communityId?: string;
+  communityName?: string;
+  rejectionReason?: string;
+  reviewedBy?: string;
+  reviewedByName?: string;
+  reviewedAt?: Date | any;
+}
+
+// ─── Notifications ──────────────────────────────────────────────────
+
+export type NotificationType =
+  | 'dilemma_submitted'
+  | 'dilemma_approved'
+  | 'dilemma_rejected'
+  | 'community_invite'
+  | 'generic';
+
+export interface AppNotification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  link?: string;
+  read: boolean;
+  createdAt: Date | any;
+  metadata?: Record<string, any>;
 }
 
 // ─── Chat ───────────────────────────────────────────────────────────
