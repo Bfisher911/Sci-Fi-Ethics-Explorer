@@ -8,14 +8,17 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, AlertCircle, Lightbulb, ListChecks, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { recordAnalysis } from '@/app/actions/progress';
+import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
 
 export default function AnalyzerPage() {
   const [analysisResult, setAnalysisResult] = useState<AnalyzeScenarioOutput | null>(null);
+  const [scenarioText, setScenarioText] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
   const handleAnalyze = async (scenarioText: string) => {
+    setScenarioText(scenarioText);
     setIsLoading(true);
     setError(null);
     setAnalysisResult(null);
@@ -120,6 +123,25 @@ export default function AnalyzerPage() {
               </Alert>
             )}
           </CardContent>
+          {user && (
+            <CardFooter className="flex justify-end">
+              <ShareToCommunityDialog
+                type="analysis"
+                defaultTitle={
+                  scenarioText.slice(0, 60) +
+                  (scenarioText.length > 60 ? '…' : '')
+                }
+                defaultSummary=""
+                content={{
+                  scenarioText,
+                  ethicalDilemmas: analysisResult.ethicalDilemmas,
+                  potentialConsequences: analysisResult.potentialConsequences,
+                  applicableEthicalTheories:
+                    analysisResult.applicableEthicalTheories,
+                }}
+              />
+            </CardFooter>
+          )}
         </Card>
       )}
     </div>

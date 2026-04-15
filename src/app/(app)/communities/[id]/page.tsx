@@ -47,6 +47,7 @@ import {
 import { getCurricula } from '@/app/actions/curriculum';
 import { CommunityMembers } from '@/components/communities/community-members';
 import { CommunityInvites } from '@/components/communities/community-invites';
+import { ContributionsFeed } from '@/components/communities/contributions-feed';
 import type { Community, CommunityMemberInfo, CurriculumPath } from '@/types';
 import Link from 'next/link';
 
@@ -253,6 +254,13 @@ export default function CommunityDetailPage() {
           </Card>
         )}
 
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-primary font-headline mb-3">
+            Contributions
+          </h2>
+          <ContributionsFeed communityId={community.id} />
+        </div>
+
         <Card className="bg-card/80 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-base">Members</CardTitle>
@@ -282,14 +290,20 @@ export default function CommunityDetailPage() {
         {community.name}
       </h1>
 
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+      <Tabs defaultValue="contributions" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="contributions">Contributions</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="invites">Invites</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
+
+        {/* Contributions Tab */}
+        <TabsContent value="contributions">
+          <ContributionsFeed communityId={community.id} />
+        </TabsContent>
 
         {/* Overview Tab */}
         <TabsContent value="overview">

@@ -15,6 +15,7 @@ import { ArrowRight, RotateCcw, Check, Lightbulb } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { recordQuizResult } from '@/app/actions/progress';
 import type { QuizResult } from '@/types';
+import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
 
 interface QuizQuestion {
   id: string;
@@ -140,6 +141,15 @@ export function EthicalFrameworkQuiz() {
   };
 
   if (showResults && finalScores) {
+    const dominantEntry = Object.entries(finalScores).reduce(
+      (best, [id, score]) => (score > best.score ? { id, score } : best),
+      { id: '', score: -1 }
+    );
+    const dominantFrameworkName =
+      mockEthicalTheories.find((t) => t.id === dominantEntry.id)?.name ||
+      dominantEntry.id ||
+      'Unknown';
+
     const chartData = mockEthicalTheories.map(theory => ({
       name: theory.name,
       score: finalScores[theory.id] || 0,
@@ -192,10 +202,22 @@ export function EthicalFrameworkQuiz() {
             Note: This quiz is a simplified exploration and not a definitive psychological assessment. Its purpose is to encourage reflection on ethical theories.
           </p>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-wrap justify-between gap-2">
           <Button onClick={handleRetakeQuiz} variant="outline">
             <RotateCcw className="mr-2 h-4 w-4" /> Retake Quiz
           </Button>
+          {user && (
+            <ShareToCommunityDialog
+              type="quiz_result"
+              defaultTitle={`My ethical framework profile: ${dominantFrameworkName}`}
+              defaultSummary=""
+              content={{
+                scores: finalScores,
+                dominantFramework: dominantFrameworkName,
+                completedAt: new Date().toISOString(),
+              }}
+            />
+          )}
         </CardFooter>
       </Card>
     );

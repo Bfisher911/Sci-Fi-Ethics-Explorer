@@ -178,6 +178,22 @@ service cloud.firestore {
       allow delete: if true;
     }
 
+    // ─── Community Contributions ───────────────────────────────
+    // Server actions enforce community membership in app code.
+    match /communityContributions/{contributionId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if true;
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if true;
+        allow update: if true;
+        allow delete: if true;
+      }
+    }
+
     // ─── Communities ────────────────────────────────────────────
     // Server actions call these; auth enforced in application code.
     match /communities/{communityId} {

@@ -15,6 +15,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Scale } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
 
 const FRAMEWORKS = [
   'Utilitarianism',
@@ -37,6 +39,7 @@ export function PerspectiveComparison({
   userChoice: initialChoice,
 }: PerspectiveComparisonProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [scenario, setScenario] = useState(initialScenario ?? '');
   const [userChoice, setUserChoice] = useState(initialChoice ?? '');
   const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>([
@@ -189,6 +192,24 @@ export function PerspectiveComparison({
                 <p className="text-sm leading-relaxed">{result.synthesis}</p>
               </CardContent>
             </Card>
+          )}
+
+          {user && (
+            <div className="flex justify-end">
+              <ShareToCommunityDialog
+                type="perspective_comparison"
+                defaultTitle={
+                  scenario.slice(0, 60) + (scenario.length > 60 ? '…' : '')
+                }
+                defaultSummary={`My choice: ${userChoice}`}
+                content={{
+                  scenario,
+                  userChoice,
+                  comparisons: result.comparisons,
+                  synthesis: result.synthesis,
+                }}
+              />
+            </div>
           )}
         </div>
       )}

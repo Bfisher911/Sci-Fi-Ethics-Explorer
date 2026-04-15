@@ -125,6 +125,51 @@ export interface SubmittedDilemma {
   reviewedAt?: Date | any;
 }
 
+// ─── Community Contributions (unified feed) ─────────────────────────
+
+export type ContributionType =
+  | 'analysis'
+  | 'quiz_result'
+  | 'perspective_comparison'
+  | 'dilemma'
+  | 'debate'
+  | 'story';
+
+export interface CommunityContribution {
+  id: string;
+  communityId: string;
+  communityName?: string;
+  type: ContributionType;
+  contributorId: string;
+  contributorName: string;
+  contributorAvatarUrl?: string;
+  title: string;
+  summary: string;
+  /**
+   * Reference to the source artifact if it lives in its own collection.
+   * e.g., sourceCollection='submittedDilemmas', sourceId='abc123'
+   */
+  sourceCollection?: string;
+  sourceId?: string;
+  /**
+   * Inline content for types that don't have their own collection
+   * (analyses, quiz results, perspective comparisons).
+   */
+  content?: Record<string, any>;
+  commentCount?: number;
+  createdAt: Date | any;
+}
+
+export interface ContributionComment {
+  id: string;
+  contributionId: string;
+  authorId: string;
+  authorName: string;
+  authorAvatarUrl?: string;
+  content: string;
+  createdAt: Date | any;
+}
+
 // ─── Notifications ──────────────────────────────────────────────────
 
 export type NotificationType =

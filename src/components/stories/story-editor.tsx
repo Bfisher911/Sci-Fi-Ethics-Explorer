@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import type { Story, StorySegment } from '@/types';
+import { useEffect, useState, useCallback } from 'react';
+import type { Community, Story, StorySegment } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,6 +17,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { SegmentEditor } from '@/components/stories/segment-editor';
 import { StoryPreview } from '@/components/stories/story-preview';
+import { getUserCommunities } from '@/app/actions/communities';
 import {
   ArrowLeft,
   ArrowRight,
@@ -28,8 +29,18 @@ import {
   Send,
 } from 'lucide-react';
 
+const NONE_COMMUNITY_VALUE = '__none__';
+
+export interface StorySubmitOptions {
+  /** If set (and not "__none__"), caller should also share to this community. */
+  communityId?: string;
+}
+
 interface StoryEditorProps {
-  onSubmit: (storyData: Omit<Story, 'id' | 'status' | 'publishedAt' | 'viewCount'>) => Promise<void>;
+  onSubmit: (
+    storyData: Omit<Story, 'id' | 'status' | 'publishedAt' | 'viewCount'>,
+    options?: StorySubmitOptions
+  ) => Promise<void>;
   authorName?: string;
   authorId?: string;
 }
@@ -92,6 +103,30 @@ export function StoryEditor({
     { id: 'seg1', type: 'linear', text: '' },
   ]);
 
+  // Community sharing
+  const [communityId, setCommunityId] = useState<string>(NONE_COMMUNITY_VALUE);
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const [loadingCommunities, setLoadingCommunities] = useState(false);
+
+  useEffect(() => {
+    if (!authorId) return;
+    let cancelled = false;
+    setLoadingCommunities(true);
+    getUserCommunities(authorId)
+      .then((res) => {
+        if (!cancelled && res.success) {
+          setCommunities(res.data);
+        }
+      })
+      .catch((err) => console.error('[StoryEditor] communities:', err))
+      .finally(() => {
+        if (!cancelled) setLoadingCommunities(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [authorId]);
+
   const stepIndex = STEPS.findIndex((s) => s.key === currentStep);
   const progress = ((stepIndex + 1) / STEPS.length) * 100;
 
@@ -128,7 +163,12 @@ export function StoryEditor({
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      await onSubmit(buildStoryData());
+      await onSubmit(buildStoryData(), {
+        communityId:
+          communityId && communityId !== NONE_COMMUNITY_VALUE
+            ? communityId
+            : undefined,
+      });
       setSubmitSuccess(true);
     } catch (err) {
       console.error('Error submitting story:', err);
@@ -340,6 +380,42 @@ export function StoryEditor({
                     publication.
                   </p>
                 </div>
+                {authorId && (
+                  <div className="space-y-1">
+                    <Label htmlFor="story-community">
+                      Share to community (optional)
+                    </Label>
+                    <Select
+                      value={communityId}
+                      onValueChange={setCommunityId}
+                      disabled={loadingCommunities || isSubmitting}
+                    >
+                      <SelectTrigger id="story-community">
+                        <SelectValue
+                          placeholder={
+                            loadingCommunities
+                              ? 'Loading…'
+                              : '— None (Public) —'
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={NONE_COMMUNITY_VALUE}>
+                          — None (Public) —
+                        </SelectItem>
+                        {communities.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      When shared, community members can discuss this story
+                      privately.
+                    </p>
+                  </div>
+                )}
                 {submitError && (
                   <p className="text-destructive text-sm">{submitError}</p>
                 )}

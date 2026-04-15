@@ -3,7 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { submitUserStory } from '@/app/actions/stories';
-import { StoryEditor } from '@/components/stories/story-editor';
+import { createContribution } from '@/app/actions/contributions';
+import {
+  StoryEditor,
+  type StorySubmitOptions,
+} from '@/components/stories/story-editor';
 import type { Story } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -17,7 +21,8 @@ export default function CreateStoryPage(): JSX.Element {
   const { user, loading } = useAuth();
 
   const handleSubmit = async (
-    storyData: Omit<Story, 'id' | 'status' | 'publishedAt' | 'viewCount'>
+    storyData: Omit<Story, 'id' | 'status' | 'publishedAt' | 'viewCount'>,
+    options?: StorySubmitOptions
   ): Promise<void> => {
     if (!user) {
       throw new Error('You must be signed in to submit a story.');
@@ -30,6 +35,30 @@ export default function CreateStoryPage(): JSX.Element {
 
     if (!result.success) {
       throw new Error(result.error || 'Failed to submit story.');
+    }
+
+    // Optional community share
+    if (options?.communityId) {
+      try {
+        const shareResult = await createContribution({
+          communityId: options.communityId,
+          type: 'story',
+          contributorId: user.uid,
+          contributorName: user.displayName || 'A member',
+          title: storyData.title,
+          summary: storyData.description,
+          sourceCollection: 'stories',
+          sourceId: result.data,
+        });
+        if (!shareResult.success) {
+          console.error(
+            '[create-story] share failed:',
+            shareResult.error
+          );
+        }
+      } catch (err) {
+        console.error('[create-story] share error:', err);
+      }
     }
   };
 
