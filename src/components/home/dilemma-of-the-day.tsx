@@ -17,17 +17,27 @@ export function DilemmaOfTheDay() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function load() {
-      const result = await getDilemmaOfTheDay();
-      if (result.success && result.data) {
-        setDilemma(result.data);
-      } else {
-        // Fallback to mock
-        setDilemma(mockDilemmaOfTheDay);
+      try {
+        const result = await getDilemmaOfTheDay();
+        if (cancelled) return;
+        if (result.success && result.data) {
+          setDilemma(result.data);
+        } else {
+          setDilemma(mockDilemmaOfTheDay);
+        }
+      } catch (err) {
+        console.error('[DilemmaOfTheDay] Failed to fetch, falling back to mock:', err);
+        if (!cancelled) setDilemma(mockDilemmaOfTheDay);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
     }
+
     load();
+    return () => { cancelled = true; };
   }, []);
 
   if (loading) {
