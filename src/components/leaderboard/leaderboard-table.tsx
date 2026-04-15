@@ -2,6 +2,7 @@
 
 import type { LeaderboardEntry } from '@/app/actions/badges';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -10,16 +11,55 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Trophy, Medal, Award } from 'lucide-react';
+import { Trophy, Medal, Award, UserCircle, EyeOff } from 'lucide-react';
 
 interface LeaderboardTableProps {
   entries: LeaderboardEntry[];
+  /** The current viewer's uid, if any. Used to apply the self-view exception. */
+  currentUserId?: string | null;
+}
+
+/**
+ * Applies the anonymity rules for a single leaderboard entry.
+ *
+ * Returns the name and avatar that should actually be rendered, given the
+ * viewer's identity.
+ *
+ * Rules:
+ *  - A user who has opted into anonymity is rendered as "Anonymous Explorer #XXXX"
+ *    with a generic sci-fi avatar to everyone EXCEPT themselves.
+ *  - The current viewer always sees their own real name, with a "Private" badge
+ *    so they know their public appearance is anonymized.
+ */
+function resolveDisplay(
+  entry: LeaderboardEntry,
+  currentUserId?: string | null
+): { name: string; avatarUrl?: string; isAnonymous: boolean; isSelf: boolean } {
+  const isSelf = !!currentUserId && currentUserId === entry.userId;
+  const wantsAnonymous = entry.anonymousOnLeaderboard === true;
+
+  if (wantsAnonymous && !isSelf) {
+    const shortHash = entry.userId.slice(-4).toUpperCase() || 'XXXX';
+    return {
+      name: `Anonymous Explorer #${shortHash}`,
+      avatarUrl: undefined,
+      isAnonymous: true,
+      isSelf: false,
+    };
+  }
+
+  return {
+    name: entry.displayName,
+    avatarUrl: entry.avatarUrl,
+    isAnonymous: wantsAnonymous,
+    isSelf,
+  };
 }
 
 /**
  * Displays a ranked leaderboard table with avatar, name, score, and badge count.
  */
-export function LeaderboardTable({ entries }: LeaderboardTableProps) {
+export function LeaderboardTable({ entries, currentUserId }: LeaderboardTableProps) {
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
@@ -53,42 +93,69 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {entries.map((entry) => (
-          <TableRow key={entry.userId} className="hover:bg-muted/50">
-            <TableCell className="text-center">
-              <div className="flex items-center justify-center">
-                {getRankIcon(entry.rank)}
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-3">
-                <Avatar className="h-8 w-8">
-                  {entry.avatarUrl && (
-                    <AvatarImage src={entry.avatarUrl} alt={entry.displayName} />
+        {entries.map((entry) => {
+          const { name, avatarUrl, isAnonymous, isSelf } = resolveDisplay(
+            entry,
+            currentUserId
+          );
+          const rowHighlight = isSelf ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/50';
+          return (
+            <TableRow key={entry.userId} className={rowHighlight}>
+              <TableCell className="text-center">
+                <div className="flex items-center justify-center">
+                  {getRankIcon(entry.rank)}
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  {isAnonymous && !isSelf ? (
+                    <div
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground"
+                      aria-label="Anonymous explorer"
+                    >
+                      <UserCircle className="h-5 w-5" />
+                    </div>
+                  ) : (
+                    <Avatar className="h-8 w-8">
+                      {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
+                      <AvatarFallback className="text-xs">
+                        {name
+                          .split(' ')
+                          .map((n) => n[0])
+                          .join('')
+                          .toUpperCase()
+                          .slice(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
                   )}
-                  <AvatarFallback className="text-xs">
-                    {entry.displayName
-                      .split(' ')
-                      .map((n) => n[0])
-                      .join('')
-                      .toUpperCase()
-                      .slice(0, 2)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="font-medium">{entry.displayName}</span>
-              </div>
-            </TableCell>
-            <TableCell className="text-right font-semibold text-primary">
-              {entry.score.toLocaleString()}
-            </TableCell>
-            <TableCell className="text-right">
-              <div className="flex items-center justify-end gap-1">
-                <Award className="h-4 w-4 text-accent" />
-                <span>{entry.badgeCount}</span>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{name}</span>
+                    {isSelf && (
+                      <Badge variant="outline" className="text-xs">
+                        You
+                      </Badge>
+                    )}
+                    {isSelf && isAnonymous && (
+                      <Badge variant="secondary" className="text-xs gap-1">
+                        <EyeOff className="h-3 w-3" />
+                        Private
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="text-right font-semibold text-primary">
+                {entry.score.toLocaleString()}
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex items-center justify-end gap-1">
+                  <Award className="h-4 w-4 text-accent" />
+                  <span>{entry.badgeCount}</span>
+                </div>
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );

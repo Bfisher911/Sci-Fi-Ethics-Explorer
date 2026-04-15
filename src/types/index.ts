@@ -25,6 +25,8 @@ export interface UserProfile {
   activeLicenseId?: string;
   onboardingComplete?: boolean;
   isAdmin?: boolean;
+  /** When true, user appears as "Anonymous Explorer" on public leaderboards. */
+  anonymousOnLeaderboard?: boolean;
   createdAt?: Date | any;
   lastUpdated?: Date | any;
 }
@@ -52,6 +54,9 @@ export interface StorySegment {
   poll?: PollData;
 }
 
+export type GlobalVisibility = 'private' | 'public';
+export type ModerationStatus = 'pending' | 'approved' | 'flagged' | 'restricted';
+
 export interface Story {
   id: string;
   title: string;
@@ -64,12 +69,20 @@ export interface Story {
   segments: StorySegment[];
   isInteractive: boolean;
   estimatedReadingTime: string;
-  // New fields for Firestore-backed stories
   authorId?: string;
+  /** Lifecycle status. Drafts are never visible publicly. */
   status?: 'draft' | 'published' | 'archived';
+  /** Whether a published item appears in public/global feeds. */
+  globalVisibility?: GlobalVisibility;
+  /** Admin-driven moderation state, independent of user visibility choice. */
+  moderationStatus?: ModerationStatus;
+  /** Pinned/featured by an admin. */
+  featured?: boolean;
   publishedAt?: Date | any;
   viewCount?: number;
   tags?: string[];
+  createdAt?: Date | any;
+  updatedAt?: Date | any;
 }
 
 // ─── Branching Narratives ───────────────────────────────────────────
@@ -116,13 +129,94 @@ export interface SubmittedDilemma {
   imageUrl?: string;
   imageHint?: string;
   submittedAt: Date | any;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'draft';
+  /** Whether the dilemma appears in the global Community Dilemmas feed. */
+  globalVisibility?: GlobalVisibility;
+  /** Admin moderation state, independent of user visibility choice. */
+  moderationStatus?: ModerationStatus;
+  featured?: boolean;
   communityId?: string;
   communityName?: string;
   rejectionReason?: string;
   reviewedBy?: string;
   reviewedByName?: string;
   reviewedAt?: Date | any;
+  updatedAt?: Date | any;
+}
+
+// ─── Saved Scenario Analyses ────────────────────────────────────────
+
+export interface SavedAnalysis {
+  id: string;
+  authorId: string;
+  authorName: string;
+  scenarioText: string;
+  ethicalDilemmas: string[];
+  potentialConsequences: string[];
+  applicableEthicalTheories: string[];
+  /** When true, appears in the public scenario archive. */
+  globalVisibility?: GlobalVisibility;
+  status?: 'draft' | 'published';
+  createdAt: Date | any;
+  updatedAt?: Date | any;
+}
+
+// ─── Saved Perspective Comparisons ──────────────────────────────────
+
+export interface SavedPerspective {
+  id: string;
+  authorId: string;
+  authorName: string;
+  scenario: string;
+  userChoice: string;
+  comparisons: { framework: string; analysis: string; verdict: string; strength: 'supports' | 'opposes' | 'neutral' }[];
+  synthesis: string;
+  globalVisibility?: GlobalVisibility;
+  status?: 'draft' | 'published';
+  createdAt: Date | any;
+  updatedAt?: Date | any;
+}
+
+// ─── Content Versions (snapshot for restore) ───────────────────────
+
+export type VersionedContentType = 'story' | 'dilemma' | 'analysis' | 'perspective';
+
+export interface ContentVersion {
+  id: string;
+  contentType: VersionedContentType;
+  contentId: string;
+  versionNumber: number;
+  authorId: string;
+  authorName?: string;
+  /** Full snapshot of the content at this version. */
+  snapshot: Record<string, any>;
+  createdAt: Date | any;
+  note?: string;
+}
+
+// ─── Audit Log (admin actions) ──────────────────────────────────────
+
+export type AuditAction =
+  | 'visibility_change'
+  | 'moderation_change'
+  | 'feature_toggle'
+  | 'tag_edit'
+  | 'delete'
+  | 'restore_version'
+  | 'admin_grant'
+  | 'admin_revoke';
+
+export interface AuditLogEntry {
+  id: string;
+  action: AuditAction;
+  actorId: string;
+  actorName?: string;
+  targetType: string;
+  targetId: string;
+  before?: Record<string, any>;
+  after?: Record<string, any>;
+  note?: string;
+  createdAt: Date | any;
 }
 
 // ─── Community Contributions (unified feed) ─────────────────────────

@@ -72,7 +72,7 @@ export default function LeaderboardPage() {
               ))}
             </div>
           ) : (
-            <LeaderboardTable entries={entries} />
+            <LeaderboardTable entries={entries} currentUserId={user?.uid} />
           )}
         </CardContent>
       </Card>

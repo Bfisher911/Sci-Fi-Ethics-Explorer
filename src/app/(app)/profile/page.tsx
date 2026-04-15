@@ -1,4 +1,5 @@
 import { UserProfileCard } from '@/components/profile/user-profile-card';
+import { PrivacySettingsCard } from '@/components/profile/privacy-settings-card';
 import { ProgressDashboard } from '@/components/profile/progress-dashboard';
 import { Card, CardContent } from '@/components/ui/card';
 import { auth } from '@/lib/firebase/config';
@@ -29,6 +30,7 @@ export default async function ProfilePage() {
         </CardContent>
       </Card>
       <UserProfileCard />
+      <PrivacySettingsCard />
       <div className="mt-8">
         <ProgressDashboard />
       </div>

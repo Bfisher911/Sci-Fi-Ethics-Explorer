@@ -18,9 +18,25 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { BookOpen, Inbox, AlertCircle, Archive, Globe } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import {
+  BookOpen,
+  Inbox,
+  AlertCircle,
+  Archive,
+  Globe,
+  History,
+} from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
+import { StoryVersionHistory } from '@/components/stories/story-version-history';
 
 /**
  * Returns the appropriate badge variant and label for a story status.
@@ -155,23 +171,49 @@ export default function AdminStoriesPage() {
                     {story.theme}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => toggleStatus(story)}
-                    >
-                      {story.status === 'archived' ? (
-                        <>
-                          <Globe className="h-4 w-4 mr-1" />
-                          Publish
-                        </>
-                      ) : (
-                        <>
-                          <Archive className="h-4 w-4 mr-1" />
-                          Archive
-                        </>
+                    <div className="flex justify-end gap-2">
+                      {user && (
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <Button size="sm" variant="ghost">
+                              <History className="h-4 w-4 mr-1" />
+                              View History
+                            </Button>
+                          </SheetTrigger>
+                          <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+                            <SheetHeader className="mb-4">
+                              <SheetTitle>Version History</SheetTitle>
+                              <SheetDescription>
+                                Read-only view of snapshots for &ldquo;
+                                {story.title}&rdquo;.
+                              </SheetDescription>
+                            </SheetHeader>
+                            <StoryVersionHistory
+                              storyId={story.id}
+                              userId={user.uid}
+                              canRestore={false}
+                            />
+                          </SheetContent>
+                        </Sheet>
                       )}
-                    </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => toggleStatus(story)}
+                      >
+                        {story.status === 'archived' ? (
+                          <>
+                            <Globe className="h-4 w-4 mr-1" />
+                            Publish
+                          </>
+                        ) : (
+                          <>
+                            <Archive className="h-4 w-4 mr-1" />
+                            Archive
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

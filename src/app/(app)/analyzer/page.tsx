@@ -5,9 +5,23 @@ import { ScenarioAnalyzerForm } from '@/components/analyzer/scenario-analyzer-fo
 import { analyzeScenario, type AnalyzeScenarioOutput } from '@/ai/flows/analyze-scenario';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, AlertCircle, Lightbulb, ListChecks, ShieldAlert } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import {
+  Loader2,
+  AlertCircle,
+  Lightbulb,
+  ListChecks,
+  ShieldAlert,
+  Globe,
+  Save,
+  Check,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 import { recordAnalysis } from '@/app/actions/progress';
+import { createAnalysis } from '@/app/actions/analyses';
 import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
 
 export default function AnalyzerPage() {
@@ -15,13 +29,18 @@ export default function AnalyzerPage() {
   const [scenarioText, setScenarioText] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [makePublic, setMakePublic] = useState<boolean>(false);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const handleAnalyze = async (scenarioText: string) => {
     setScenarioText(scenarioText);
     setIsLoading(true);
     setError(null);
     setAnalysisResult(null);
+    setSavedId(null);
     try {
       const result = await analyzeScenario({ scenarioText });
       setAnalysisResult(result);
@@ -39,6 +58,40 @@ export default function AnalyzerPage() {
       setError(err.message || "Failed to analyze scenario. Please try again.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user?.uid || !analysisResult) return;
+    setSaving(true);
+    try {
+      const res = await createAnalysis({
+        authorId: user.uid,
+        authorName: user.displayName || 'Anonymous',
+        scenarioText,
+        ethicalDilemmas: analysisResult.ethicalDilemmas,
+        potentialConsequences: analysisResult.potentialConsequences,
+        applicableEthicalTheories: analysisResult.applicableEthicalTheories,
+        globalVisibility: makePublic ? 'public' : 'private',
+        status: 'published',
+      });
+      if (res.success) {
+        setSavedId(res.data);
+        toast({
+          title: 'Analysis saved',
+          description: makePublic
+            ? 'Saved and made publicly visible.'
+            : 'Saved privately to My Submissions.',
+        });
+      } else {
+        toast({
+          title: 'Could not save',
+          description: res.error || 'Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -121,6 +174,54 @@ export default function AnalyzerPage() {
                 <AlertTitle>Quota Information</AlertTitle>
                 <AlertDescription>{analysisResult.quotaInformation}</AlertDescription>
               </Alert>
+            )}
+
+            {user && (
+              <div className="rounded-lg border border-input bg-background/50 p-4 space-y-3">
+                <div className="flex items-center justify-between gap-4">
+                  <Label
+                    htmlFor="analysis-public"
+                    className="flex items-center text-base"
+                  >
+                    <Globe className="mr-2 h-4 w-4 text-muted-foreground" />
+                    Make Publicly Visible
+                  </Label>
+                  <Switch
+                    id="analysis-public"
+                    checked={makePublic}
+                    onCheckedChange={setMakePublic}
+                    disabled={saving || !!savedId}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  When on, this analysis appears in the public scenario archive.
+                  When off, only you can see it from My Submissions. You can
+                  still share to a community below without making it public.
+                </p>
+                <Button
+                  onClick={handleSave}
+                  disabled={saving || !!savedId}
+                  className="w-full md:w-auto"
+                  variant={makePublic ? 'default' : 'secondary'}
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : savedId ? (
+                    <>
+                      <Check className="mr-2 h-4 w-4" />
+                      Saved
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      {makePublic ? 'Save & Make Public' : 'Save Privately'}
+                    </>
+                  )}
+                </Button>
+              </div>
             )}
           </CardContent>
           {user && (

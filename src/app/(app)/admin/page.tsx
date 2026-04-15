@@ -4,37 +4,72 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getPendingDilemmas, getAllUsers, getAllStories } from '@/app/actions/admin';
-import { FileText, Users, BookOpen, ShieldCheck } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import {
+  getPendingDilemmas,
+  getAllUsers,
+  getAllStories,
+  getModerationQueue,
+} from '@/app/actions/admin';
+import {
+  FileText,
+  Users,
+  BookOpen,
+  ShieldCheck,
+  Shield,
+  History,
+} from 'lucide-react';
 
 /**
  * Admin Dashboard landing page showing summary cards and quick links.
  */
 export default function AdminDashboardPage() {
+  const { user } = useAuth();
   const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [usersCount, setUsersCount] = useState<number | null>(null);
   const [storiesCount, setStoriesCount] = useState<number | null>(null);
+  const [moderationCount, setModerationCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchCounts() {
-      const [dilemmasResult, usersResult, storiesResult] = await Promise.all([
-        getPendingDilemmas(),
-        getAllUsers(),
-        getAllStories(),
-      ]);
+      const [dilemmasResult, usersResult, storiesResult, moderationResult] =
+        await Promise.all([
+          getPendingDilemmas(),
+          getAllUsers(),
+          getAllStories(),
+          user ? getModerationQueue(user.uid) : Promise.resolve(null),
+        ]);
 
       if (dilemmasResult.success) setPendingCount(dilemmasResult.data.length);
       if (usersResult.success) setUsersCount(usersResult.data.length);
       if (storiesResult.success) setStoriesCount(storiesResult.data.length);
+      if (moderationResult && moderationResult.success) {
+        const { stories, dilemmas, analyses, perspectives } = moderationResult.data;
+        setModerationCount(
+          stories.length +
+            dilemmas.length +
+            analyses.length +
+            perspectives.length
+        );
+      } else {
+        setModerationCount(0);
+      }
 
       setLoading(false);
     }
 
-    fetchCounts();
-  }, []);
+    if (user) fetchCounts();
+  }, [user]);
 
   const cards = [
+    {
+      title: 'Moderation Queue',
+      count: moderationCount,
+      icon: Shield,
+      href: '/admin/moderation',
+      description: 'Items pending or flagged across all content types',
+    },
     {
       title: 'Pending Dilemmas',
       count: pendingCount,
@@ -56,6 +91,13 @@ export default function AdminDashboardPage() {
       href: '/admin/stories',
       description: 'All stories in the system',
     },
+    {
+      title: 'Audit Log',
+      count: null,
+      icon: History,
+      href: '/admin/audit-log',
+      description: 'Review every admin action',
+    },
   ];
 
   return (
@@ -74,7 +116,7 @@ export default function AdminDashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {cards.map((card) => (
           <Link key={card.title} href={card.href}>
             <Card className="bg-card/80 backdrop-blur-sm hover:bg-card/90 transition-colors cursor-pointer">
@@ -85,10 +127,12 @@ export default function AdminDashboardPage() {
                 <card.icon className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                {loading ? (
+                {loading && card.count !== null ? (
                   <Skeleton className="h-8 w-16" />
+                ) : card.count === null ? (
+                  <div className="text-lg font-semibold text-primary">View →</div>
                 ) : (
-                  <div className="text-3xl font-bold">{card.count ?? 0}</div>
+                  <div className="text-3xl font-bold">{card.count}</div>
                 )}
                 <p className="text-xs text-muted-foreground mt-1">
                   {card.description}

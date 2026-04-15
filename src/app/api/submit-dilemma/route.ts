@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
       imageUrl,
       imageHint,
       communityId,
+      globalVisibility,
     } = body;
 
     if (!title || !description || !theme) {
@@ -37,12 +38,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Default to 'public' for backward compatibility (implicit behavior)
+    const visibility: 'public' | 'private' =
+      globalVisibility === 'private' ? 'private' : 'public';
+
     const newDilemma: Record<string, any> = {
       title,
       description,
       theme,
       authorName: authorName || 'Anonymous',
       status: 'pending',
+      globalVisibility: visibility,
       submittedAt: serverTimestamp(),
     };
 

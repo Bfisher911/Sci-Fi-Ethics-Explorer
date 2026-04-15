@@ -111,6 +111,8 @@ export interface LeaderboardEntry {
   score: number;
   badgeCount: number;
   rank: number;
+  /** When true, this user has opted out of public leaderboard visibility. */
+  anonymousOnLeaderboard?: boolean;
 }
 
 /**
@@ -149,10 +151,14 @@ export async function getLeaderboard(
       entries.push({
         userId: progress.userId,
         displayName:
-          profileData?.displayName ?? profileData?.email ?? 'Anonymous',
+          profileData?.name ??
+          profileData?.displayName ??
+          profileData?.email ??
+          'Anonymous',
         avatarUrl: profileData?.avatarUrl,
         score,
         badgeCount,
+        anonymousOnLeaderboard: profileData?.anonymousOnLeaderboard === true,
       });
     }
 

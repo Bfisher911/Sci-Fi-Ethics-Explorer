@@ -1,10 +1,18 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import type { SubmittedDilemma } from '@/types';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { User, Calendar, ThumbsUp } from 'lucide-react'; // Example icons
+import { User, Calendar, ArrowRight } from 'lucide-react';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 
 interface CommunityDilemmaCardProps {
@@ -12,72 +20,83 @@ interface CommunityDilemmaCardProps {
 }
 
 export function CommunityDilemmaCard({ dilemma }: CommunityDilemmaCardProps) {
-  const formattedDate = dilemma.submittedAt instanceof Date 
+  const formattedDate = dilemma.submittedAt instanceof Date
     ? dilemma.submittedAt.toLocaleDateString()
     // @ts-ignore
     : (dilemma.submittedAt?.seconds ? new Date(dilemma.submittedAt.seconds * 1000).toLocaleDateString() : 'N/A');
 
-
   return (
-    <Card className="relative flex flex-col h-full overflow-hidden shadow-lg hover:shadow-primary/30 transition-shadow duration-300 bg-card/80 backdrop-blur-sm">
-      {dilemma.id && (
-        <div
-          className="absolute top-2 right-2 z-10"
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-          }}
-        >
-          <div className="rounded-full bg-background/70 backdrop-blur-sm">
-            <BookmarkButton
-              itemId={dilemma.id}
-              itemType="dilemma"
-              title={dilemma.title}
+    <Link
+      href={`/community-dilemmas/${dilemma.id}`}
+      aria-label={`Read dilemma: ${dilemma.title}`}
+      className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg transform transition-all duration-300 hover:-translate-y-1 h-full"
+    >
+      <Card className="relative flex flex-col h-full overflow-hidden shadow-lg border-border group-hover:border-primary/40 group-hover:shadow-primary/30 transition-all duration-300 bg-card/80 backdrop-blur-sm">
+        {dilemma.id && (
+          <div
+            className="absolute top-2 right-2 z-10"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+          >
+            <div className="rounded-full bg-background/70 backdrop-blur-sm">
+              <BookmarkButton
+                itemId={dilemma.id}
+                itemType="dilemma"
+                title={dilemma.title}
+              />
+            </div>
+          </div>
+        )}
+        {dilemma.imageUrl && (
+          <div className="relative w-full h-48">
+            <Image
+              src={dilemma.imageUrl}
+              alt={dilemma.title}
+              layout="fill"
+              objectFit="cover"
+              data-ai-hint={dilemma.imageHint || 'community sci-fi concept'}
             />
           </div>
-        </div>
-      )}
-      {dilemma.imageUrl && (
-        <div className="relative w-full h-48">
-          <Image
-            src={dilemma.imageUrl}
-            alt={dilemma.title}
-            layout="fill"
-            objectFit="cover"
-            data-ai-hint={dilemma.imageHint || 'community sci-fi concept'}
-          />
-        </div>
-      )}
-      {!dilemma.imageUrl && (
-         <div className="relative w-full h-48 bg-muted flex items-center justify-center">
-           <Image 
-            src={`https://placehold.co/600x400.png?text=${encodeURIComponent(dilemma.title.substring(0,20))}`} 
-            alt={dilemma.title} 
-            layout="fill"
-            objectFit="cover"
-            data-ai-hint={dilemma.imageHint || dilemma.theme.toLowerCase() || "abstract concept"}
+        )}
+        {!dilemma.imageUrl && (
+          <div className="relative w-full h-48 bg-muted flex items-center justify-center">
+            <Image
+              src={`https://placehold.co/600x400.png?text=${encodeURIComponent(dilemma.title.substring(0, 20))}`}
+              alt={dilemma.title}
+              layout="fill"
+              objectFit="cover"
+              data-ai-hint={dilemma.imageHint || dilemma.theme.toLowerCase() || 'abstract concept'}
             />
-         </div>
-      )}
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold text-primary">{dilemma.title}</CardTitle>
-        <Badge variant="secondary" className="w-fit mt-1">{dilemma.theme}</Badge>
-      </CardHeader>
-      <CardContent className="flex-grow">
-        <CardDescription className="text-sm text-foreground/80 line-clamp-4">{dilemma.description}</CardDescription>
-      </CardContent>
-      <CardFooter className="border-t pt-4 text-xs text-muted-foreground space-y-1 md:space-y-0 md:flex md:justify-between md:items-center">
-        <div className="flex items-center">
-          <User className="h-3.5 w-3.5 mr-1.5" /> Submitted by: {dilemma.authorName}
-        </div>
-        <div className="flex items-center">
-          <Calendar className="h-3.5 w-3.5 mr-1.5" /> {formattedDate}
-        </div>
-        {/* Placeholder for upvotes/engagement */}
-        {/* <div className="flex items-center">
-          <ThumbsUp className="h-3.5 w-3.5 mr-1.5 text-green-400" /> {Math.floor(Math.random() * 100)}
-        </div> */}
-      </CardFooter>
-    </Card>
+          </div>
+        )}
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold text-primary transition-colors duration-300 group-hover:text-accent">
+            {dilemma.title}
+          </CardTitle>
+          <Badge variant="secondary" className="w-fit mt-1">{dilemma.theme}</Badge>
+        </CardHeader>
+        <CardContent className="flex-grow">
+          <CardDescription className="text-sm text-foreground/80 line-clamp-4">
+            {dilemma.description}
+          </CardDescription>
+        </CardContent>
+        <CardFooter className="border-t pt-4 text-xs text-muted-foreground flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="flex items-center">
+              <User className="h-3.5 w-3.5 mr-1.5" /> {dilemma.authorName}
+            </span>
+            <span className="flex items-center">
+              <Calendar className="h-3.5 w-3.5 mr-1.5" /> {formattedDate}
+            </span>
+          </div>
+          <span className="inline-flex items-center text-accent font-medium transition-transform duration-300 group-hover:translate-x-1">
+            Explore Scenario
+            <ArrowRight className="h-3.5 w-3.5 ml-1" />
+          </span>
+        </CardFooter>
+      </Card>
+    </Link>
   );
 }

@@ -11,12 +11,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Scale } from 'lucide-react';
+import { Loader2, Scale, Globe, Save, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
+import { createPerspective } from '@/app/actions/perspectives';
 
 const FRAMEWORKS = [
   'Utilitarianism',
@@ -47,6 +49,9 @@ export function PerspectiveComparison({
   ]);
   const [result, setResult] = useState<ComparePerspectivesOutput | null>(null);
   const [loading, setLoading] = useState(false);
+  const [makePublic, setMakePublic] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   const toggleFramework = (framework: string) => {
     setSelectedFrameworks((prev) =>
@@ -77,6 +82,7 @@ export function PerspectiveComparison({
 
     setLoading(true);
     setResult(null);
+    setSavedId(null);
     try {
       const output = await comparePerspectives({
         scenario: scenario.trim(),
@@ -93,6 +99,45 @@ export function PerspectiveComparison({
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user?.uid || !result) return;
+    setSaving(true);
+    try {
+      const res = await createPerspective({
+        authorId: user.uid,
+        authorName: user.displayName || 'Anonymous',
+        scenario: scenario.trim(),
+        userChoice: userChoice.trim(),
+        comparisons: result.comparisons.map((c) => ({
+          framework: c.framework,
+          analysis: c.analysis,
+          verdict: c.verdict,
+          strength: c.strength,
+        })),
+        synthesis: result.synthesis || '',
+        globalVisibility: makePublic ? 'public' : 'private',
+        status: 'published',
+      });
+      if (res.success) {
+        setSavedId(res.data);
+        toast({
+          title: 'Comparison saved',
+          description: makePublic
+            ? 'Saved and made publicly visible.'
+            : 'Saved privately to My Submissions.',
+        });
+      } else {
+        toast({
+          title: 'Could not save',
+          description: res.error || 'Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -192,6 +237,52 @@ export function PerspectiveComparison({
                 <p className="text-sm leading-relaxed">{result.synthesis}</p>
               </CardContent>
             </Card>
+          )}
+
+          {user && (
+            <div className="rounded-lg border border-input bg-background/50 p-4 space-y-3">
+              <div className="flex items-center justify-between gap-4">
+                <Label
+                  htmlFor="perspective-public"
+                  className="flex items-center text-base"
+                >
+                  <Globe className="mr-2 h-4 w-4 text-muted-foreground" />
+                  Make Publicly Visible
+                </Label>
+                <Switch
+                  id="perspective-public"
+                  checked={makePublic}
+                  onCheckedChange={setMakePublic}
+                  disabled={saving || !!savedId}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                When on, this comparison appears in the public perspective
+                archive. When off, only you can see it from My Submissions.
+              </p>
+              <Button
+                onClick={handleSave}
+                disabled={saving || !!savedId}
+                variant={makePublic ? 'default' : 'secondary'}
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : savedId ? (
+                  <>
+                    <Check className="mr-2 h-4 w-4" />
+                    Saved
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    {makePublic ? 'Save & Make Public' : 'Save Privately'}
+                  </>
+                )}
+              </Button>
+            </div>
           )}
 
           {user && (

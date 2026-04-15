@@ -23,8 +23,10 @@ import {
   Users,
   Image as ImageIcon,
   Building,
+  Globe,
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
 import { getUserCommunities } from '@/app/actions/communities';
 import type { Community } from '@/types';
 
@@ -56,6 +58,7 @@ export function SubmitDilemmaForm() {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [communityId, setCommunityId] = useState<string>(NONE_COMMUNITY_VALUE);
   const [loadingCommunities, setLoadingCommunities] = useState(false);
+  const [publiclyVisible, setPubliclyVisible] = useState(true);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +111,7 @@ export function SubmitDilemmaForm() {
       imageUrl,
       imageHint,
       communityId: selectedCommunityId,
+      globalVisibility: publiclyVisible ? 'public' : 'private',
       submittedAt: new Date().toISOString(), // Firestore will convert to Timestamp
       status: 'pending',
     };
@@ -242,6 +246,31 @@ export function SubmitDilemmaForm() {
             <p className="text-xs text-muted-foreground">
               Community-scoped dilemmas are reviewed by that community's
               instructors. Platform-wide dilemmas are reviewed by site admins.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-input bg-background/50 p-4 space-y-2">
+            <div className="flex items-center justify-between gap-4">
+              <div className="space-y-0.5">
+                <Label
+                  htmlFor="publiclyVisible"
+                  className="flex items-center text-base"
+                >
+                  <Globe className="mr-2 h-4 w-4 text-muted-foreground" />
+                  Make Publicly Visible
+                </Label>
+              </div>
+              <Switch
+                id="publiclyVisible"
+                checked={publiclyVisible}
+                onCheckedChange={setPubliclyVisible}
+                disabled={isLoading}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              When on, this dilemma appears in the public Community Dilemmas
+              feed. When off, only you and instructors of any community you
+              submitted to can see it.
             </p>
           </div>
 

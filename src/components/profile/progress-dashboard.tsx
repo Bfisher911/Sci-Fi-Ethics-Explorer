@@ -13,11 +13,10 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  Tooltip,
 } from 'recharts';
 import {
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
 } from '@/components/ui/chart';
 import {
   BookOpen,
@@ -80,11 +79,24 @@ export function ProgressDashboard() {
     ? progress.quizResults[progress.quizResults.length - 1]
     : null;
 
+  // Shorten long names for the chart axis; keep full name for tooltip
+  const shortenName = (fullName: string): string => {
+    if (fullName.length <= 22) return fullName;
+    const firstWord = fullName.split(' ')[0];
+    return `${firstWord}...`;
+  };
+
   const quizChartData = latestQuiz
-    ? Object.entries(latestQuiz.scores).map(([framework, score]) => ({
-        name: framework.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-        score,
-      })).sort((a, b) => b.score - a.score)
+    ? Object.entries(latestQuiz.scores).map(([framework, score]) => {
+        const fullName = framework
+          .replace(/-/g, ' ')
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+        return {
+          name: shortenName(fullName),
+          fullName,
+          score,
+        };
+      }).sort((a, b) => b.score - a.score)
     : [];
 
   const chartConfig = quizChartData.reduce((acc, item, index) => {
@@ -156,29 +168,62 @@ export function ProgressDashboard() {
                 ? latestQuiz.completedAt.toLocaleDateString()
                 : new Date(latestQuiz.completedAt).toLocaleDateString()}
             </p>
-            <div className="h-[250px] w-full">
-              <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-                <BarChart
-                  accessibilityLayer
-                  data={quizChartData}
-                  layout="vertical"
-                  margin={{ left: 20, right: 20 }}
-                >
-                  <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-                  <XAxis type="number" hide />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    tickLine={false}
-                    axisLine={false}
-                    stroke="hsl(var(--foreground))"
-                    tickFormatter={(value: string) =>
-                      value.length > 18 ? value.substring(0, 18) + '...' : value
-                    }
-                  />
-                  <ChartTooltip content={<ChartTooltipContent hideLabel />} cursor={false} />
-                  <Bar dataKey="score" radius={5} fill="hsl(var(--chart-1))" />
-                </BarChart>
+            <div className="w-full">
+              <ChartContainer config={chartConfig} className="h-[280px] w-full">
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart
+                    accessibilityLayer
+                    data={quizChartData}
+                    layout="vertical"
+                    barSize={24}
+                    barCategoryGap={8}
+                    margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                  >
+                    <CartesianGrid
+                      horizontal={false}
+                      strokeDasharray="3 3"
+                      stroke="hsl(var(--border))"
+                    />
+                    <XAxis
+                      type="number"
+                      domain={[0, 'dataMax']}
+                      tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                      stroke="hsl(var(--border))"
+                    />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      width={140}
+                      interval={0}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
+                      stroke="hsl(var(--foreground))"
+                    />
+                    <Tooltip
+                      cursor={{ fill: 'hsl(var(--muted) / 0.3)' }}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '0.5rem',
+                        color: 'hsl(var(--popover-foreground))',
+                      }}
+                      labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
+                      formatter={(value: number, _name, props: any) => [
+                        value,
+                        props?.payload?.fullName ?? props?.payload?.name ?? 'Score',
+                      ]}
+                      labelFormatter={(_label, payload) =>
+                        payload && payload[0] ? payload[0].payload.fullName : ''
+                      }
+                    />
+                    <Bar
+                      dataKey="score"
+                      radius={[0, 4, 4, 0]}
+                      fill="hsl(var(--primary))"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
               </ChartContainer>
             </div>
           </div>

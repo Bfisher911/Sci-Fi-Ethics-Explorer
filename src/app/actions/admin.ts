@@ -7,15 +7,20 @@ import {
   getDoc,
   getDocs,
   updateDoc,
+  deleteDoc,
   query,
   where,
   orderBy,
   limit,
   serverTimestamp,
+  writeBatch,
 } from 'firebase/firestore';
 import { requireAdmin } from '@/lib/admin';
 import { notifyOnDilemmaReviewed } from '@/lib/notifications-dispatch';
-import type { SubmittedDilemma, Story, UserProfile } from '@/types';
+import { logAdminAction } from '@/lib/audit-log';
+import type {
+  SubmittedDilemma, Story, UserProfile, GlobalVisibility, ModerationStatus,
+} from '@/types';
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -350,5 +355,286 @@ export async function getAllStories(): Promise<ActionResult<Story[]>> {
   } catch (error: any) {
     console.error('[admin] Error fetching stories:', error);
     return { success: false, error: error.message || 'Failed to fetch stories' };
+  }
+}
+
+// ─── Moderation Queue ─────────────────────────────────────────────
+
+/**
+ * Returns all globally-visible content across content types that is
+ * still pending or flagged. Admin-only.
+ */
+export async function getModerationQueue(adminUid: string): Promise<ActionResult<{
+  stories: Story[];
+  dilemmas: SubmittedDilemma[];
+  analyses: any[];
+  perspectives: any[];
+}>> {
+  try {
+    await requireAdmin(adminUid);
+
+    async function fetchQueue(coll: string): Promise<any[]> {
+      try {
+        // Fetch globally-visible items (pending or flagged moderation status)
+        const snap = await getDocs(
+          query(
+            collection(db, coll),
+            where('globalVisibility', '==', 'public'),
+            orderBy('createdAt', 'desc'),
+            limit(200)
+          )
+        );
+        return snap.docs
+          .map((d) => {
+            const data = d.data();
+            return { id: d.id, ...data };
+          })
+          .filter((item: any) => {
+            const status = item.moderationStatus || 'pending';
+            return status === 'pending' || status === 'flagged';
+          });
+      } catch {
+        return [];
+      }
+    }
+
+    const [storiesRaw, dilemmasRaw, analysesRaw, perspectivesRaw] = await Promise.all([
+      fetchQueue('stories'),
+      fetchQueue('submittedDilemmas'),
+      fetchQueue('analyses'),
+      fetchQueue('perspectives'),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        stories: storiesRaw as Story[],
+        dilemmas: dilemmasRaw as SubmittedDilemma[],
+        analyses: analysesRaw,
+        perspectives: perspectivesRaw,
+      },
+    };
+  } catch (error: any) {
+    console.error('[admin] getModerationQueue error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Set moderation status for any content type. Admin-only. Audit-logged.
+ */
+export async function setModerationStatus(
+  contentType: 'story' | 'dilemma' | 'analysis' | 'perspective',
+  contentId: string,
+  newStatus: ModerationStatus,
+  adminUid: string,
+  note?: string
+): Promise<ActionResult<void>> {
+  try {
+    await requireAdmin(adminUid);
+    const coll =
+      contentType === 'story' ? 'stories' :
+      contentType === 'dilemma' ? 'submittedDilemmas' :
+      contentType === 'analysis' ? 'analyses' :
+      'perspectives';
+
+    const ref = doc(db, coll, contentId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return { success: false, error: 'Item not found.' };
+    const before = snap.data();
+
+    await updateDoc(ref, {
+      moderationStatus: newStatus,
+      updatedAt: serverTimestamp(),
+    });
+
+    await logAdminAction({
+      action: 'moderation_change',
+      actorId: adminUid,
+      targetType: contentType,
+      targetId: contentId,
+      before: { moderationStatus: before.moderationStatus || 'pending' },
+      after: { moderationStatus: newStatus },
+      note,
+    });
+
+    return { success: true, data: undefined };
+  } catch (error: any) {
+    console.error('[admin] setModerationStatus error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Force-set visibility on any content. Admin-only. Audit-logged.
+ */
+export async function forceSetVisibility(
+  contentType: 'story' | 'dilemma' | 'analysis' | 'perspective',
+  contentId: string,
+  visibility: GlobalVisibility,
+  adminUid: string,
+  note?: string
+): Promise<ActionResult<void>> {
+  try {
+    await requireAdmin(adminUid);
+    const coll =
+      contentType === 'story' ? 'stories' :
+      contentType === 'dilemma' ? 'submittedDilemmas' :
+      contentType === 'analysis' ? 'analyses' :
+      'perspectives';
+
+    const ref = doc(db, coll, contentId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return { success: false, error: 'Item not found.' };
+    const before = snap.data();
+
+    await updateDoc(ref, {
+      globalVisibility: visibility,
+      updatedAt: serverTimestamp(),
+    });
+
+    await logAdminAction({
+      action: 'visibility_change',
+      actorId: adminUid,
+      targetType: contentType,
+      targetId: contentId,
+      before: { globalVisibility: before.globalVisibility || 'public' },
+      after: { globalVisibility: visibility },
+      note,
+    });
+
+    return { success: true, data: undefined };
+  } catch (error: any) {
+    console.error('[admin] forceSetVisibility error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Pin or unpin content as featured. Admin-only.
+ */
+export async function setFeatured(
+  contentType: 'story' | 'dilemma',
+  contentId: string,
+  featured: boolean,
+  adminUid: string
+): Promise<ActionResult<void>> {
+  try {
+    await requireAdmin(adminUid);
+    const coll = contentType === 'story' ? 'stories' : 'submittedDilemmas';
+    const ref = doc(db, coll, contentId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return { success: false, error: 'Item not found.' };
+    const before = snap.data();
+
+    await updateDoc(ref, { featured, updatedAt: serverTimestamp() });
+
+    await logAdminAction({
+      action: 'feature_toggle',
+      actorId: adminUid,
+      targetType: contentType,
+      targetId: contentId,
+      before: { featured: before.featured ?? false },
+      after: { featured },
+    });
+
+    return { success: true, data: undefined };
+  } catch (error: any) {
+    console.error('[admin] setFeatured error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Edit category/tag fields on submitted content. Admin-only.
+ */
+export async function editContentTags(
+  contentType: 'story' | 'dilemma',
+  contentId: string,
+  updates: { genre?: string; theme?: string; tags?: string[] },
+  adminUid: string
+): Promise<ActionResult<void>> {
+  try {
+    await requireAdmin(adminUid);
+    const coll = contentType === 'story' ? 'stories' : 'submittedDilemmas';
+    const ref = doc(db, coll, contentId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return { success: false, error: 'Item not found.' };
+    const before = snap.data();
+
+    await updateDoc(ref, { ...updates, updatedAt: serverTimestamp() });
+
+    await logAdminAction({
+      action: 'tag_edit',
+      actorId: adminUid,
+      targetType: contentType,
+      targetId: contentId,
+      before: { genre: before.genre, theme: before.theme, tags: before.tags },
+      after: updates,
+    });
+
+    return { success: true, data: undefined };
+  } catch (error: any) {
+    console.error('[admin] editContentTags error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Bulk moderation actions on multiple items.
+ */
+export async function bulkModerate(
+  items: { contentType: 'story' | 'dilemma' | 'analysis' | 'perspective'; contentId: string }[],
+  action: 'approve' | 'flag' | 'restrict' | 'delete' | 'make_public' | 'make_private',
+  adminUid: string
+): Promise<ActionResult<{ succeeded: number; failed: number }>> {
+  try {
+    await requireAdmin(adminUid);
+    let succeeded = 0;
+    let failed = 0;
+
+    for (const item of items) {
+      const coll =
+        item.contentType === 'story' ? 'stories' :
+        item.contentType === 'dilemma' ? 'submittedDilemmas' :
+        item.contentType === 'analysis' ? 'analyses' :
+        'perspectives';
+      const ref = doc(db, coll, item.contentId);
+      try {
+        if (action === 'delete') {
+          await deleteDoc(ref);
+          await logAdminAction({
+            action: 'delete',
+            actorId: adminUid,
+            targetType: item.contentType,
+            targetId: item.contentId,
+          });
+        } else {
+          let updates: any = { updatedAt: serverTimestamp() };
+          if (action === 'approve') updates.moderationStatus = 'approved';
+          if (action === 'flag') updates.moderationStatus = 'flagged';
+          if (action === 'restrict') updates.moderationStatus = 'restricted';
+          if (action === 'make_public') updates.globalVisibility = 'public';
+          if (action === 'make_private') updates.globalVisibility = 'private';
+          await updateDoc(ref, updates);
+          await logAdminAction({
+            action: action.includes('public') || action.includes('private') ? 'visibility_change' : 'moderation_change',
+            actorId: adminUid,
+            targetType: item.contentType,
+            targetId: item.contentId,
+            after: updates,
+          });
+        }
+        succeeded++;
+      } catch (err) {
+        console.error(`[admin] bulkModerate item failed: ${item.contentType}/${item.contentId}`, err);
+        failed++;
+      }
+    }
+
+    return { success: true, data: { succeeded, failed } };
+  } catch (error: any) {
+    console.error('[admin] bulkModerate error:', error);
+    return { success: false, error: error.message };
   }
 }
