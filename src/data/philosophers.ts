@@ -3,6 +3,7 @@ import type { Philosopher } from '@/types';
 export const philosopherData: Philosopher[] = [
   {
     id: 'aristotle',
+    imageUrl: '/images/philosophers/aristotle.png',
     name: 'Aristotle',
     era: '384-322 BCE',
     bio: `The son of Nicomachus, physician to the Macedonian court, grew up in a household where the practical study of living bodies was ordinary work. That detail matters. For the rest of his life, Aristotle approached the most abstract questions of philosophy with the instincts of someone who had watched his father diagnose illness by observing symptoms and comparing cases. Knowledge, for him, would always begin with the careful gathering of particulars before any flight into generality. At seventeen he traveled to Athens and joined the Academy of Plato, where he remained for twenty years. The relationship between the two thinkers was intimate and combative. Plato called him "the mind of the school," yet their disagreements became the founding quarrel of Western philosophy. Where Plato looked upward to eternal Forms of which the visible world was only a shadow, Aristotle kept returning his gaze to the things of this earth, convinced that reality was not elsewhere but here, immanent in the creatures and substances we can touch.
@@ -42,6 +43,7 @@ A modern reader picks up the Nicomachean Ethics and meets a voice that does not 
   },
   {
     id: 'confucius',
+    imageUrl: '/images/philosophers/confucius.png',
     name: 'Confucius',
     era: '551-479 BCE',
     bio: `The man we call Confucius was known in his own time as Kong Qiu, and later, more formally, as Kongzi or Master Kong. The Latinized name by which Europe came to know him was invented by sixteenth-century Jesuit missionaries who recognized, correctly, that they were dealing with a figure of comparable stature to any ancient sage they had studied. He lived in a world coming apart. The Zhou dynasty, which had once governed a vast territory through a ritualized order of feudal obligations, had weakened almost to the point of collapse. Local lords fought for advantage, treachery and usurpation were common, and the old ceremonies that had bound society together were performed without conviction or ignored altogether. Confucius came of age in the small state of Lu, on the edge of the Shandong peninsula, and his lifelong question was how to restore coherence and humaneness to a civilization that had forgotten how to be civilized.
@@ -81,6 +83,7 @@ A modern reader approaches the Analects and meets a voice both intimate and stra
   },
   {
     id: 'beauvoir',
+    imageUrl: '/images/philosophers/beauvoir.png',
     name: 'Simone de Beauvoir',
     era: '1908-1986',
     bio: `She grew up in a Paris apartment that her family's declining fortunes made feel smaller each year, the eldest daughter of a lawyer who had expected wealth and a mother whose Catholicism demanded the consolation of daughterly devotion. Her childhood is one of the best documented of any philosopher, because she wrote about it for the rest of her life: the long summer visits to her grandfather's estate at Meyrignac, the charismatic schoolfriend Zaza whose mysterious death at twenty-one she never stopped trying to understand, the early realization that she was cleverer than almost everyone around her and that this cleverness was a problem her culture did not know how to welcome. She read voraciously. She stopped believing in God at fourteen with the calm finality of someone closing a door. She decided, around the same time, that she would be a writer and that she would never marry. Remarkably, she did both.
@@ -122,6 +125,7 @@ A modern reader picks up The Ethics of Ambiguity and meets a philosopher who ref
   },
   {
     id: 'hobbes',
+    imageUrl: '/images/philosophers/hobbes.png',
     name: 'Thomas Hobbes',
     era: '1588-1679',
     bio: `He was born prematurely in the spring of 1588, as the Spanish Armada sailed toward England, and he liked to say that his mother had given birth to twins: himself and fear. The joke contained a whole philosophy in compressed form. For Hobbes, fear was the great educator of the species, the passion through which creatures at the mercy of one another first learned to calculate, to reason, and finally to construct the political order that alone could keep them from tearing each other apart. He lived ninety-one years, an extraordinary span for his century, and saw the English Civil War, the execution of a king, the collapse of Parliament, the Protectorate, the Restoration, and the Plague. The disorder he theorized was not abstract. He had watched it.
@@ -161,6 +165,7 @@ And yet he endures, because the question he answered is the question any politic
   },
   {
     id: 'hume',
+    imageUrl: '/images/philosophers/hume.png',
     name: 'David Hume',
     era: '1711-1776',
     bio: `By his own cheerful admission, he was a fat, good-natured Scot who loved a supper party and wanted, above almost everything else, to be read. The self-portrait is accurate but incomplete. Beneath the convivial exterior, Hume conducted one of the most radical dismantlings of philosophical orthodoxy in the Western tradition, and he did it with a lightness of touch that sometimes concealed, even from professional philosophers, quite how thorough the demolition was. He was born in Edinburgh to a minor Scottish gentry family, educated at the University of Edinburgh from the age of eleven or twelve, and retreated at nineteen to La Flèche in France, where he worked in monastic seclusion on the book that would consume him. He returned to Britain with the manuscript of A Treatise of Human Nature and saw it fall, as he later said, "dead-born from the press." He was twenty-eight. Most thinkers would have spent the rest of their lives defending the great youthful system. Hume, characteristically, decided that the failure of the Treatise was largely a failure of presentation, rewrote its ideas in more accessible form, and went on to reshape the intellectual life of his century through a second career as historian and essayist.
@@ -202,6 +207,7 @@ Why do we still read him? Because he asked, with unsentimental clarity, what can
   },
   {
     id: 'kant',
+    imageUrl: '/images/philosophers/kant.png',
     name: 'Immanuel Kant',
     era: '1724-1804',
     bio: `For the whole of his eighty years he lived in Königsberg, a Baltic port city that was then the easternmost outpost of Prussia and is now the Russian exclave of Kaliningrad. He almost never left it. The neighbors famously set their watches by his afternoon walks, a small daily ritual he interrupted only twice in his adult life, once to read Rousseau's Emile, which so gripped him he could not stop, and once when news of the French Revolution arrived and disturbed his ordinary rhythm. The monotony of his biography is a useful antidote to the extravagance of his thought, which traveled farther in the landscape of ideas than any philosopher of his century.
@@ -243,6 +249,7 @@ A modern reader approaches the Groundwork and encounters prose whose difficulty 
   },
   {
     id: 'mill',
+    imageUrl: '/images/philosophers/mill.png',
     name: 'John Stuart Mill',
     era: '1806-1873',
     bio: `His education was an experiment, and he was the subject. James Mill, disciple of Jeremy Bentham and a formidable intellect in his own right, decided that his eldest son would receive the most rigorous education ever attempted on a single child. Greek was begun at three. Latin at eight. By twelve the boy had read most of Plato in the original, a large share of Herodotus and Xenophon, and had worked his way through history, logic, political economy, and mathematics at a level that would have embarrassed most university graduates. He was not sent to school. He had no friends his own age. Afternoons were spent walking with his father, who quizzed him on the morning's reading. Younger siblings became his students, and James Mill instructed him to teach them as a way of consolidating his own learning. The whole regime was designed to produce a rational being free of superstition and sentimentality who would carry forward the utilitarian reform of British society.
@@ -280,6 +287,7 @@ A modern reader picks up On Liberty and meets a voice both impassioned and caref
   },
   {
     id: 'nietzsche',
+    imageUrl: '/images/philosophers/nietzsche.png',
     name: 'Friedrich Nietzsche',
     era: '1844-1900',
     bio: `He was the son and grandson of Lutheran pastors in a small Saxon village, and for the first five years of his life his father's affection was the warm center of his world. When the pastor died of a softening of the brain, young Friedrich was left to the care of a household of pious women, his mother, two aunts, a grandmother, and a younger sister, whose fussing devotion he learned to resent and rely on in roughly equal measure. Out of that hothouse emerged a boy so precociously serious that schoolmates called him the little pastor. He sang hymns in a clear voice, composed music, read the Bible with terrifying attentiveness, and seemed destined to follow his father into the pulpit. What happened instead is one of the strangest intellectual trajectories in European history.
@@ -323,6 +331,7 @@ A modern reader opens Beyond Good and Evil and meets a voice unlike any other in
   },
   {
     id: 'noddings',
+    imageUrl: '/images/philosophers/noddings.png',
     name: 'Nel Noddings',
     era: '1929-2022',
     bio: `She came to philosophy late and by a path that most of her contemporaries in the field had not traveled. For two decades she taught mathematics in New Jersey public schools, raised ten children, and observed, from inside the actual classrooms and actual kitchens of American life, the kind of moral work that academic ethics tended to render invisible. When she eventually completed her doctorate at Stanford in the early 1970s and joined its education faculty, she brought with her a resource few of her colleagues possessed: a precise, experiential knowledge of what it is to care for another human being day after day, of what caring requires, of how it can fail, and of how the moral theories she had read in graduate school almost entirely failed to describe it. Out of that knowledge came a body of work that reshaped moral philosophy and educational theory both.
@@ -364,6 +373,7 @@ A modern reader picks up Caring and meets a voice of quiet authority, speaking f
   },
   {
     id: 'nussbaum',
+    imageUrl: '/images/philosophers/nussbaum.png',
     name: 'Martha Nussbaum',
     era: '1947-present',
     bio: `She grew up in a wealthy Main Line Philadelphia family she would later describe as emotionally stiff, socially snobbish, and intellectually underwhelmed by the daughter who turned out to be the family's strongest mind. She rebelled early. She studied theater at New York University, converted to Reform Judaism in her twenties against her Episcopalian father's bewildered disappointment, and found her way to classical philology by way of a passion for Greek tragedy that never left her. She completed her doctorate at Harvard in 1975 under the direction of G. E. L. Owen, became one of the first women to hold a fellowship at Harvard's Society of Fellows, and was denied tenure at Harvard under circumstances that sparked a public dispute and sent her, eventually, to Brown and then to the University of Chicago, where she has taught for more than three decades with a cross-appointment that spans the law school, the philosophy department, and the divinity school. Few living philosophers occupy a wider intellectual territory.
@@ -403,6 +413,7 @@ A modern reader picks up Fragility of Goodness or Creating Capabilities and meet
   },
   {
     id: 'rawls',
+    imageUrl: '/images/philosophers/rawls.png',
     name: 'John Rawls',
     era: '1921-2002',
     bio: `He was shaped by deaths he could not have prevented. Two of his younger brothers died in childhood, one from a diphtheria he contracted from Jack, the other from a pneumonia contracted in similar circumstances. Rawls carried a lifelong stammer that appeared after the second death and a quiet guilt that some biographers have linked to the moral seriousness of his later philosophy. He grew up in Baltimore in a prosperous household, served as an infantryman in the Pacific during the Second World War, saw combat in New Guinea and the Philippines, walked through Hiroshima after the bomb, and returned home with a settled conviction that the inherited justifications for the moral order he had grown up in would not bear the weight they were being asked to bear. He had been raised with a kind of genteel Episcopalian Christianity. By the end of the war he no longer believed in it, though he refused for the rest of his life to make a show of his unbelief. The loss left a demand. If there were no divine guarantees of moral order, what would be required to construct an order whose justification could answer the skeptic?
@@ -444,6 +455,7 @@ A modern reader picks up A Theory of Justice and meets a prose of unshowy rigor,
   },
   {
     id: 'singer',
+    imageUrl: '/images/philosophers/singer.png',
     name: 'Peter Singer',
     era: '1946-present',
     bio: `His grandparents died in the camps. Three of his four grandparents were murdered by the Nazis; his parents escaped Vienna in 1938, settled in Melbourne, and raised him in a comfortable, secular Jewish household in a new country. The fact shaped everything. He grew up understanding that apparently ordinary societies could, given certain premises about who counted morally, produce catastrophic evil, and that the question of who counted, of which beings had moral status and on what grounds, was not abstract. He studied at the University of Melbourne and then at Oxford, completing a doctoral thesis on civil disobedience under R. M. Hare, one of the leading British utilitarians of the postwar period. He returned to Australia, held posts at Monash and elsewhere, and in 1999 accepted a chair at Princeton where he has taught since. Along the way he became, by a considerable margin, the most widely read living philosopher in the English-speaking world, and one of its most controversial.

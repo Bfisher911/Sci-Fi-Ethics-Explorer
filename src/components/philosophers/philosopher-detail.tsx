@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { BookOpen, Brain, Lightbulb, Link as LinkIcon } from 'lucide-react';
 import type { Philosopher } from '@/types';
+import Image from 'next/image';
 import Link from 'next/link';
 
 interface PhilosopherDetailProps {
@@ -19,21 +20,52 @@ export function PhilosopherDetail({ philosopher }: PhilosopherDetailProps) {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-card/80 backdrop-blur-sm">
-        <CardContent className="p-6 space-y-4">
-          <div>
-            <h1 className="text-3xl font-bold text-primary font-headline">
-              {philosopher.name}
-            </h1>
-            <p className="text-lg text-muted-foreground">{philosopher.era}</p>
+      <Card className="bg-card/80 backdrop-blur-sm overflow-hidden">
+        {philosopher.imageUrl && (
+          <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-0">
+            <div className="relative w-full aspect-[4/5] md:h-full md:aspect-auto">
+              <Image
+                src={philosopher.imageUrl}
+                alt={`Portrait of ${philosopher.name}`}
+                fill
+                sizes="(max-width: 768px) 100vw, 280px"
+                className="object-cover"
+                data-ai-hint={philosopher.imageHint || 'philosopher portrait'}
+                priority
+              />
+            </div>
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <h1 className="text-3xl font-bold text-primary font-headline">
+                  {philosopher.name}
+                </h1>
+                <p className="text-lg text-muted-foreground">{philosopher.era}</p>
+              </div>
+              <Separator />
+              <div className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-relaxed">
+                {bioParagraphs.map((p, i) => (
+                  <p key={i} className="mb-4">{p}</p>
+                ))}
+              </div>
+            </CardContent>
           </div>
-          <Separator />
-          <div className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-relaxed">
-            {bioParagraphs.map((p, i) => (
-              <p key={i} className="mb-4">{p}</p>
-            ))}
-          </div>
-        </CardContent>
+        )}
+        {!philosopher.imageUrl && (
+          <CardContent className="p-6 space-y-4">
+            <div>
+              <h1 className="text-3xl font-bold text-primary font-headline">
+                {philosopher.name}
+              </h1>
+              <p className="text-lg text-muted-foreground">{philosopher.era}</p>
+            </div>
+            <Separator />
+            <div className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-relaxed">
+              {bioParagraphs.map((p, i) => (
+                <p key={i} className="mb-4">{p}</p>
+              ))}
+            </div>
+          </CardContent>
+        )}
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

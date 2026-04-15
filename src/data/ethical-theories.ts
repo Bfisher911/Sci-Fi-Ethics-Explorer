@@ -8,7 +8,7 @@ export const ethicalTheories: EthicalTheory[] = [
     proponents: ['Jeremy Bentham', 'John Stuart Mill', 'Henry Sidgwick', 'R. M. Hare', 'Peter Singer', 'Derek Parfit'],
     keyConcepts: ['Consequentialism', 'Greatest Happiness Principle', 'Hedonic Calculus', 'Act vs Rule Utilitarianism', 'Impartiality', 'Aggregation'],
     exampleScenario: 'Faced with the runaway trolley, the utilitarian pulls the lever: one death is a smaller harm than five, so the numbers decide. In a starship triage, they choose which cryopods to keep alive by estimating expected welfare, not by lottery or seniority.',
-    imageUrl: 'https://placehold.co/400x300.png',
+    imageUrl: '/images/theories/utilitarianism.png',
     imageHint: 'scales balance',
   },
   {
@@ -18,7 +18,7 @@ export const ethicalTheories: EthicalTheory[] = [
     proponents: ['Immanuel Kant', 'W. D. Ross', 'Frances Kamm', 'Christine Korsgaard', 'Onora O\'Neill', 'Barbara Herman'],
     keyConcepts: ['Categorical Imperative', 'Duty', 'Moral Law', 'Good Will', 'Treating Persons as Ends', 'Universalizability', 'Prima Facie Duties'],
     exampleScenario: 'A Kantian researcher refuses to experiment on a sentient AI without its consent, even if the experiment would yield life-saving knowledge, because using a rational being as a mere means violates its dignity.',
-    imageUrl: 'https://placehold.co/400x300.png',
+    imageUrl: '/images/theories/deontology.png',
     imageHint: 'duty rules',
   },
   {
@@ -28,7 +28,7 @@ export const ethicalTheories: EthicalTheory[] = [
     proponents: ['Aristotle', 'Plato', 'Thomas Aquinas', 'Alasdair MacIntyre', 'Philippa Foot', 'Rosalind Hursthouse', 'Martha Nussbaum', 'Elizabeth Anscombe'],
     keyConcepts: ['Eudaimonia (Flourishing)', 'Arete (Virtue)', 'Phronesis (Practical Wisdom)', 'The Golden Mean', 'Habituation', 'Character', 'Moral Exemplars'],
     exampleScenario: 'Rather than asking whether to deactivate a sentient AI by rule or by calculation, the virtue ethicist asks what a person of practical wisdom, courage, and justice would do, someone whose character has been formed to perceive what the situation actually requires.',
-    imageUrl: 'https://placehold.co/400x300.png',
+    imageUrl: '/images/theories/virtue-ethics.png',
     imageHint: 'character wisdom',
   },
   {
@@ -38,7 +38,7 @@ export const ethicalTheories: EthicalTheory[] = [
     proponents: ['Thomas Hobbes', 'John Locke', 'Jean-Jacques Rousseau', 'Immanuel Kant', 'John Rawls', 'David Gauthier', 'Carole Pateman', 'Charles Mills'],
     keyConcepts: ['State of Nature', 'Natural Rights', 'Consent of the Governed', 'General Will', 'Original Position', 'Veil of Ignorance', 'Justice as Fairness'],
     exampleScenario: 'Before founding a Mars colony, settlers meet behind a veil of ignorance, not knowing whether they will be the first or the last born, the most skilled or the least. They choose principles of justice that any of them could live with regardless of their eventual position.',
-    imageUrl: 'https://placehold.co/400x300.png',
+    imageUrl: '/images/theories/social-contract-theory.png',
     imageHint: 'agreement society',
   },
   {
@@ -48,7 +48,7 @@ export const ethicalTheories: EthicalTheory[] = [
     proponents: ['Carol Gilligan', 'Nel Noddings', 'Virginia Held', 'Joan Tronto', 'Sara Ruddick', 'Eva Kittay', 'Annette Baier'],
     keyConcepts: ['Caring Relation', 'Attentiveness', 'Responsiveness', 'Dependency', 'Vulnerability', 'Relational Autonomy', 'Engrossment'],
     exampleScenario: 'A medical AI refuses to reduce a terminal patient\'s treatment plan to a cost-benefit analysis. Instead it asks who is at the bedside, who is being listened to, and what response the specific relationship between this patient and her family actually calls for.',
-    imageUrl: 'https://placehold.co/400x300.png',
+    imageUrl: '/images/theories/ethics-of-care.png',
     imageHint: 'hands connection',
   },
   {
@@ -58,7 +58,7 @@ export const ethicalTheories: EthicalTheory[] = [
     proponents: ['T. M. Scanlon', 'Derek Parfit', 'Rahul Kumar', 'Thomas Nagel', 'Nicholas Southwood', 'Pamela Hieronymi'],
     keyConcepts: ['Reasonable Rejection', 'What We Owe to Each Other', 'Justifiability', 'The Individualist Restriction', 'Interpersonal Justification', 'Principles for General Regulation'],
     exampleScenario: 'Designers of an AI triage system do not merely optimize lives saved. They articulate the triage principle and test it against each possible patient\'s complaint, accepting only principles that could be defended to every person whose life they touch.',
-    imageUrl: 'https://placehold.co/400x300.png',
+    imageUrl: '/images/theories/contractualism.png',
     imageHint: 'dialogue reasons',
   },
   {
@@ -68,7 +68,7 @@ export const ethicalTheories: EthicalTheory[] = [
     proponents: ['Amartya Sen', 'Martha Nussbaum', 'Ingrid Robeyns', 'Sabina Alkire', 'Jonathan Wolff', 'Avner de-Shalit'],
     keyConcepts: ['Capabilities vs Functionings', 'Central Human Capabilities', 'Conversion Factors', 'Adaptive Preferences', 'Substantive Freedom', 'Human Development'],
     exampleScenario: 'When evaluating a Mars colony\'s life-support policy, the capabilities theorist does not only ask whether residents survive. She asks whether each colonist can live in health, use her senses and reason, affiliate freely, and participate politically, and whether the policy expands or restricts these real freedoms.',
-    imageUrl: 'https://placehold.co/400x300.png',
+    imageUrl: '/images/theories/capabilities-approach.png',
     imageHint: 'growth freedom',
   },
   {
@@ -78,7 +78,7 @@ export const ethicalTheories: EthicalTheory[] = [
     proponents: ['Desmond Tutu', 'Nelson Mandela', 'Mogobe Ramose', 'Thaddeus Metz', 'Kwame Gyekye', 'Augustine Shutte', 'Drucilla Cornell'],
     keyConcepts: ['Umuntu ngumuntu ngabantu', 'Relational Personhood', 'Communalism', 'Harmony', 'Restorative Justice', 'Solidarity', 'Hospitality'],
     exampleScenario: 'After a corporate AI causes widespread harm, an Ubuntu-informed tribunal does not only punish the responsible engineers. It convenes those harmed, those who built the system, and the wider community, asking how the torn relationships can be restored and how the community can become one that would not build such a system again.',
-    imageUrl: 'https://placehold.co/400x300.png',
+    imageUrl: '/images/theories/ubuntu-ethics.png',
     imageHint: 'community circle',
   },
 ];
