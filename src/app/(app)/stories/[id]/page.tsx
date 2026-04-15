@@ -1,10 +1,9 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { getStoryById } from '@/app/actions/stories';
 import { mockStories } from '@/data/mock-data';
 import type { Story, StorySegment, StoryChoice } from '@/types';
@@ -12,16 +11,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { PollComponent } from '@/components/stories/poll-component';
 import { BranchingNavigator } from '@/components/stories/branching-navigator';
-import { BranchVisualization } from '@/components/stories/branch-visualization';
+import { StoryHeader } from '@/components/stories/story-header';
+import { StoryMapOverlay } from '@/components/stories/story-map-overlay';
+import { ChoiceImpactIndicator } from '@/components/stories/choice-impact-indicator';
 import { EpilogueViewer } from '@/components/stories/epilogue-viewer';
 import { generateEndingReflection } from '@/ai/flows/generate-ending-reflection';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowLeft, CheckSquare, Loader2, MessageSquare, Map, Clock, Sparkles, X } from 'lucide-react';
+import { ArrowLeft, CheckSquare, Loader2, MessageSquare, Map, Clock, Sparkles } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
 import { recordStoryCompletion, recordStoryChoice } from '@/app/actions/progress';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
+import { classifyChoice, FRAMEWORK_INFO } from '@/lib/choice-frameworks';
+import { cn } from '@/lib/utils';
 
 export default function StoryDetailPage() {
   const params = useParams();
@@ -31,12 +34,16 @@ export default function StoryDetailPage() {
   const [story, setStory] = useState<Story | null>(null);
   const [currentSegment, setCurrentSegment] = useState<StorySegment | null>(null);
   const [userChoices, setUserChoices] = useState<string[]>([]);
+  const [pickedChoiceTexts, setPickedChoiceTexts] = useState<string[]>([]);
   const [visitedSegments, setVisitedSegments] = useState<string[]>([]);
   const [reflection, setReflection] = useState<string | null>(null);
   const [isLoadingReflection, setIsLoadingReflection] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showStoryMap, setShowStoryMap] = useState(false);
   const [showEpilogue, setShowEpilogue] = useState(false);
+  const [lastAlignedFramework, setLastAlignedFramework] = useState<string | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const segmentRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -78,8 +85,15 @@ export default function StoryDetailPage() {
   const handleChoice = async (choice: StoryChoice, segmentText: string) => {
     const newChoices = [...userChoices, `${segmentText.substring(0, 50)}... -> Choice: ${choice.text}`];
     setUserChoices(newChoices);
+    setPickedChoiceTexts((prev) => [...prev, choice.text]);
 
-    // Track choice in user progress
+    const frameworkId = classifyChoice(choice.text);
+    if (frameworkId !== 'unaligned') {
+      const label = FRAMEWORK_INFO[frameworkId].label;
+      setLastAlignedFramework(label);
+      setTimeout(() => setLastAlignedFramework(null), 2400);
+    }
+
     if (user?.uid && storyId) {
       try {
         await recordStoryChoice(user.uid, storyId, choice.text);
@@ -88,20 +102,27 @@ export default function StoryDetailPage() {
       }
     }
 
+    setIsTransitioning(true);
+    await new Promise((r) => setTimeout(r, 180));
+
     if (choice.nextSegmentId) {
       const nextSegment = story?.segments.find((s) => s.id === choice.nextSegmentId);
       if (nextSegment) {
         setCurrentSegment(nextSegment);
         setVisitedSegments((prev) => [...prev, nextSegment.id]);
+        segmentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
         setCurrentSegment(null);
       }
+      setIsTransitioning(false);
       if (nextSegment?.reflectionTrigger || choice.reflectionTrigger) {
         await triggerReflection(story?.title, newChoices);
       }
     } else if (choice.reflectionTrigger) {
+      setIsTransitioning(false);
       await triggerReflection(story?.title, newChoices);
     } else {
+      setIsTransitioning(false);
       if (story?.isInteractive) {
         await triggerReflection(story?.title, newChoices);
       }
@@ -209,66 +230,102 @@ export default function StoryDetailPage() {
         />
       )}
 
-      {/* Story Map Overlay */}
+      {/* Story Map Overlay (modal with fog-of-war + fast-travel) */}
       {showStoryMap && (
-        <div className="mb-6 relative">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-2 z-10"
-            onClick={() => setShowStoryMap(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-          <BranchVisualization
-            story={story}
-            currentSegmentId={currentSegment.id}
-            visitedSegments={visitedSegments}
-          />
-        </div>
+        <StoryMapOverlay
+          story={story}
+          currentSegmentId={currentSegment.id}
+          visitedSegments={visitedSegments}
+          onFastTravel={(id) => {
+            navigateToSegment(id);
+            setShowStoryMap(false);
+          }}
+          onClose={() => setShowStoryMap(false)}
+        />
       )}
 
-      <Card className="shadow-xl bg-card/80 backdrop-blur-sm">
-        <CardHeader>
+      <Card className="shadow-xl bg-card/80 backdrop-blur-sm relative overflow-hidden">
+        {/* Backlit-terminal glow behind content */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-40"
+          style={{
+            background:
+              'radial-gradient(ellipse at 50% 0%, rgba(125,249,255,0.08), transparent 60%)',
+          }}
+        />
+
+        <CardHeader className="relative">
           <CardTitle className="text-3xl md:text-4xl font-bold text-primary font-headline">{story.title}</CardTitle>
           <CardDescription className="text-md text-muted-foreground">
             By {story.author} | Genre: {story.genre} | Theme: {story.theme}
           </CardDescription>
         </CardHeader>
 
-        {currentSegment.image && (
-          <div className="relative w-full h-64 md:h-96 my-6">
-            <Image
-              src={currentSegment.image}
-              alt={`Scene from ${story.title}`}
-              layout="fill"
-              objectFit="cover"
-              className="rounded-lg shadow-md"
-              data-ai-hint={currentSegment.imageHint || 'story scene'}
-            />
-          </div>
-        )}
+        <div className="px-6 pb-4 relative">
+          <StoryHeader
+            imageUrl={currentSegment.image || story.imageUrl}
+            imageHint={currentSegment.imageHint || story.imageHint}
+            title={story.title}
+            subtitle={`${story.genre} · ${story.theme}`}
+          />
+        </div>
 
-        <CardContent className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-relaxed">
-          <p>{currentSegment.text}</p>
-        </CardContent>
+        <div
+          ref={segmentRef}
+          key={currentSegment.id}
+          className={cn(
+            'transition-opacity duration-300 ease-out relative',
+            isTransitioning ? 'opacity-0' : 'animate-in fade-in opacity-100'
+          )}
+        >
+          <CardContent className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-relaxed">
+            <p className="whitespace-pre-wrap">{currentSegment.text}</p>
+          </CardContent>
 
-        {story.isInteractive && currentSegment.choices && currentSegment.choices.length > 0 && (
-          <CardFooter className="flex flex-col items-start gap-3 pt-6 border-t">
-            <h3 className="text-lg font-semibold text-accent">Your Decision:</h3>
-            {currentSegment.choices.map((choice, index) => (
-              <Button
-                key={index}
-                onClick={() => handleChoice(choice, currentSegment.text)}
-                variant="outline"
-                className="w-full justify-start text-left h-auto py-3 hover:bg-primary/10 hover:border-primary"
-              >
-                <CheckSquare className="mr-3 h-5 w-5 text-primary" />
-                {choice.text}
-              </Button>
-            ))}
-          </CardFooter>
-        )}
+          {story.isInteractive && currentSegment.choices && currentSegment.choices.length > 0 && (
+            <CardFooter className="flex flex-col items-start gap-3 pt-6 border-t">
+              <h3 className="text-lg font-semibold text-accent">Your Decision:</h3>
+              {currentSegment.choices.map((choice, index) => {
+                const frameworkId = classifyChoice(choice.text);
+                const info = FRAMEWORK_INFO[frameworkId];
+                const aligned = frameworkId !== 'unaligned';
+                return (
+                  <Button
+                    key={index}
+                    onClick={() => handleChoice(choice, currentSegment.text)}
+                    variant="outline"
+                    title={aligned ? `${info.label}: ${info.hint}` : undefined}
+                    className={cn(
+                      'group relative w-full justify-start text-left h-auto min-h-14 py-3 md:py-4 px-4 whitespace-normal',
+                      'transition-all duration-200 hover:bg-primary/10 hover:border-primary',
+                      'hover:shadow-[0_0_24px_-4px_hsl(var(--primary)/0.5)]',
+                      aligned && info.accent
+                    )}
+                  >
+                    <CheckSquare className="mr-3 h-5 w-5 text-primary shrink-0" />
+                    <span className="flex-1">{choice.text}</span>
+                    {aligned && (
+                      <span
+                        className={cn(
+                          'ml-3 hidden md:inline-block text-[10px] uppercase tracking-widest font-semibold opacity-0 group-hover:opacity-100 transition-opacity',
+                          info.color
+                        )}
+                      >
+                        {info.shortLabel}
+                      </span>
+                    )}
+                  </Button>
+                );
+              })}
+              {currentSegment.choices.some((c) => classifyChoice(c.text) !== 'unaligned') && (
+                <p className="text-[11px] text-muted-foreground/70 italic pt-1">
+                  Hover a choice to see its ethical leaning.
+                </p>
+              )}
+            </CardFooter>
+          )}
+        </div>
 
         {currentSegment.poll && (
           <div className="p-6 border-t">
@@ -325,6 +382,22 @@ export default function StoryDetailPage() {
               />
             </Card>
           )}
+        </div>
+      )}
+
+      {/* Floating framework counts */}
+      <ChoiceImpactIndicator pickedChoiceTexts={pickedChoiceTexts} />
+
+      {/* Ephemeral alignment pulse after each choice */}
+      {lastAlignedFramework && (
+        <div
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-40 pointer-events-none"
+          aria-live="polite"
+        >
+          <div className="px-4 py-2 rounded-full bg-card/90 backdrop-blur-md border border-primary/40 shadow-lg shadow-primary/20 text-sm animate-in fade-in slide-in-from-top-2 duration-300">
+            <span className="text-primary font-semibold">{lastAlignedFramework}</span>
+            <span className="text-muted-foreground"> +1</span>
+          </div>
         </div>
       )}
     </div>

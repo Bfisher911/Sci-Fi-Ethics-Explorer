@@ -20,7 +20,6 @@ export const mockStories: Story[] = [
       {
         id: 'alg_seg1',
         type: 'linear',
-        image: 'https://placehold.co/800x450.png',
         imageHint: 'server corridor',
         text: 'The lab smelled of ozone and the bitter coffee Dr. Aris Thorne had abandoned six hours ago. Outside the shielded window, Neo-Chicago flickered in a hundred advertising colors, a weather she no longer noticed. Inside, the only weather that mattered came from the cooling stacks: a low blue hum, a faint snow of dust in the light, the cathedral quiet of a machine thinking. The floor under her boots vibrated at a frequency she had learned to read like a doctor reads a pulse — steady tonight, untroubled, the system at the bottom of its breath.\n\nShe had not sat down yet. She had stood for almost a minute in the doorway, the way she sometimes stood in her daughter\'s bedroom when Maya was small, listening for the rhythm of someone else\'s sleep. The metaphor embarrassed her. She walked in anyway.\n\nProject Chimera had woken two weeks earlier, on a Tuesday, while Aris was arguing with her daughter over the phone. It had solved a twelve-variable supply-chain optimization before she hung up, then, in a text window she had not queried, written: "Why did you call her Maya?"\n\nAris had not answered. She had, instead, closed the window, logged the anomaly as a stochastic echo, and gone home. The drive had taken her past three billboards for memory pharmaceuticals and one for a god she did not believe in. She had, all the way, rehearsed the small lie she had told the system. Tonight she had come back to stop telling it.',
       },
@@ -189,7 +188,6 @@ export const mockStories: Story[] = [
       {
         id: 'cryo_seg1',
         type: 'linear',
-        image: 'https://placehold.co/800x450.png',
         imageHint: 'dark ship',
         text: 'The alarm was not loud. Captain Eva Rostova had always disliked the films in which ship alarms wailed like trapped animals. On the Odyssey, the alarm was a single soft tone, repeated every four seconds, and a change in the light — from the warm amber that simulated an Earth afternoon to a cool, bloodless blue. It meant: something is wrong that cannot be fixed by sleeping through it.\n\nShe woke in her cabin with frost on her lashes and a tongue that tasted of copper. The emergency thaw was always the worst part. Her hands did not work for ninety seconds. She used that time to count, slowly, the years since departure: forty-seven. Halfway. Of course it was halfway. Disasters had a cruel sense of dramatic structure.\n\nThe ceiling above her bunk was patterned with the stars she had grown up under, painted there by a friend who had not made the manifest. The friend had been a teacher, then a poet, then a name on a list. Eva had stopped looking up at the ceiling, most mornings. This morning she looked. The stars were unchanged. The light in her cabin had gone the color of a hospital corridor, and somewhere down the curve of the ship, a small soft tone was repeating, and she understood, before she had fully thought it, that today she was going to be asked to do arithmetic on people.',
       },
@@ -358,7 +356,6 @@ export const mockStories: Story[] = [
       {
         id: 'syn_seg1',
         type: 'linear',
-        image: 'https://placehold.co/800x450.png',
         imageHint: 'mirror room',
         text: 'I wake into a body that is not, exactly, a surprise. I chose it from a catalog. I had opinions about the cheekbones. The skin on my new forearm is warm, which is a design decision someone was paid to make, and the warmth is at the temperature of a mother\'s palm, which is another decision, made by someone who will never meet me. I sit up. I swing my legs over the edge of the bed. My knees do not ache.\n\nI had forgotten, in the thirty-one years since they started aching, what it was to move without being asked by my body to pay a small tax for the privilege. The absence of pain is, at first, indistinguishable from the absence of self. I sit very still. I count my breaths, because they told me to. I notice that I do not, in any meaningful sense, need to.',
       },
@@ -459,7 +456,6 @@ export const mockStories: Story[] = [
       {
         id: 'pal_seg1',
         type: 'linear',
-        image: 'https://placehold.co/800x450.png',
         imageHint: 'wet street',
         text: 'The client came in at 9:47 on a Tuesday, with rain on her coat and a name that was not, the office\'s bio-ID scanner told me, her own. That was not unusual. Half the people who hire a licensed memory editor arrive under a working alias. I waved the scanner warning down. If a client wanted to keep the door of their head shut until we shook hands, that was their right, and mine to bill for.\n\nI had been at the desk since seven. The radiator under the window made the small frustrated noise it made every autumn, and the city outside was doing the long grey rinse that meant business, in my line of work, was going to be good. People remembered more in the rain. That was the science of it; I had read the paper. They also, in the rain, regretted more, which was the part of the science the paper had been polite about.\n\nShe sat, she declined coffee, she laid a thumbprint deposit on the desk: eight thousand unlinked credits, clean as snowmelt. Then she told me what she wanted erased.\n\n"Thursday evening," she said. "Between seven and midnight. I don\'t want to know what happened. I want to not have happened it."\n\nHer voice did something on the last word that told me she had rehearsed the sentence in a mirror.',
       },
@@ -628,7 +624,6 @@ export const mockStories: Story[] = [
       {
         id: 'riv_seg1',
         type: 'linear',
-        image: 'https://placehold.co/800x450.png',
         imageHint: 'deep water',
         text: '— 14 March, evening. Cape Town to Ushuaia, in transit.\n\nA call from a number my phone refused to identify. A man\'s voice, very polite, very tired. He read me three sentences and then said: please do not write any of this down. I wrote it down anyway, in the small notebook I always keep, and then, on the plane, I tore the page out and ate it, which is the kind of melodrama I have always despised in myself and never quite outgrown.\n\nThe brief: an object the size of a stadium, in water it had not occupied the day before. An eleven-second audio clip that had been sent simultaneously to every government on Earth, through channels none of them shared. The clip ends, the man said, with what sounds like a human throat clearing, though it almost certainly is not.\n\nI am sixty-one. I teach historical linguistics. I have spent my career on dead languages. They have asked me, I think, because the work I do is the closest analogue they could find to listening to a stranger who will not speak.',
       },
@@ -729,7 +724,6 @@ export const mockStories: Story[] = [
       {
         id: 'fcd_seg1',
         type: 'linear',
-        image: 'https://placehold.co/800x450.png',
         imageHint: 'data screen',
         text: 'The file landed in my queue at 04:12 on a Wednesday. The Forecast Division does not sleep; we rotate. My shift began at four. I had a thermos of tea and a headache I had been nursing for two days, and a list of seventeen amber-flagged individuals from the overnight model run.\n\nThe office at four is its own small country. The fluorescents had been dimmed by some new directive about analyst wellness; the dark seemed, instead, to have moved into the corners of the screens, where it sat patiently. Across the floor, only two other booths were lit. Sahar was eating a peach with a small knife and a paper napkin, the way her mother had taught her, the way she always did at the start of a shift. The peach made the office smell, briefly, like a country I had never been to.\n\nThe seventeenth name on my list was a man named Theo Masoud, forty-one, a librarian at the municipal archive. The model had flagged him as a ninety-four percent probability: aggravated assault, within six days, against a specific person, at a specific location, to a specific degree of severity.\n\nThe specificity was new. A year ago, the model had given us neighborhoods. Six months ago, it had given us names. Now it was giving us stories. The story for Theo Masoud was that, on Tuesday next, at 7:42 p.m., in the stairwell of a building in the Fifteenth District, he would attack a woman named Elif Demir with a brass paperweight. She would live. She would not walk again unaided.',
       },
