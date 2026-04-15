@@ -220,12 +220,39 @@ export default function StoryDetailPage() {
     ? Math.round(((story.isInteractive ? visitedSegments.length : currentIndex + 1) / totalSegments) * 100)
     : 0;
 
-  const nextLinearSegment =
-    !story.isInteractive && currentIndex + 1 < totalSegments
-      ? story.segments[currentIndex + 1]
-      : null;
+  // A segment's "next" neighbor is the one immediately after it in the
+  // author's segment array — we auto-flow to it when the current segment
+  // has no choices of its own AND is not a branch landing reached via
+  // some earlier choice.nextSegmentId. This fixes the "stuck on the first
+  // paragraph" bug in interactive stories whose opening segments are
+  // pure narrative with no choices yet.
+  const choiceTargetIds = (() => {
+    const targets = new Set<string>();
+    for (const seg of story.segments) {
+      for (const c of seg.choices ?? []) {
+        if (c.nextSegmentId) targets.add(c.nextSegmentId);
+      }
+    }
+    return targets;
+  })();
+  const hasOwnChoices =
+    Array.isArray(currentSegment.choices) && currentSegment.choices.length > 0;
+  const isBranchLanding = choiceTargetIds.has(currentSegment.id);
+  const canFlowLinearly =
+    !hasOwnChoices &&
+    !isBranchLanding &&
+    currentIndex + 1 < totalSegments;
+  const nextLinearSegment = canFlowLinearly
+    ? story.segments[currentIndex + 1]
+    : null;
 
-  const isStoryEnd = !currentSegment.choices && !story.isInteractive && !nextLinearSegment || (story.isInteractive && !currentSegment.choices && !isLoadingReflection && reflection);
+  const isStoryEnd =
+    (!hasOwnChoices && !nextLinearSegment && !isLoadingReflection) ||
+    (story.isInteractive &&
+      !hasOwnChoices &&
+      !nextLinearSegment &&
+      !isLoadingReflection &&
+      Boolean(reflection));
 
   const storyEndingText = currentSegment.text.substring(0, 200);
 

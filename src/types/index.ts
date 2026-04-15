@@ -74,6 +74,8 @@ export interface StorySegment {
   text: string;
   choices?: StoryChoice[];
   poll?: PollData;
+  /** When true, reaching this segment triggers the ending reflection flow. */
+  reflectionTrigger?: boolean;
 }
 
 export type GlobalVisibility = 'private' | 'public';
