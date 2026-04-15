@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { doc, getDoc } from 'firebase/firestore';
+import { DilemmaImage } from '@/components/community-dilemmas/dilemma-image';
 import { format } from 'date-fns';
 
 import { db } from '@/lib/firebase/config';
@@ -167,27 +167,15 @@ export default function CommunityDilemmaDetailPage() {
           </div>
         )}
 
-        {dilemma.imageUrl ? (
-          <div className="relative w-full h-64 md:h-80">
-            <Image
-              src={dilemma.imageUrl}
-              alt={dilemma.title}
-              layout="fill"
-              objectFit="cover"
-              data-ai-hint={dilemma.imageHint || 'community sci-fi concept'}
-            />
-          </div>
-        ) : (
-          <div className="relative w-full h-64 md:h-80 bg-muted">
-            <Image
-              src={`https://placehold.co/1200x600.png?text=${encodeURIComponent(dilemma.title.substring(0, 30))}`}
-              alt={dilemma.title}
-              layout="fill"
-              objectFit="cover"
-              data-ai-hint={dilemma.imageHint || dilemma.theme?.toLowerCase() || 'abstract concept'}
-            />
-          </div>
-        )}
+        <div className="relative w-full h-64 md:h-80 bg-muted overflow-hidden">
+          <DilemmaImage
+            imageUrl={dilemma.imageUrl}
+            title={dilemma.title}
+            theme={dilemma.theme}
+            hint={dilemma.imageHint}
+            size="detail"
+          />
+        </div>
 
         <CardHeader className="space-y-3">
           <CardTitle className="text-3xl md:text-4xl font-bold text-primary font-headline">

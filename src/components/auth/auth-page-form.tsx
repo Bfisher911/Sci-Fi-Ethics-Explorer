@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -11,9 +11,12 @@ import {
   sendPasswordResetEmail,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  browserPopupRedirectResolver,
 } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase/config'; // db import might not be needed here if using server actions
-import { createUserProfile } from '@/app/actions/user'; 
+import { auth, db } from '@/lib/firebase/config';
+import { createUserProfile } from '@/app/actions/user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -108,27 +111,77 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
     }
   };
 
-  // Google Sign-In (optional, but good to keep if already styled)
-   const handleGoogleSignIn = async () => {
+  // Handle a returning Google redirect flow (used when popup was blocked).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (!result || cancelled) return;
+        const user = result.user;
+        const profileResult = await createUserProfile(user.uid, user.email, user.displayName);
+        if (!profileResult.success) {
+          console.warn('Google redirect: profile creation fallback:', profileResult.error);
+        }
+        toast({ title: 'Signed in with Google', description: 'Welcome!' });
+        router.push('/stories');
+      } catch (err) {
+        console.error('Google redirect sign-in error:', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [router, toast]);
+
+  const handleGoogleSignIn = async () => {
     setIsLoading(true);
     setError(null);
     setMessage(null);
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
     try {
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider, browserPopupRedirectResolver);
       const user = result.user;
-      
-      // Client-side attempt to create profile. Cloud Function is backup.
+
       const profileResult = await createUserProfile(user.uid, user.email, user.displayName);
-       if (!profileResult.success) {
-        console.warn("Google Sign-In: Client-side profile creation attempt failed (Cloud Function is backup):", profileResult.error);
+      if (!profileResult.success) {
+        console.warn('Google Sign-In: profile creation fallback:', profileResult.error);
       }
 
-      toast({ title: "Signed in with Google", description: "Welcome!" });
+      toast({ title: 'Signed in with Google', description: 'Welcome!' });
       router.push('/stories');
     } catch (err: any) {
-      setError(err.message);
-      toast({ title: "Google Sign-In Error", description: err.message, variant: "destructive" });
+      // Common failure modes: popup blocked, popup closed, third-party
+      // cookies blocked. Fall back to full-page redirect so the flow works
+      // even in restrictive browsers (mobile Safari, in-app webviews).
+      const code = err?.code ?? '';
+      const shouldRedirect =
+        code === 'auth/popup-blocked' ||
+        code === 'auth/popup-closed-by-user' ||
+        code === 'auth/cancelled-popup-request' ||
+        code === 'auth/operation-not-supported-in-this-environment' ||
+        code === 'auth/web-storage-unsupported';
+
+      if (shouldRedirect) {
+        try {
+          await signInWithRedirect(auth, provider);
+          return;
+        } catch (redirectErr: any) {
+          setError(redirectErr.message || 'Google sign-in failed.');
+          toast({
+            title: 'Google Sign-In Error',
+            description: redirectErr.message,
+            variant: 'destructive',
+          });
+        }
+      } else {
+        setError(err.message || 'Google sign-in failed.');
+        toast({
+          title: 'Google Sign-In Error',
+          description: err.message,
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsLoading(false);
     }

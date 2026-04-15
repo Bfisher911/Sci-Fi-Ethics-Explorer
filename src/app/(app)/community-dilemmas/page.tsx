@@ -7,8 +7,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Inbox } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { PremiumGate } from '@/components/gating/premium-gate';
 
 export default function CommunityDilemmasPage() {
+  return (
+    <PremiumGate featureName="Community Dilemmas">
+      <CommunityDilemmasPageInner />
+    </PremiumGate>
+  );
+}
+
+function CommunityDilemmasPageInner() {
   const [dilemmas, setDilemmas] = useState<SubmittedDilemma[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

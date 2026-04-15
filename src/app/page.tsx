@@ -89,8 +89,8 @@ export default function HomePage() {
         <p className="text-sm tracking-widest uppercase">&copy; {new Date().getFullYear()} Sci-Fi Ethics Explorer</p>
         <div className="flex gap-8 text-xs">
           <Link href="/about" className="hover:text-primary transition-colors">About</Link>
-          <Link href="/stories" className="hover:text-primary transition-colors">Archive</Link>
-          <Link href="/login" className="hover:text-primary transition-colors">Privacy</Link>
+          <Link href="/philosophers" className="hover:text-primary transition-colors">Archive</Link>
+          <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
         </div>
       </footer>
     </div>

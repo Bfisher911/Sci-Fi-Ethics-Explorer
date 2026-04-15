@@ -23,8 +23,17 @@ import { useToast } from '@/hooks/use-toast';
 import { recordAnalysis } from '@/app/actions/progress';
 import { createAnalysis } from '@/app/actions/analyses';
 import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
+import { PremiumGate } from '@/components/gating/premium-gate';
 
 export default function AnalyzerPage() {
+  return (
+    <PremiumGate featureName="Scenario Analyzer">
+      <AnalyzerPageInner />
+    </PremiumGate>
+  );
+}
+
+function AnalyzerPageInner() {
   const [analysisResult, setAnalysisResult] = useState<AnalyzeScenarioOutput | null>(null);
   const [scenarioText, setScenarioText] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);

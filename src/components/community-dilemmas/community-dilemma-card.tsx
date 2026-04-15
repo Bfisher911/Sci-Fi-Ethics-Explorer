@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import type { SubmittedDilemma } from '@/types';
+import { DilemmaImage } from './dilemma-image';
 import {
   Card,
   CardContent,
@@ -49,28 +49,15 @@ export function CommunityDilemmaCard({ dilemma }: CommunityDilemmaCardProps) {
             </div>
           </div>
         )}
-        {dilemma.imageUrl && (
-          <div className="relative w-full h-48">
-            <Image
-              src={dilemma.imageUrl}
-              alt={dilemma.title}
-              layout="fill"
-              objectFit="cover"
-              data-ai-hint={dilemma.imageHint || 'community sci-fi concept'}
-            />
-          </div>
-        )}
-        {!dilemma.imageUrl && (
-          <div className="relative w-full h-48 bg-muted flex items-center justify-center">
-            <Image
-              src={`https://placehold.co/600x400.png?text=${encodeURIComponent(dilemma.title.substring(0, 20))}`}
-              alt={dilemma.title}
-              layout="fill"
-              objectFit="cover"
-              data-ai-hint={dilemma.imageHint || dilemma.theme.toLowerCase() || 'abstract concept'}
-            />
-          </div>
-        )}
+        <div className="relative w-full h-48 bg-muted overflow-hidden">
+          <DilemmaImage
+            imageUrl={dilemma.imageUrl}
+            title={dilemma.title}
+            theme={dilemma.theme}
+            hint={dilemma.imageHint}
+            size="card"
+          />
+        </div>
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-primary transition-colors duration-300 group-hover:text-accent">
             {dilemma.title}

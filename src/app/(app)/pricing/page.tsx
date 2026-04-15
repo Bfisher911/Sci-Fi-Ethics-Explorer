@@ -18,6 +18,8 @@ import {
 } from '@/config/plans';
 import { useSubscription } from '@/hooks/use-subscription';
 import { useAuth } from '@/hooks/use-auth';
+import { createCheckoutSession } from '@/app/actions/stripe';
+import { useToast } from '@/hooks/use-toast';
 import {
   CreditCard,
   Building2,
@@ -35,6 +37,8 @@ export default function PricingPage() {
   const router = useRouter();
   const { accountRole } = useSubscription();
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   // Organization license state
   const [licenseTerm, setLicenseTerm] = useState<LicenseTerm>('semester');
@@ -43,13 +47,38 @@ export default function PricingPage() {
   const seatTiers = getSeatTiers(licenseTerm);
   const selectedTier = seatTiers.find((t) => t.seats === selectedSeats);
 
-  function handleIndividualSelect(planId: string, periodId: BillingPeriodId): void {
+  async function handleIndividualSelect(_planId: string, periodId: BillingPeriodId): Promise<void> {
     if (!user) {
-      router.push('/onboarding');
+      router.push(`/login?next=/pricing`);
       return;
     }
-    // Navigate to onboarding with plan info
-    router.push(`/onboarding?plan=${planId}&period=${periodId}`);
+    if (periodId !== 'monthly' && periodId !== 'semester' && periodId !== 'annual') {
+      toast({
+        title: 'Unsupported billing period',
+        description: 'Choose monthly, semester, or annual.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setIsCheckingOut(true);
+    try {
+      const result = await createCheckoutSession({
+        uid: user.uid,
+        email: user.email,
+        period: periodId,
+      });
+      if (!result.success) {
+        toast({
+          title: 'Checkout unavailable',
+          description: result.error,
+          variant: 'destructive',
+        });
+        return;
+      }
+      window.location.href = result.data.url;
+    } finally {
+      setIsCheckingOut(false);
+    }
   }
 
   function handleLicensePurchase(): void {
@@ -232,8 +261,13 @@ export default function PricingPage() {
       </Tabs>
 
       <p className="text-center text-sm text-muted-foreground mt-12 max-w-lg mx-auto">
-        Payment processing coming soon. Plans are currently simulated.
+        Secure checkout powered by Stripe. Promo codes supported at checkout.
       </p>
+      {isCheckingOut && (
+        <p className="text-center text-xs text-muted-foreground mt-2">
+          Redirecting to secure checkout…
+        </p>
+      )}
     </div>
   );
 }

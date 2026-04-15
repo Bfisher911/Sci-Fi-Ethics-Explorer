@@ -12,8 +12,17 @@ import {
   deleteChatSession,
 } from '@/app/actions/chat';
 import type { ChatSession, ChatMessage } from '@/types';
+import { PremiumGate } from '@/components/gating/premium-gate';
 
 export default function AICounselorPage() {
+  return (
+    <PremiumGate featureName="AI Counselor">
+      <AICounselorPageInner />
+    </PremiumGate>
+  );
+}
+
+function AICounselorPageInner() {
   const { user } = useAuth();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | undefined>(undefined);

@@ -31,6 +31,7 @@ export interface UserProfile {
   accountRole?: AccountRole;
   subscriptionId?: string;
   subscriptionStatus?: SubscriptionStatus;
+  stripeCustomerId?: string;
   activeLicenseId?: string;
   onboardingComplete?: boolean;
   isAdmin?: boolean;
