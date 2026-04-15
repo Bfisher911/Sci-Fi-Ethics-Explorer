@@ -3,16 +3,23 @@
 
 import { db } from '@/lib/firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
+import { isSuperAdminEmail } from '@/lib/super-admins';
 
 /**
- * Checks whether the given user is an admin by reading their Firestore profile.
+ * Checks whether the given user is an admin. A user is considered admin if:
+ *  - their Firestore profile has `isAdmin === true`, OR
+ *  - their email appears in the SUPER_ADMIN_EMAILS allowlist (server-side
+ *    safety net so the platform owner can never get locked out).
  */
 export async function isUserAdmin(uid: string): Promise<boolean> {
   if (!uid) return false;
   try {
     const userDoc = await getDoc(doc(db, 'users', uid));
     if (!userDoc.exists()) return false;
-    return userDoc.data()?.isAdmin === true;
+    const data = userDoc.data();
+    if (data?.isAdmin === true) return true;
+    if (isSuperAdminEmail(data?.email)) return true;
+    return false;
   } catch (error) {
     console.error(`[admin] Error checking admin status for UID ${uid}:`, error);
     return false;

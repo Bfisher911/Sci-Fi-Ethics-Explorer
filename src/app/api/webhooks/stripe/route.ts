@@ -79,6 +79,55 @@ async function updateUserSubscription(
   }
 }
 
+/**
+ * Create a Firestore License document for an org-license payment and link it
+ * to the purchaser's user profile. Driven entirely by Stripe metadata that
+ * was set on the Checkout Session.
+ */
+async function provisionLicense(
+  uid: string,
+  metadata: Stripe.Metadata,
+  stripeCustomerId: string | undefined
+): Promise<void> {
+  try {
+    const seats = parseInt(metadata.seats || '0', 10);
+    const totalPrice = parseFloat(metadata.totalPrice || '0');
+    const term = metadata.term === 'annual' ? 'annual' : 'semester';
+    const organizationName = metadata.organizationName || 'Organization';
+    const purchaserName = metadata.purchaserName || 'Purchaser';
+
+    const now = new Date();
+    const endDate = new Date(now);
+    endDate.setMonth(endDate.getMonth() + (term === 'semester' ? 4 : 12));
+
+    const licenseRef = await addDoc(collection(db, 'licenses'), {
+      organizationName,
+      purchaserId: uid,
+      purchaserName,
+      planId: 'organization-license',
+      totalSeats: seats,
+      usedSeats: 0,
+      term,
+      startDate: now,
+      endDate,
+      status: 'active',
+      priceTotal: totalPrice,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    await updateUserSubscription(uid, {
+      stripeCustomerId,
+      activeLicenseId: licenseRef.id,
+      subscriptionStatus: 'active',
+      onboardingComplete: true,
+    });
+  } catch (err) {
+    console.error('[stripe webhook] provisionLicense error:', err);
+    throw err;
+  }
+}
+
 async function createNotification(uid: string, title: string, body: string): Promise<void> {
   try {
     await addDoc(collection(db, 'notifications'), {
@@ -138,12 +187,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             ? session.subscription
             : session.subscription?.id;
 
-        await updateUserSubscription(uid, {
-          stripeCustomerId: customerId,
-          subscriptionId,
-          subscriptionStatus: 'active',
-          onboardingComplete: true,
-        });
+        // Branch: license (one-time payment) vs individual subscription.
+        if (session.metadata?.type === 'license') {
+          await provisionLicense(uid, session.metadata, customerId);
+        } else {
+          await updateUserSubscription(uid, {
+            stripeCustomerId: customerId,
+            subscriptionId,
+            subscriptionStatus: 'active',
+            onboardingComplete: true,
+          });
+        }
         break;
       }
 

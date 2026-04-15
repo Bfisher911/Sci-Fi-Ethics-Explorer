@@ -11,8 +11,9 @@ import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { SeatTierSelector } from '@/components/billing/license-purchase';
 import { getSeatTiers } from '@/config/plans';
-import { createLicense } from '@/app/actions/licenses';
+import { createLicenseCheckoutSession } from '@/app/actions/stripe';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 import {
   Building2,
   Calendar,
@@ -41,10 +42,12 @@ export default function LicensePurchasePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   // Initialize from URL params if present
   const initialTerm = (searchParams.get('term') as LicenseTerm) || 'semester';
   const initialSeats = searchParams.get('seats') ? Number(searchParams.get('seats')) : undefined;
+  const wasCanceled = searchParams.get('canceled') === '1';
 
   const [step, setStep] = useState<Step>(1);
   const [orgName, setOrgName] = useState('');
@@ -52,7 +55,7 @@ export default function LicensePurchasePage() {
   const [selectedSeats, setSelectedSeats] = useState<number | undefined>(initialSeats);
   const [submitting, setSubmitting] = useState(false);
   const [licenseId, setLicenseId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(wasCanceled ? 'Checkout was canceled. Adjust your selection and try again.' : null);
 
   const seatTiers = getSeatTiers(term);
   const selectedTier = seatTiers.find((t) => t.seats === selectedSeats);
@@ -87,28 +90,41 @@ export default function LicensePurchasePage() {
   }
 
   async function handlePurchase(): Promise<void> {
-    if (!user || !selectedTier) return;
+    if (!user) {
+      router.push('/login?next=/license/purchase');
+      return;
+    }
+    if (!selectedTier) return;
     setSubmitting(true);
     setError(null);
 
     try {
-      const result = await createLicense({
+      const result = await createLicenseCheckoutSession({
+        uid: user.uid,
+        email: user.email,
         organizationName: orgName.trim(),
-        purchaserId: user.uid,
         purchaserName: user.displayName || user.email || 'Unknown',
-        totalSeats: selectedTier.seats,
+        seats: selectedTier.seats,
+        pricePerSeat: selectedTier.pricePerSeat,
+        totalPrice: selectedTier.totalPrice,
         term,
-        priceTotal: selectedTier.totalPrice,
       });
 
-      if (result.success) {
-        setLicenseId(result.data);
-        setStep(5);
-      } else {
+      if (!result.success) {
+        toast({
+          title: 'Checkout unavailable',
+          description: result.error,
+          variant: 'destructive',
+        });
         setError(result.error);
+        return;
       }
+
+      // Redirect to Stripe-hosted checkout. The webhook will provision the
+      // license on payment; the user lands back on /success on completion.
+      window.location.href = result.data.url;
     } catch (err) {
-      setError(String(err));
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setSubmitting(false);
     }
@@ -366,7 +382,7 @@ export default function LicensePurchasePage() {
                 </div>
               )}
               <p className="text-xs text-muted-foreground text-center">
-                Payment processing coming soon. Plans are currently simulated.
+                Secure checkout powered by Stripe. Promo codes supported on the next screen.
               </p>
             </div>
           )}
@@ -393,12 +409,12 @@ export default function LicensePurchasePage() {
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
+                  Redirecting to Stripe…
                 </>
               ) : step === 4 ? (
                 <>
-                  Complete Purchase
-                  <CheckCircle2 className="ml-2 h-4 w-4" />
+                  Continue to Checkout
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </>
               ) : (
                 <>
