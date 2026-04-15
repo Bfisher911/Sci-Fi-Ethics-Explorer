@@ -166,12 +166,15 @@ export async function submitUserStory(
   }
 ): Promise<ActionResult<string>> {
   try {
+    const isPublic = story.globalVisibility === 'public';
     const docRef = await addDoc(collection(db, 'stories'), {
       ...story,
-      status: 'draft',
+      // Stories shared publicly go live on /community-stories immediately;
+      // private drafts stay hidden until the author re-publishes them.
+      status: isPublic ? 'published' : 'draft',
       globalVisibility: story.globalVisibility || 'private',
-      moderationStatus: 'pending',
-      publishedAt: null,
+      moderationStatus: isPublic ? 'approved' : 'pending',
+      publishedAt: isPublic ? serverTimestamp() : null,
       viewCount: 0,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -179,6 +182,40 @@ export async function submitUserStory(
     return { success: true, data: docRef.id };
   } catch (error) {
     console.error('[stories] submitUserStory error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Fetch all user-submitted stories that are published and globally visible.
+ * These populate the /community-stories gallery.
+ */
+export async function getCommunityStories(): Promise<ActionResult<Story[]>> {
+  try {
+    const q = query(
+      collection(db, 'stories'),
+      where('status', '==', 'published'),
+      where('globalVisibility', '==', 'public')
+    );
+    const snapshot = await getDocs(q);
+
+    // Filter in memory: authorId must exist (community content is authored
+    // by real users, not by the seed/import script which omits authorId).
+    const stories = snapshot.docs
+      .map((d) => storyFromDoc(d.id, d.data()))
+      .filter((s) => !!s.authorId);
+
+    // Newest first by publishedAt (fall back to title for undated records).
+    stories.sort((a, b) => {
+      const ad = a.publishedAt instanceof Date ? a.publishedAt.getTime() : 0;
+      const bd = b.publishedAt instanceof Date ? b.publishedAt.getTime() : 0;
+      if (bd !== ad) return bd - ad;
+      return a.title.localeCompare(b.title);
+    });
+
+    return { success: true, data: stories };
+  } catch (error) {
+    console.error('[stories] getCommunityStories error:', error);
     return { success: false, error: String(error) };
   }
 }

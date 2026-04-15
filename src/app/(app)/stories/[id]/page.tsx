@@ -17,9 +17,12 @@ import { ChoiceImpactIndicator } from '@/components/stories/choice-impact-indica
 import { EpilogueViewer } from '@/components/stories/epilogue-viewer';
 import { generateEndingReflection } from '@/ai/flows/generate-ending-reflection';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowLeft, CheckSquare, Loader2, MessageSquare, Map, Clock, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, CheckSquare, Loader2, MessageSquare, Map, Clock, Sparkles, Volume2, VolumeX, ArrowDown, Lock } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/use-auth';
+import { useSubscription } from '@/hooks/use-subscription';
+import { LockedFeatureModal } from '@/components/gating/locked-feature-modal';
 import { recordStoryCompletion, recordStoryChoice } from '@/app/actions/progress';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
@@ -46,8 +49,14 @@ export default function StoryDetailPage() {
   const [lastAlignedFramework, setLastAlignedFramework] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [atmosphereOn, setAtmosphereOn] = useState(false);
+  const [showLockedModal, setShowLockedModal] = useState(false);
   const segmentRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  const { isPaid } = useSubscription();
+
+  // Free preview length for non-subscribers: they can read segments 0 and 1.
+  // Segment 2+ requires an active subscription.
+  const FREE_PREVIEW_SEGMENTS = 2;
 
   const mood = getMoodTheme(
     story?.theme,
@@ -199,9 +208,43 @@ export default function StoryDetailPage() {
     );
   }
 
-  const isStoryEnd = !currentSegment.choices && !story.isInteractive || (story.isInteractive && !currentSegment.choices && !isLoadingReflection && reflection);
+  // Index of current segment within the array. For linear stories we use
+  // simple sequential order (segments[0], segments[1], ...); for interactive
+  // stories this falls back to the visited-length estimate.
+  const currentIndex = Math.max(
+    0,
+    story.segments.findIndex((s) => s.id === currentSegment.id)
+  );
+  const totalSegments = story.segments.length;
+  const progressPercent = totalSegments > 0
+    ? Math.round(((story.isInteractive ? visitedSegments.length : currentIndex + 1) / totalSegments) * 100)
+    : 0;
+
+  const nextLinearSegment =
+    !story.isInteractive && currentIndex + 1 < totalSegments
+      ? story.segments[currentIndex + 1]
+      : null;
+
+  const isStoryEnd = !currentSegment.choices && !story.isInteractive && !nextLinearSegment || (story.isInteractive && !currentSegment.choices && !isLoadingReflection && reflection);
 
   const storyEndingText = currentSegment.text.substring(0, 200);
+
+  const handleContinueReading = (): void => {
+    if (!nextLinearSegment) return;
+    const nextIndex = currentIndex + 1;
+    // Gate segments beyond the free preview for unpaid users.
+    if (!isPaid && nextIndex >= FREE_PREVIEW_SEGMENTS) {
+      setShowLockedModal(true);
+      return;
+    }
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentSegment(nextLinearSegment);
+      setVisitedSegments((prev) => [...prev, nextLinearSegment.id]);
+      setIsTransitioning(false);
+      segmentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 180);
+  };
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -291,6 +334,21 @@ export default function StoryDetailPage() {
           <CardDescription className="text-md text-muted-foreground">
             By {story.author} | Genre: {story.genre} | Theme: {story.theme}
           </CardDescription>
+
+          {totalSegments > 1 && (
+            <div className="pt-3 space-y-1.5" aria-label="Reading progress">
+              <div className="flex items-center justify-between text-[11px] uppercase tracking-widest text-muted-foreground/80">
+                <span>
+                  {story.isInteractive ? 'Your Path' : 'Part'}{' '}
+                  {story.isInteractive ? visitedSegments.length : currentIndex + 1}
+                  {' / '}
+                  {totalSegments}
+                </span>
+                <span>{progressPercent}%</span>
+              </div>
+              <Progress value={progressPercent} className="h-1.5" />
+            </div>
+          )}
         </CardHeader>
 
         <div className="px-6 pb-4 relative">
@@ -313,6 +371,36 @@ export default function StoryDetailPage() {
           <CardContent className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-relaxed">
             <p className="whitespace-pre-wrap">{currentSegment.text}</p>
           </CardContent>
+
+          {nextLinearSegment && (
+            <CardFooter className="flex flex-col items-stretch gap-2 pt-6 border-t">
+              {!isPaid && currentIndex + 1 >= FREE_PREVIEW_SEGMENTS ? (
+                <>
+                  <Button
+                    onClick={() => setShowLockedModal(true)}
+                    size="lg"
+                    variant="outline"
+                    className="w-full min-h-14 border-primary/40 hover:border-primary hover:bg-primary/5 text-primary"
+                  >
+                    <Lock className="mr-2 h-4 w-4" />
+                    Unlock Part {currentIndex + 2} of {totalSegments}
+                  </Button>
+                  <p className="text-xs text-muted-foreground/70 text-center italic">
+                    Preview ends here — subscribe to continue this story.
+                  </p>
+                </>
+              ) : (
+                <Button
+                  onClick={handleContinueReading}
+                  size="lg"
+                  className="w-full min-h-14 bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_24px_-6px_hsl(var(--primary)/0.5)]"
+                >
+                  Continue Reading — Part {currentIndex + 2} of {totalSegments}
+                  <ArrowDown className="ml-2 h-4 w-4" />
+                </Button>
+              )}
+            </CardFooter>
+          )}
 
           {story.isInteractive && currentSegment.choices && currentSegment.choices.length > 0 && (
             <CardFooter className="flex flex-col items-start gap-3 pt-6 border-t">
@@ -418,6 +506,14 @@ export default function StoryDetailPage() {
 
       {/* Floating framework counts */}
       <ChoiceImpactIndicator pickedChoiceTexts={pickedChoiceTexts} />
+
+      <LockedFeatureModal
+        open={showLockedModal}
+        onOpenChange={setShowLockedModal}
+        featureName={`The rest of "${story.title}"`}
+        title="This story continues behind the gate."
+        description={`You've reached the end of the free preview. Subscribe to unlock parts ${FREE_PREVIEW_SEGMENTS + 1}–${totalSegments} and continue the journey.`}
+      />
 
       {/* Ephemeral alignment pulse after each choice */}
       {lastAlignedFramework && (

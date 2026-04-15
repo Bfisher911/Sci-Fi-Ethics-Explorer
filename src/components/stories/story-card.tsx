@@ -5,15 +5,18 @@ import Image from 'next/image';
 import type { Story } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Clock } from 'lucide-react';
+import { ArrowRight, Clock, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
+import { DilemmaImage } from '@/components/community-dilemmas/dilemma-image';
 
 interface StoryCardProps {
   story: Story;
+  /** When true, shows a "Community" badge and uses the fallback image pipeline. */
+  isCommunity?: boolean;
 }
 
-export function StoryCard({ story }: StoryCardProps) {
+export function StoryCard({ story, isCommunity }: StoryCardProps) {
   return (
     <Card className="relative flex flex-col h-full overflow-hidden shadow-lg hover:shadow-primary/30 transition-shadow duration-300 bg-card/80 backdrop-blur-sm">
       <div
@@ -31,18 +34,33 @@ export function StoryCard({ story }: StoryCardProps) {
           />
         </div>
       </div>
-      {story.imageUrl && (
-        <div className="relative w-full h-48">
+      <div className="relative w-full h-48 bg-muted overflow-hidden">
+        {story.imageUrl ? (
           <Image
             src={story.imageUrl}
             alt={story.title}
-            layout="fill"
-            objectFit="cover"
-            className="transition-transform duration-300 group-hover:scale-105"
+            fill
+            sizes="(max-width: 768px) 100vw, 400px"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
             data-ai-hint={story.imageHint || 'sci-fi concept'}
           />
-        </div>
-      )}
+        ) : (
+          <DilemmaImage
+            title={story.title}
+            theme={story.theme}
+            hint={story.imageHint}
+            size="card"
+          />
+        )}
+        {isCommunity && (
+          <div className="absolute top-2 left-2 z-10">
+            <Badge className="bg-accent/90 text-accent-foreground flex items-center gap-1 shadow">
+              <Users className="h-3 w-3" />
+              Community
+            </Badge>
+          </div>
+        )}
+      </div>
       <CardHeader>
         <CardTitle className="text-xl font-semibold text-primary group-hover:text-accent transition-colors pr-10">
           <Link href={`/stories/${story.id}`}>{story.title}</Link>

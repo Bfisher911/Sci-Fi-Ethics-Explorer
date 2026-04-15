@@ -58,6 +58,7 @@ const communityNavItems = [
   { href: '/submit-dilemma', label: 'Submit Dilemma', icon: FilePlus2 },
   { href: '/my-submissions', label: 'My Submissions', icon: FileCheck },
   { href: '/community-dilemmas', label: 'Community Dilemmas', icon: Users },
+  { href: '/community-stories', label: 'Community Stories', icon: BookOpen },
   { href: '/debate-arena', label: 'Debate Arena', icon: Scale },
   { href: '/workshops', label: 'Workshops', icon: Presentation },
   { href: '/messages', label: 'Messages', icon: MessageCircle },
