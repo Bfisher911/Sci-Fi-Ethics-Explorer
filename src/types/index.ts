@@ -79,6 +79,19 @@ export interface StorySegment {
 export type GlobalVisibility = 'private' | 'public';
 export type ModerationStatus = 'pending' | 'approved' | 'flagged' | 'restricted';
 
+export type StorySubGenre =
+  | 'Cyberpunk'
+  | 'Solarpunk'
+  | 'Space Opera'
+  | 'Hard Sci-Fi'
+  | 'Dystopian'
+  | 'Biopunk'
+  | 'Post-Apocalyptic'
+  | 'First Contact'
+  | 'Time Travel';
+
+export type StoryTechLevel = 'Near-Future' | 'Mid-Future' | 'Galactic' | 'Post-Human';
+
 export interface Story {
   id: string;
   title: string;
@@ -92,6 +105,14 @@ export interface Story {
   isInteractive: boolean;
   estimatedReadingTime: string;
   authorId?: string;
+  /** Optional sub-genre tag (e.g., Cyberpunk, Solarpunk). Used for image keywords. */
+  subGenre?: StorySubGenre;
+  /** Ethical topics this story engages with (free-form tag cloud). */
+  ethicalFocus?: string[];
+  /** Moral Grey-Scale rating: 1 (Binary) through 5 (Infinite Complexity). */
+  complexity?: number;
+  /** Tech setting bucket. */
+  techLevel?: StoryTechLevel;
   /** Lifecycle status. Drafts are never visible publicly. */
   status?: 'draft' | 'published' | 'archived';
   /** Whether a published item appears in public/global feeds. */

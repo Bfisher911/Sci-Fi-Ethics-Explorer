@@ -14,6 +14,12 @@ interface StoryHeaderProps {
   title: string;
   /** Optional subtitle (genre · theme). */
   subtitle?: string;
+  /**
+   * Keywords used to pull a thematic cover from Unsplash when `imageUrl` is
+   * not provided. For community stories this is the sub-genre + ethical-focus
+   * tags so the cover matches the author's metadata.
+   */
+  fallbackKeywords?: (string | undefined)[];
   /** Aspect ratio class. Defaults to a wide cinematic 16:9-ish shape. */
   aspect?: 'video' | 'cinematic' | 'square';
   className?: string;
@@ -36,11 +42,30 @@ export function StoryHeader({
   imageHint,
   title,
   subtitle,
+  fallbackKeywords,
   aspect = 'cinematic',
   className,
 }: StoryHeaderProps): JSX.Element {
   const [errored, setErrored] = useState(false);
-  const showImage = Boolean(imageUrl) && !errored;
+
+  // If the author didn't upload a cover but provided sub-genre / ethical-focus
+  // keywords, pull a thematic cover from Unsplash Source rather than showing
+  // the generic branded fallback.
+  const resolvedKeywords = (fallbackKeywords || [])
+    .filter((k): k is string => !!k && k.trim().length > 0)
+    .slice(0, 4)
+    .map((k) => k.toLowerCase().replace(/\s+/g, '-'))
+    .join(',');
+
+  const derivedSrc =
+    imageUrl ||
+    (resolvedKeywords
+      ? `https://source.unsplash.com/1600x900/?${encodeURIComponent(
+          resolvedKeywords
+        )}&sig=${encodeURIComponent(title.slice(0, 60).toLowerCase())}`
+      : undefined);
+
+  const showImage = Boolean(derivedSrc) && !errored;
 
   return (
     <div
@@ -52,12 +77,13 @@ export function StoryHeader({
     >
       {showImage ? (
         <Image
-          src={imageUrl as string}
+          src={derivedSrc as string}
           alt={`Cover art for ${title}${imageHint ? ` — ${imageHint}` : ''}`}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 800px, 1024px"
           className="object-cover"
           priority
+          unoptimized={!imageUrl}
           onError={() => setErrored(true)}
           data-ai-hint={imageHint}
         />

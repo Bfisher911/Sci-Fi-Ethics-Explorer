@@ -13,6 +13,12 @@ interface DilemmaImageProps {
   theme?: string;
   /** Free-text hint; combined with theme to build the Unsplash query. */
   hint?: string;
+  /**
+   * Additional keywords that take priority over theme/hint when present.
+   * Used to pass sub-genre + ethical-focus for community stories so the
+   * generated cover matches the author's tagged metadata.
+   */
+  keywords?: (string | undefined)[];
   /** Image aspect sizing. */
   className?: string;
   /** 400x300 for card, 1200x675 for detail page. */
@@ -44,18 +50,27 @@ function buildUnsplashUrl(
   theme: string | undefined,
   hint: string | undefined,
   width: number,
-  height: number
+  height: number,
+  extraKeywords?: (string | undefined)[]
 ): string {
+  // Priority: explicit extra keywords (sub-genre, ethical focus) > theme
+  // mapping > free-text hint > default sci-fi bucket.
+  const cleanExtras = (extraKeywords || [])
+    .filter((k): k is string => !!k && k.trim().length > 0)
+    .map((k) => k.toLowerCase().trim().replace(/\s+/g, '-'));
+
   const themeKey = (theme || '').toLowerCase().trim();
+  const themeKeywords = THEME_KEYWORDS[themeKey];
+
   const keywords =
-    THEME_KEYWORDS[themeKey] ||
-    (hint && hint.trim()) ||
-    'cyberpunk,futuristic,neon,ethics';
+    cleanExtras.length > 0
+      ? cleanExtras.join(',')
+      : themeKeywords ||
+        (hint && hint.trim()) ||
+        'cyberpunk,futuristic,neon,ethics';
 
   const seed = encodeURIComponent(title.slice(0, 60).toLowerCase());
   const query = encodeURIComponent(keywords);
-  // source.unsplash.com is the keyless endpoint; the `sig=` seed pins the
-  // image so two cards with the same title render the same picture.
   return `https://source.unsplash.com/${width}x${height}/?${query}&sig=${seed}`;
 }
 
@@ -78,16 +93,19 @@ export function DilemmaImage({
   title,
   theme,
   hint,
+  keywords,
   className,
   size = 'card',
 }: DilemmaImageProps): JSX.Element {
   const [errored, setErrored] = useState(false);
   const [width, height] = size === 'detail' ? [1200, 675] : [600, 400];
 
+  const keywordsKey = (keywords || []).filter(Boolean).join('|');
   const src = useMemo(() => {
     if (!isPlaceholder(imageUrl)) return imageUrl as string;
-    return buildUnsplashUrl(title, theme, hint, width, height);
-  }, [imageUrl, title, theme, hint, width, height]);
+    return buildUnsplashUrl(title, theme, hint, width, height, keywords);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imageUrl, title, theme, hint, width, height, keywordsKey]);
 
   if (errored) {
     return (

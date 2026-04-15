@@ -357,6 +357,12 @@ export default function StoryDetailPage() {
             imageHint={currentSegment.imageHint || story.imageHint}
             title={story.title}
             subtitle={`${story.genre} · ${story.theme}`}
+            fallbackKeywords={[
+              story.subGenre,
+              ...(story.ethicalFocus ?? []),
+              story.genre,
+              story.theme,
+            ]}
           />
         </div>
 
@@ -393,10 +399,19 @@ export default function StoryDetailPage() {
                 <Button
                   onClick={handleContinueReading}
                   size="lg"
-                  className="w-full min-h-14 bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_24px_-6px_hsl(var(--primary)/0.5)]"
+                  className="group relative w-full min-h-14 bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_24px_-6px_hsl(var(--primary)/0.5)] overflow-hidden"
                 >
-                  Continue Reading — Part {currentIndex + 2} of {totalSegments}
-                  <ArrowDown className="ml-2 h-4 w-4" />
+                  <span className="relative z-10 inline-flex items-center transition-opacity duration-200 group-hover:opacity-0">
+                    Continue Reading — Part {currentIndex + 2} of {totalSegments}
+                    <ArrowDown className="ml-2 h-4 w-4" />
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 z-10 flex items-center justify-center gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100 font-mono text-sm tracking-wider"
+                  >
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary-foreground animate-pulse" />
+                    Calculating Probabilities…
+                  </span>
                 </Button>
               )}
             </CardFooter>

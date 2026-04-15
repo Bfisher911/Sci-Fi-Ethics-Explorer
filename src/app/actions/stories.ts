@@ -48,6 +48,10 @@ function storyFromDoc(id: string, data: Record<string, any>): Story {
     publishedAt: timestampToDate(data.publishedAt),
     viewCount: data.viewCount || 0,
     tags: data.tags || [],
+    subGenre: data.subGenre,
+    ethicalFocus: data.ethicalFocus,
+    complexity: data.complexity,
+    techLevel: data.techLevel,
     createdAt: timestampToDate(data.createdAt),
     updatedAt: timestampToDate(data.updatedAt),
   };

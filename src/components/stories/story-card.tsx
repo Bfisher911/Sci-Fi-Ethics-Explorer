@@ -49,6 +49,7 @@ export function StoryCard({ story, isCommunity }: StoryCardProps) {
             title={story.title}
             theme={story.theme}
             hint={story.imageHint}
+            keywords={[story.subGenre, ...(story.ethicalFocus ?? [])]}
             size="card"
           />
         )}
@@ -70,9 +71,39 @@ export function StoryCard({ story, isCommunity }: StoryCardProps) {
           <Badge variant="outline">{story.theme}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="flex-grow">
+      <CardContent className="flex-grow space-y-2">
         <CardDescription className="text-sm text-foreground/80 line-clamp-3">{story.description}</CardDescription>
-        <p className="text-xs text-muted-foreground mt-2">By: {story.author}</p>
+        <p className="text-xs text-muted-foreground">By: {story.author}</p>
+
+        {(story.subGenre || story.complexity || (story.ethicalFocus && story.ethicalFocus.length > 0) || story.techLevel) && (
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {story.subGenre && (
+              <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary border-primary/30">
+                {story.subGenre}
+              </Badge>
+            )}
+            {story.techLevel && (
+              <Badge variant="outline" className="text-[10px]">
+                {story.techLevel}
+              </Badge>
+            )}
+            {typeof story.complexity === 'number' && story.complexity > 0 && (
+              <Badge variant="outline" className="text-[10px] border-accent/40 text-accent">
+                Complexity {story.complexity}/5
+              </Badge>
+            )}
+            {story.ethicalFocus?.slice(0, 2).map((f) => (
+              <Badge key={f} variant="outline" className="text-[10px]">
+                {f}
+              </Badge>
+            ))}
+            {story.ethicalFocus && story.ethicalFocus.length > 2 && (
+              <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                +{story.ethicalFocus.length - 2}
+              </Badge>
+            )}
+          </div>
+        )}
       </CardContent>
       <CardFooter className="flex justify-between items-center border-t pt-4">
         <div className="text-xs text-muted-foreground flex items-center">

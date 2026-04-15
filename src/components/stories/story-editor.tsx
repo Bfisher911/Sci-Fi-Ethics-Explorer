@@ -31,6 +31,12 @@ import { StoryVersionHistory } from '@/components/stories/story-version-history'
 import { StoryWalkthrough } from '@/components/stories/story-walkthrough';
 import { TemplatePicker } from '@/components/stories/template-picker';
 import { WritingAssistant } from '@/components/stories/writing-assistant';
+import {
+  SubGenreSelect,
+  EthicalFocusTagCloud,
+  ComplexitySlider,
+  TechLevelSelect,
+} from '@/components/stories/metadata-inputs';
 import { InfoIcon } from '@/components/ui/info-icon';
 import type { StoryTemplate } from '@/data/story-templates';
 import { getUserCommunities } from '@/app/actions/communities';
@@ -153,6 +159,12 @@ export function StoryEditor({
   const [genre, setGenre] = useState(initialStory?.genre ?? '');
   const [theme, setTheme] = useState(initialStory?.theme ?? '');
   const [author, setAuthor] = useState(initialStory?.author ?? authorName);
+  const [subGenre, setSubGenre] = useState<Story['subGenre']>(initialStory?.subGenre);
+  const [ethicalFocus, setEthicalFocus] = useState<string[]>(
+    initialStory?.ethicalFocus ?? []
+  );
+  const [complexity, setComplexity] = useState<number>(initialStory?.complexity ?? 3);
+  const [techLevel, setTechLevel] = useState<Story['techLevel']>(initialStory?.techLevel);
 
   // Segments
   const [segments, setSegments] = useState<StorySegment[]>(
@@ -197,6 +209,10 @@ export function StoryEditor({
           if (s.segments && s.segments.length > 0) {
             setSegments(s.segments);
           }
+          setSubGenre(s.subGenre);
+          setEthicalFocus(s.ethicalFocus ?? []);
+          setComplexity(s.complexity ?? 3);
+          setTechLevel(s.techLevel);
           setPubliclyVisible((s.globalVisibility ?? 'private') === 'public');
           setStoryId(s.id);
           setJustHydrated(true);
@@ -259,8 +275,12 @@ export function StoryEditor({
       isInteractive: hasInteractive,
       estimatedReadingTime: `${Math.max(1, Math.ceil(segments.length * 2))} min read`,
       authorId,
+      subGenre,
+      ethicalFocus: ethicalFocus.length > 0 ? ethicalFocus : undefined,
+      complexity,
+      techLevel,
     };
-  }, [title, description, genre, theme, author, segments, authorId]);
+  }, [title, description, genre, theme, author, segments, authorId, subGenre, ethicalFocus, complexity, techLevel]);
 
   // Debounced auto-save: only active once a storyId is known (i.e. editing
   // an existing story, or after the first manual "Save as Draft" of a new
@@ -656,6 +676,38 @@ export function StoryEditor({
                 onChange={(e) => setAuthor(e.target.value)}
                 placeholder="Your name"
               />
+            </div>
+
+            {/* Research Terminal: extended metadata. All optional, but powers
+                filtering in the Community Stories hub and cover-image search. */}
+            <div className="pt-4 mt-4 border-t border-border/60 space-y-4">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Research Terminal
+                </h3>
+                <span className="h-px flex-1 bg-border/60" />
+                <span className="text-[10px] text-muted-foreground/70">optional</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <SubGenreSelect
+                  id="story-sub-genre"
+                  value={subGenre}
+                  onChange={setSubGenre}
+                />
+                <TechLevelSelect
+                  id="story-tech-level"
+                  value={techLevel}
+                  onChange={setTechLevel}
+                />
+              </div>
+
+              <EthicalFocusTagCloud
+                values={ethicalFocus}
+                onChange={setEthicalFocus}
+              />
+
+              <ComplexitySlider value={complexity} onChange={setComplexity} />
             </div>
           </CardContent>
         </Card>
