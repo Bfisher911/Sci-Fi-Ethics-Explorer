@@ -7,7 +7,6 @@ import { onAuthStateChanged, getIdTokenResult } from 'firebase/auth';
 import { createContext, useEffect, useState, type ReactNode, useCallback } from 'react';
 // 🔁 END PATCH
 import { auth } from '@/lib/firebase/config';
-import { Skeleton } from '@/components/ui/skeleton';
 // 🔁 PATCH: Import AuthContextType from use-auth.ts (BF 2025-06-06)
 import type { AuthContextType } from '@/hooks/use-auth';
 // 🔁 END PATCH
@@ -73,25 +72,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, [refreshClaims]);
 
-  if (loading) {
-    // Simple full-page skeleton loader
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
-        <div className="w-full max-w-md space-y-6">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-8 w-3/4" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-10 w-1/2" />
-        </div>
-      </div>
-    );
-  }
-
+  // Always render children. `loading` is exposed through context so
+  // components that actually need to wait for auth (like the protected
+  // app shell) can show their own loading state. Public pages like the
+  // home splash, /about, and the auth pages render immediately.
   return (
-    // 🔁 PATCH: Pass claims and refreshClaims in context value (BF 2025-06-06)
     <AuthContext.Provider value={{ user, loading, claims, refreshClaims }}>
       {children}
     </AuthContext.Provider>
-    // 🔁 END PATCH
   );
 }
