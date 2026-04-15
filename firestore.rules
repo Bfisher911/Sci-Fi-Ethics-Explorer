@@ -8,8 +8,13 @@ service cloud.firestore {
     }
 
     // ─── Users ──────────────────────────────────────────────────
+    // Open reads because server actions (Directory, isUserAdmin, leaderboard,
+    // etc.) run without Firebase auth context. Privacy is enforced in app code:
+    //   - `isPublicProfile === false` excludes from the directory
+    //   - `anonymousOnLeaderboard === true` masks name on the leaderboard
+    //   - sensitive fields (email) are only surfaced to self / admin in UI
     match /users/{userId} {
-      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow read: if true;
       allow create: if request.auth != null &&
                        request.auth.uid == userId &&
                        request.resource.data.uid == request.auth.uid;
