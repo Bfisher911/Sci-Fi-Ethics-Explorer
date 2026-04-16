@@ -28,6 +28,7 @@ Two centuries later, the novel remains the canonical reference for every debate 
     relatedFrameworks: ['deontology', 'virtue-ethics', 'ethics-of-care'],
     notableWorks: ['Frankenstein; or, The Modern Prometheus', 'The Last Man', 'Mathilda'],
     techEthicsFocus: 'The founding text on what creators owe their creations — directly applicable to AI alignment, synthetic biology, and any act of bringing novel minds into being.',
+    imageUrl: '/images/authors/mary_shelley.png',
     imageHint: 'romantic era female author',
   },
   {
@@ -52,6 +53,7 @@ Beyond the Robot stories, Asimov's Foundation series imagined "psychohistory," a
     relatedFrameworks: ['deontology', 'utilitarianism', 'natural-law'],
     notableWorks: ['I, Robot', 'The Caves of Steel', 'Foundation', 'The Bicentennial Man', 'The Gods Themselves'],
     techEthicsFocus: 'The canonical exploration of programmed ethics for artificial minds — a century before AI alignment became an engineering discipline, Asimov was stress-testing its assumptions.',
+    imageUrl: '/images/authors/isaac_asimov.png',
     imageHint: 'twentieth century science fiction writer',
   },
   {
@@ -76,6 +78,7 @@ In the decades since his death, Dick's stock has risen enormously — in part be
     relatedFrameworks: ['ethics-of-care', 'existentialist-ethics', 'deontology'],
     notableWorks: ['Do Androids Dream of Electric Sheep?', 'Ubik', 'The Man in the High Castle', 'A Scanner Darkly', 'Valis'],
     techEthicsFocus: 'The definitive literary exploration of machine personhood, simulated reality, and the moral weight of empathy when the objects of empathy are technologically ambiguous.',
+    imageUrl: '/images/authors/philip_k_dick.png',
     imageHint: 'mid-century science fiction writer',
   },
   {
@@ -100,6 +103,7 @@ Le Guin's influence on technology ethics is indirect but profound. Unlike Asimov
     relatedFrameworks: ['daoist-ethics', 'ubuntu-ethics', 'ethics-of-care', 'social-contract-theory'],
     notableWorks: ['The Left Hand of Darkness', 'The Dispossessed', 'The Ones Who Walk Away from Omelas', 'The Lathe of Heaven', 'A Wizard of Earthsea'],
     techEthicsFocus: 'Locates the ethics of technology in the texture of the societies that build and live with it, making "culture" — not "the tool" — the proper unit of moral analysis.',
+    imageUrl: '/images/authors/ursula_le_guin.png',
     imageHint: 'twentieth century female science fiction author',
   },
   {
@@ -124,6 +128,7 @@ For technology ethics the Butler questions are: what is the moral weight of cons
     relatedFrameworks: ['ethics-of-care', 'deontology', 'existentialist-ethics', 'ubuntu-ethics'],
     notableWorks: ['Kindred', 'Parable of the Sower', 'Parable of the Talents', 'Lilith\'s Brood (Xenogenesis Trilogy)', 'Fledgling'],
     techEthicsFocus: 'Interrogates genetic engineering, uplift, and species-level transformation through the lens of consent, power, and the histories of domination we bring with us into any technological future.',
+    imageUrl: '/images/authors/octavia_butler.png',
     imageHint: 'contemporary african american female author',
   },
   {
@@ -148,6 +153,7 @@ For a reader thinking about technology ethics, Gibson is a permanent corrective 
     relatedFrameworks: ['social-contract-theory', 'existentialist-ethics', 'pragmatist-ethics'],
     notableWorks: ['Neuromancer', 'Count Zero', 'Mona Lisa Overdrive', 'Pattern Recognition', 'The Peripheral', 'Agency'],
     techEthicsFocus: 'The founding writer of cyberpunk and the most acute literary analyst of how networked computing, corporate power, and surveillance reshape what is ethically possible.',
+    imageUrl: '/images/authors/william_gibson.png',
     imageHint: 'cyberpunk era contemporary author',
   },
   {
@@ -172,6 +178,7 @@ Several of his stories could be handed to an ethics seminar and taught for weeks
     relatedFrameworks: ['virtue-ethics', 'ethics-of-care', 'deontology', 'buddhist-ethics'],
     notableWorks: ['Stories of Your Life and Others', 'Exhalation', 'Story of Your Life', 'The Lifecycle of Software Objects'],
     techEthicsFocus: 'The most philosophically precise writer of short fiction on AI, memory, language, and scientific discovery — each story is essentially a controlled ethics experiment.',
+    imageUrl: '/images/authors/ted_chiang.png',
     imageHint: 'contemporary asian american author',
   },
   {
@@ -196,6 +203,7 @@ For readers of technology ethics, Jemisin supplies what a great deal of the fiel
     relatedFrameworks: ['environmental-ethics', 'ubuntu-ethics', 'social-contract-theory', 'ethics-of-care'],
     notableWorks: ['The Fifth Season', 'The Obelisk Gate', 'The Stone Sky', 'The City We Became', 'The Hundred Thousand Kingdoms'],
     techEthicsFocus: 'Makes the ethics of ecological and technological systems inseparable from the ethics of who gets to survive them — essential reading for climate tech, geoengineering, and any "solution" that produces a disposable class.',
+    imageUrl: '/images/authors/nk_jemisin.png',
     imageHint: 'contemporary african american author',
   },
   {
@@ -220,6 +228,7 @@ For technology ethics he poses a question that matters increasingly as humans co
     relatedFrameworks: ['utilitarianism', 'social-contract-theory', 'cosmopolitanism'],
     notableWorks: ['The Three-Body Problem', 'The Dark Forest', 'Death\'s End', 'Ball Lightning', 'The Wandering Earth (short stories)'],
     techEthicsFocus: 'Stages the collision of ordinary ethics with civilizational-scale game theory, forcing the question of whether our moral intuitions survive the transition from local to interstellar consequences.',
+    imageUrl: '/images/authors/liu_cixin.png',
     imageHint: 'contemporary chinese male author',
   },
   {
@@ -244,6 +253,7 @@ For technology ethics, Atwood's contribution is a refusal of the comforting assu
     relatedFrameworks: ['deontology', 'environmental-ethics', 'ethics-of-care', 'discourse-ethics'],
     notableWorks: ['The Handmaid\'s Tale', 'The Testaments', 'Oryx and Crake', 'The Year of the Flood', 'MaddAddam'],
     techEthicsFocus: 'The essential novelist of bioengineering, reproductive technology, and ecological collapse in deregulated political economies — her work insists that how a technology gets used is a political and not merely technical question.',
+    imageUrl: '/images/authors/margaret_atwood.png',
     imageHint: 'canadian female author contemporary',
   },
 ];
