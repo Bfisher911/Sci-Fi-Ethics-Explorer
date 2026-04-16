@@ -683,28 +683,35 @@ interface ContentBlockShape {
 }
 
 function paragraphsToBlocks(
-  paragraphs: RawParagraph[]
+  paragraphs: RawParagraph[],
+  options: { allowPullQuotes?: boolean } = {}
 ): { blocks: ContentBlockShape[]; refs: Array<{ name: string; kind: EntityKind; slug: string }> } {
+  const allowPullQuotes = options.allowPullQuotes !== false;
   const blocks: ContentBlockShape[] = [];
   const seenSlugs = new Set<string>();
   const refs: Array<{ name: string; kind: EntityKind; slug: string }> = [];
   for (const p of paragraphs) {
     const text = stripDocxQuotes(p.text.trim());
     if (!text) continue;
-    if (p.style.italic) {
-      const q = matchPullQuote(text);
-      if (q) {
-        blocks.push({ type: 'quote', text: q.text, attribution: q.attribution });
-        continue;
+    // Pull-quote detection is for essays / cited material — not for the
+    // chapter's original short stories, where dialogue tags begin with
+    // quotation marks but should render as ordinary prose.
+    if (allowPullQuotes) {
+      if (p.style.italic) {
+        const q = matchPullQuote(text);
+        if (q) {
+          blocks.push({ type: 'quote', text: q.text, attribution: q.attribution });
+          continue;
+        }
       }
-    }
-    // Fallback: unrecognized italic paragraph still becomes a pull quote if
-    // it starts with a quote mark.
-    if (text.startsWith('"') && text.length < 500) {
-      const q = matchPullQuote(text);
-      if (q) {
-        blocks.push({ type: 'quote', text: q.text, attribution: q.attribution });
-        continue;
+      // Fallback: unrecognized italic paragraph still becomes a pull quote if
+      // it starts with a quote mark.
+      if (text.startsWith('"') && text.length < 500) {
+        const q = matchPullQuote(text);
+        if (q) {
+          blocks.push({ type: 'quote', text: q.text, attribution: q.attribution });
+          continue;
+        }
       }
     }
     blocks.push({ type: 'paragraph', text });
@@ -969,10 +976,10 @@ function assembleChapter(slice: ChapterSlice): AssembledChapter {
   const quiz: QuizSpec = kc ? parseKnowledgeCheck(kc.paragraphs) : { questions: [] };
   if (ak) applyAnswerKey(quiz, ak.paragraphs);
 
-  // 4. Short Story
+  // 4. Short Story (dialogue stays as prose — no pull-quote extraction)
   const story = findSection(meta.shortStoryHeadingMatch);
   if (story) {
-    const storyBlocks = paragraphsToBlocks(story.paragraphs);
+    const storyBlocks = paragraphsToBlocks(story.paragraphs, { allowPullQuotes: false });
     assembledSections.push({
       id: slugIdSegment(slice.slug, 'story'),
       kind: 'short-story',

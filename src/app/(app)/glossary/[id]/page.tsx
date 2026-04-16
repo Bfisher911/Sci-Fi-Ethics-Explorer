@@ -200,8 +200,9 @@ export default function TheoryDetailPage() {
         />
       </div>
 
-      {/* Related philosophers */}
-      {philosophers.length > 0 && (
+      {/* Philosophers Associated With This Tradition */}
+      {(philosophers.length > 0 ||
+        (theory.proponents && theory.proponents.length > 0)) && (
         <Card className="mb-6 bg-card/80 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-base flex items-center">
@@ -209,24 +210,71 @@ export default function TheoryDetailPage() {
               Philosophers Associated With This Tradition
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {philosophers.map((p) => (
-                <Link
-                  key={p.id}
-                  href={`/philosophers/${p.id}`}
-                  className="group flex items-center justify-between p-3 rounded-md border border-border hover:border-primary/40 hover:bg-primary/5 transition-colors"
-                >
-                  <div>
-                    <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                      {p.name}
+          <CardContent className="space-y-4">
+            {philosophers.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {philosophers.map((p) => (
+                  <Link
+                    key={p.id}
+                    href={`/philosophers/${p.id}`}
+                    className="group flex items-center justify-between p-3 rounded-md border border-border hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                  >
+                    <div>
+                      <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                        {p.name}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{p.era}</div>
                     </div>
-                    <div className="text-xs text-muted-foreground">{p.era}</div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* Proponents not yet in the philosopher database — show as
+                unlinked Badge list with a note. Guarantees this section
+                appears for every theory. */}
+            {theory.proponents && theory.proponents.length > 0 && (
+              (() => {
+                const linkedNames = new Set(
+                  philosophers.map((p) => p.name.toLowerCase())
+                );
+                const extras = theory.proponents.filter(
+                  (name) => !linkedNames.has(name.toLowerCase())
+                );
+                if (extras.length === 0) return null;
+                return (
+                  <div
+                    className={
+                      philosophers.length > 0
+                        ? 'border-t border-border pt-4 space-y-2'
+                        : 'space-y-2'
+                    }
+                  >
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-headline">
+                      {philosophers.length > 0
+                        ? 'Additional key thinkers'
+                        : 'Key thinkers'}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {extras.map((name) => (
+                        <Badge
+                          key={name}
+                          variant="outline"
+                          className="text-xs border-border/60"
+                        >
+                          {name}
+                        </Badge>
+                      ))}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground/70 italic">
+                      Individual profile pages for these thinkers are coming
+                      soon.
+                    </p>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-                </Link>
-              ))}
-            </div>
+                );
+              })()
+            )}
           </CardContent>
         </Card>
       )}
