@@ -9,6 +9,7 @@ import { Newspaper, Calendar, User, ArrowRight, PenTool } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getPublishedBlogPosts } from '@/app/actions/blog';
 import { useAdmin } from '@/hooks/use-admin';
+import { displayAuthorName } from '@/lib/official-author';
 import type { BlogPost } from '@/types';
 
 function formatDate(d: any): string {
@@ -67,7 +68,7 @@ export default function BlogPage() {
                   <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
                     <span className="flex items-center gap-1">
                       <User className="h-3 w-3" />
-                      {post.authorName}
+                      {displayAuthorName(post.authorId, post.authorName)}
                     </span>
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />

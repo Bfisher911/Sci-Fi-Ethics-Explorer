@@ -18,6 +18,10 @@ import {
   updateBlogPost,
   getBlogPostById,
 } from '@/app/actions/blog';
+import {
+  OFFICIAL_AUTHOR_NAME,
+  OFFICIAL_AUTHOR_UID,
+} from '@/lib/official-author';
 import type { BlogPost } from '@/types';
 
 function slugify(text: string): string {
@@ -98,13 +102,16 @@ export default function BlogEditorPage() {
     }
     setSaving(true);
     try {
+      // Admin-published blog posts are first-party platform content and
+      // are attributed to the canonical site author (Professor Paradox).
+      // The acting admin's UID is preserved on the audit trail server-side.
       const postData = {
         title: title.trim(),
         slug: slug.trim() || slugify(title),
         excerpt: excerpt.trim() || body.trim().slice(0, 200),
         body: body.trim(),
-        authorId: user.uid,
-        authorName: user.displayName || user.email || 'Admin',
+        authorId: OFFICIAL_AUTHOR_UID,
+        authorName: OFFICIAL_AUTHOR_NAME,
         tags: tags
           .split(',')
           .map((t) => t.trim())

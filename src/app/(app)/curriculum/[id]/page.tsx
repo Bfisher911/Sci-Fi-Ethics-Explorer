@@ -38,6 +38,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useAdmin } from '@/hooks/use-admin';
 import { useToast } from '@/hooks/use-toast';
 import { getUserProfile } from '@/app/actions/user';
+import { displayAuthorName } from '@/lib/official-author';
 import type {
   Certificate,
   CurriculumPath,
@@ -251,9 +252,9 @@ export default function CurriculumDetailPage() {
                   {curriculum.title}
                 </h1>
                 <p className="text-muted-foreground mt-1">{curriculum.description}</p>
-                {curriculum.creatorName && (
+                {(curriculum.creatorName || curriculum.creatorId) && (
                   <p className="text-sm text-muted-foreground mt-2">
-                    Created by {curriculum.creatorName}
+                    Created by {displayAuthorName(curriculum.creatorId, curriculum.creatorName)}
                   </p>
                 )}
               </div>

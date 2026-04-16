@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getStoryById } from '@/app/actions/stories';
 import { mockStories } from '@/data/mock-data';
+import { displayAuthorName } from '@/lib/official-author';
 import type { Story, StorySegment, StoryChoice } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -422,7 +423,7 @@ export default function StoryDetailPage() {
         <CardHeader className="relative">
           <CardTitle className="text-3xl md:text-4xl font-bold text-primary font-headline">{story.title}</CardTitle>
           <CardDescription className="text-md text-muted-foreground">
-            By {story.author} | Genre: {story.genre} | Theme: {story.theme}
+            By {displayAuthorName(story.authorId, story.author)} | Genre: {story.genre} | Theme: {story.theme}
           </CardDescription>
 
           {totalSegments > 1 && (

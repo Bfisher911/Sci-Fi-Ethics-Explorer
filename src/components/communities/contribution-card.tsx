@@ -16,6 +16,10 @@ import {
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import { cn } from '@/lib/utils';
 import type { CommunityContribution, ContributionType } from '@/types';
+import {
+  displayAuthorAvatar,
+  displayAuthorName,
+} from '@/lib/official-author';
 
 interface ContributionCardProps {
   contribution: CommunityContribution;
@@ -93,15 +97,25 @@ export function ContributionCard({
           <div className="mt-auto flex items-center justify-between gap-2 pt-2">
             <div className="flex items-center gap-2 min-w-0">
               <Avatar className="h-6 w-6">
-                {contribution.contributorAvatarUrl && (
-                  <AvatarImage src={contribution.contributorAvatarUrl} />
+                {(displayAuthorAvatar(contribution.contributorId, contribution.contributorName) ||
+                  contribution.contributorAvatarUrl) && (
+                  <AvatarImage
+                    src={
+                      displayAuthorAvatar(
+                        contribution.contributorId,
+                        contribution.contributorName
+                      ) || contribution.contributorAvatarUrl
+                    }
+                  />
                 )}
                 <AvatarFallback className="text-[10px]">
-                  {initials(contribution.contributorName)}
+                  {initials(
+                    displayAuthorName(contribution.contributorId, contribution.contributorName)
+                  )}
                 </AvatarFallback>
               </Avatar>
               <span className="text-xs text-muted-foreground truncate">
-                {contribution.contributorName}
+                {displayAuthorName(contribution.contributorId, contribution.contributorName)}
               </span>
               <span className="text-xs text-muted-foreground">·</span>
               <span className="text-xs text-muted-foreground whitespace-nowrap">

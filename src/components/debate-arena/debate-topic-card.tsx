@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Users, CalendarDays, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
+import { displayAuthorName } from '@/lib/official-author';
 
 interface DebateTopicCardProps {
   debate: Debate;
@@ -81,7 +82,7 @@ export function DebateTopicCard({ debate }: DebateTopicCardProps) {
           </div>
           <div className="text-sm text-muted-foreground flex items-center">
             <MessageSquare className="h-4 w-4 mr-1.5" />
-            Created by {debate.creatorName}
+            Created by {displayAuthorName(debate.creatorId, debate.creatorName)}
           </div>
         </CardFooter>
       </Card>

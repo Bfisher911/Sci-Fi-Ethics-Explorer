@@ -14,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { User, Calendar, ArrowRight } from 'lucide-react';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
+import { displayAuthorName } from '@/lib/official-author';
 
 interface CommunityDilemmaCardProps {
   dilemma: SubmittedDilemma;
@@ -72,7 +73,7 @@ export function CommunityDilemmaCard({ dilemma }: CommunityDilemmaCardProps) {
         <CardFooter className="border-t pt-4 text-xs text-muted-foreground flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
           <div className="flex items-center gap-3 flex-wrap">
             <span className="flex items-center">
-              <User className="h-3.5 w-3.5 mr-1.5" /> {dilemma.authorName}
+              <User className="h-3.5 w-3.5 mr-1.5" /> {displayAuthorName(dilemma.authorId, dilemma.authorName)}
             </span>
             <span className="flex items-center">
               <Calendar className="h-3.5 w-3.5 mr-1.5" /> {formattedDate}

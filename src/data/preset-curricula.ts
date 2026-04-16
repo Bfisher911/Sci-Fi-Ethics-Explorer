@@ -1,4 +1,8 @@
 import type { CurriculumPath } from '@/types';
+import {
+  OFFICIAL_AUTHOR_NAME,
+  OFFICIAL_AUTHOR_UID,
+} from '@/lib/official-author';
 
 /**
  * Pre-built learning paths available to all users. These are seeded into
@@ -15,8 +19,8 @@ export const presetCurricula: CurriculumPath[] = [
     title: 'Introduction to Technology Ethics',
     description:
       'A beginner-friendly path covering the foundations: what ethical frameworks exist, how they apply to technology, and why science fiction has been thinking about these problems longer than Silicon Valley has. Complete all required items and earn your certificate.',
-    creatorId: 'system',
-    creatorName: 'Sci-Fi Ethics Explorer',
+    creatorId: OFFICIAL_AUTHOR_UID,
+    creatorName: OFFICIAL_AUTHOR_NAME,
     isPublic: true,
     isTemplate: true,
     modules: [
@@ -60,8 +64,8 @@ export const presetCurricula: CurriculumPath[] = [
     title: 'AI Rights & Machine Personhood',
     description:
       'A focused path on the most contested question in tech ethics: when (if ever) does a machine deserve moral consideration? Covers philosophical foundations, literary explorations, and film depictions.',
-    creatorId: 'system',
-    creatorName: 'Sci-Fi Ethics Explorer',
+    creatorId: OFFICIAL_AUTHOR_UID,
+    creatorName: OFFICIAL_AUTHOR_NAME,
     isPublic: true,
     isTemplate: true,
     modules: [
@@ -106,8 +110,8 @@ export const presetCurricula: CurriculumPath[] = [
     title: 'Surveillance, Privacy & Digital Identity',
     description:
       'From Orwell to social credit scores: a path through the ethics of watching, being watched, and the data trails we leave behind. Covers philosophical arguments, dystopian fiction, and modern TV depictions.',
-    creatorId: 'system',
-    creatorName: 'Sci-Fi Ethics Explorer',
+    creatorId: OFFICIAL_AUTHOR_UID,
+    creatorName: OFFICIAL_AUTHOR_NAME,
     isPublic: true,
     isTemplate: true,
     modules: [
@@ -150,8 +154,8 @@ export const presetCurricula: CurriculumPath[] = [
     title: 'Environmental Ethics Through Sci-Fi',
     description:
       'Climate change, terraforming, and the moral status of ecosystems. This path connects environmental philosophy to the science-fiction writers and stories that imagine ecological futures.',
-    creatorId: 'system',
-    creatorName: 'Sci-Fi Ethics Explorer',
+    creatorId: OFFICIAL_AUTHOR_UID,
+    creatorName: OFFICIAL_AUTHOR_NAME,
     isPublic: true,
     isTemplate: true,
     modules: [
@@ -196,8 +200,8 @@ export const presetCurricula: CurriculumPath[] = [
     title: 'Cosmic Ethics & First Contact',
     description:
       'What do we owe aliens? What do they owe us? A path through cosmopolitanism, game theory, and the science fiction that stages the encounter with radically different minds.',
-    creatorId: 'system',
-    creatorName: 'Sci-Fi Ethics Explorer',
+    creatorId: OFFICIAL_AUTHOR_UID,
+    creatorName: OFFICIAL_AUTHOR_NAME,
     isPublic: true,
     isTemplate: true,
     modules: [

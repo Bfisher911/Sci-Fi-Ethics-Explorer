@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Users, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { PremiumGate } from '@/components/gating/premium-gate';
+import { displayAuthorName } from '@/lib/official-author';
 
 /**
  * Workshop listing page with ability to create new workshops.
@@ -102,7 +103,7 @@ function WorkshopsPageInner() {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Hosted by {workshop.hostName}
+                  Hosted by {displayAuthorName(workshop.hostId, workshop.hostName)}
                 </p>
                 <Link href={`/workshops/${workshop.id}`}>
                   <Button variant="outline" size="sm" className="w-full gap-2 mt-2">

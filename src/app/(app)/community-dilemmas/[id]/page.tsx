@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 
 import { db } from '@/lib/firebase/config';
 import type { SubmittedDilemma } from '@/types';
+import { displayAuthorName } from '@/lib/official-author';
 
 import {
   Card,
@@ -250,7 +251,7 @@ export default function CommunityDilemmaDetailPage() {
           <CardDescription className="flex flex-wrap gap-4 text-sm">
             <span className="flex items-center">
               <User className="h-4 w-4 mr-1.5" />
-              {dilemma.authorName}
+              {displayAuthorName(dilemma.authorId, dilemma.authorName)}
             </span>
             <span className="flex items-center">
               <Calendar className="h-4 w-4 mr-1.5" />

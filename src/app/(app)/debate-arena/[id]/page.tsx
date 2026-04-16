@@ -24,6 +24,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import type { Debate, DebateArgument } from '@/types';
+import { displayAuthorName } from '@/lib/official-author';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
 import { AdminActions } from '@/components/admin/admin-actions';
@@ -274,7 +275,7 @@ export default function DebateDetailPage() {
           <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
             <span className="flex items-center">
               <User className="h-4 w-4 mr-1.5" />
-              Created by {debate.creatorName}
+              Created by {displayAuthorName(debate.creatorId, debate.creatorName)}
             </span>
             <span className="flex items-center">
               <CalendarDays className="h-4 w-4 mr-1.5" />

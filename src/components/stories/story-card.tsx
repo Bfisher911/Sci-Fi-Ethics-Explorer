@@ -9,6 +9,7 @@ import { ArrowRight, Clock, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { DilemmaImage } from '@/components/community-dilemmas/dilemma-image';
+import { displayAuthorName } from '@/lib/official-author';
 
 interface StoryCardProps {
   story: Story;
@@ -73,7 +74,7 @@ export function StoryCard({ story, isCommunity }: StoryCardProps) {
       </CardHeader>
       <CardContent className="flex-grow space-y-2">
         <CardDescription className="text-sm text-foreground/80 line-clamp-3">{story.description}</CardDescription>
-        <p className="text-xs text-muted-foreground">By: {story.author}</p>
+        <p className="text-xs text-muted-foreground">By: {displayAuthorName(story.authorId, story.author)}</p>
 
         {(story.subGenre || story.complexity || (story.ethicalFocus && story.ethicalFocus.length > 0) || story.techLevel) && (
           <div className="flex flex-wrap gap-1.5 pt-1">

@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Calendar, User } from 'lucide-react';
 import { getBlogPostBySlug, deleteBlogPost } from '@/app/actions/blog';
 import { AdminActions } from '@/components/admin/admin-actions';
+import { displayAuthorName, displayAuthorId } from '@/lib/official-author';
 import type { BlogPost } from '@/types';
 
 function formatDate(d: any): string {
@@ -80,7 +81,16 @@ export default function BlogPostPage() {
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <User className="h-3.5 w-3.5" />
-                  {post.authorName}
+                  {displayAuthorId(post.authorId, post.authorName) ? (
+                    <Link
+                      href={`/users/${displayAuthorId(post.authorId, post.authorName)}`}
+                      className="hover:text-primary hover:underline"
+                    >
+                      {displayAuthorName(post.authorId, post.authorName)}
+                    </Link>
+                  ) : (
+                    displayAuthorName(post.authorId, post.authorName)
+                  )}
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="h-3.5 w-3.5" />

@@ -3,6 +3,7 @@
 import type { Story, StorySegment } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckSquare, BookOpen } from 'lucide-react';
+import { displayAuthorName } from '@/lib/official-author';
 
 interface StoryPreviewProps {
   story: Partial<Story>;
@@ -22,7 +23,7 @@ export function StoryPreview({ story }: StoryPreviewProps): JSX.Element {
             {story.title || 'Untitled Story'}
           </CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
-            {story.author && `By ${story.author}`}
+            {(story.author || story.authorId) && `By ${displayAuthorName(story.authorId, story.author)}`}
             {story.genre && ` | Genre: ${story.genre}`}
             {story.theme && ` | Theme: ${story.theme}`}
           </CardDescription>

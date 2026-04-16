@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import type { Story } from '@/types';
 import { getAllStories } from '@/app/actions/admin';
+import { displayAuthorName } from '@/lib/official-author';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -162,7 +163,7 @@ export default function AdminStoriesPage() {
                   <TableCell className="font-medium max-w-[200px] truncate">
                     {story.title}
                   </TableCell>
-                  <TableCell>{story.author}</TableCell>
+                  <TableCell>{displayAuthorName(story.authorId, story.author)}</TableCell>
                   <TableCell>{statusBadge(story.status)}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{story.genre}</Badge>

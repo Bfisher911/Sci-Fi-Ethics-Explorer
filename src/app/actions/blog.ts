@@ -8,6 +8,11 @@ import {
 import type { BlogPost } from '@/types';
 import { timestampToDate } from '@/lib/firebase/firestore-helpers';
 import { requireAdmin } from '@/lib/admin';
+import {
+  OFFICIAL_AUTHOR_NAME,
+  OFFICIAL_AUTHOR_UID,
+  isOfficialAuthor,
+} from '@/lib/official-author';
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -89,9 +94,24 @@ export async function createBlogPost(
 ): Promise<ActionResult<string>> {
   try {
     await requireAdmin(adminUid);
+    // First-party blog posts are platform content. Default attribution to
+    // Professor Paradox unless an explicit non-official authorId was set.
+    // (`isOfficialAuthor` is tolerant — accepts the canonical UID, the
+    //  display name, or legacy 'system' values.)
+    const useOfficial =
+      !data.authorId ||
+      data.authorId === adminUid ||
+      isOfficialAuthor(data.authorId);
+    const normalized = useOfficial
+      ? {
+          ...data,
+          authorId: OFFICIAL_AUTHOR_UID,
+          authorName: OFFICIAL_AUTHOR_NAME,
+        }
+      : data;
     const ref = await addDoc(collection(db, 'blogPosts'), {
-      ...data,
-      publishedAt: data.status === 'published' ? serverTimestamp() : null,
+      ...normalized,
+      publishedAt: normalized.status === 'published' ? serverTimestamp() : null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });

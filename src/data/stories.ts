@@ -1,5 +1,14 @@
 import type { Story } from '@/types';
+import {
+  OFFICIAL_AUTHOR_NAME,
+  OFFICIAL_AUTHOR_UID,
+} from '@/lib/official-author';
 
+/**
+ * Seeded site stories. All entries here are first-party platform content
+ * authored by the canonical site author (Professor Paradox). User-created
+ * stories live in Firestore under the real submitter's UID.
+ */
 export const mockStories: Story[] = [
   // ─────────────────────────────────────────────────────────────────
   // 1. THE ALGERNON GAMBIT (Interactive)
@@ -11,7 +20,8 @@ export const mockStories: Story[] = [
       'An experimental AI achieves sentience behind the walls of a private lab. Its creator must decide what is owed to a mind she built on a government contract.',
     genre: 'Cyberpunk',
     theme: 'AI Sentience',
-    author: 'Dr. Evelyn Hayes',
+    author: OFFICIAL_AUTHOR_NAME,
+    authorId: OFFICIAL_AUTHOR_UID,
     imageUrl: '/images/stories/the-algernon-gambit.png',
     imageHint: 'neon lab',
     estimatedReadingTime: '25 min read',
@@ -179,7 +189,8 @@ export const mockStories: Story[] = [
       'Halfway to a new sun, the generation ship Odyssey loses half its life support. The captain has six hours and nine thousand sleepers to choose from.',
     genre: 'Space Opera',
     theme: 'Resource Scarcity',
-    author: 'Captain Eva Rostova',
+    author: OFFICIAL_AUTHOR_NAME,
+    authorId: OFFICIAL_AUTHOR_UID,
     imageUrl: '/images/stories/cryosleep-conundrum.png',
     imageHint: 'cryo pods',
     estimatedReadingTime: '25 min read',
@@ -347,7 +358,8 @@ export const mockStories: Story[] = [
       'In the days after her consciousness is transferred into a synthetic body, a wealthy industrialist tries to take inventory of what she has and has not kept of herself.',
     genre: 'Philosophical Sci-Fi',
     theme: 'Transhumanism',
-    author: 'The Cartographer',
+    author: OFFICIAL_AUTHOR_NAME,
+    authorId: OFFICIAL_AUTHOR_UID,
     imageUrl: '/images/stories/synthetic-souls.png',
     imageHint: 'twin figures',
     estimatedReadingTime: '20 min read',
@@ -447,7 +459,8 @@ export const mockStories: Story[] = [
       'A memory-editing detective is hired to erase a murder from her client\'s head. The trouble begins when she realizes whose head it was.',
     genre: 'Noir',
     theme: 'Memory and Identity',
-    author: 'Idris Vale',
+    author: OFFICIAL_AUTHOR_NAME,
+    authorId: OFFICIAL_AUTHOR_UID,
     imageUrl: '/images/stories/the-palimpsest-clause.png',
     imageHint: 'rain noir',
     estimatedReadingTime: '25 min read',
@@ -615,7 +628,8 @@ export const mockStories: Story[] = [
       'A linguist\'s research log, kept across the months that humanity made its first contact — and its first irreversible decision — with a visitor in the southern sea.',
     genre: 'First Contact',
     theme: 'Diplomacy and Otherness',
-    author: 'Dr. Nomusa Okafor',
+    author: OFFICIAL_AUTHOR_NAME,
+    authorId: OFFICIAL_AUTHOR_UID,
     imageUrl: '/images/stories/the-river-we-offered.png',
     imageHint: 'alien ocean',
     estimatedReadingTime: '20 min read',
@@ -715,7 +729,8 @@ export const mockStories: Story[] = [
       'A predictive policing algorithm flags a man for a crime he has not committed. The analyst assigned to him has six days to decide whether prediction is the same as evidence.',
     genre: 'Techno-Thriller',
     theme: 'Determinism and Surveillance',
-    author: 'Halide Emre',
+    author: OFFICIAL_AUTHOR_NAME,
+    authorId: OFFICIAL_AUTHOR_UID,
     imageUrl: '/images/stories/the-forecast-division.png',
     imageHint: 'city surveillance',
     estimatedReadingTime: '25 min read',

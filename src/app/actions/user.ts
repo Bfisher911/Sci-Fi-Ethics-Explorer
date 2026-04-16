@@ -4,6 +4,11 @@
 import { db } from '@/lib/firebase/config';
 import { doc, getDoc, setDoc, serverTimestamp, type Timestamp } from 'firebase/firestore';
 import type { UserProfile, AccountRole } from '@/types';
+import {
+  OFFICIAL_AUTHOR_PROFILE,
+  OFFICIAL_AUTHOR_UID,
+  isOfficialAuthor,
+} from '@/lib/official-author';
 
 type GetUserProfileResult = { success: true; data: UserProfile | null } | { success: false; error: string };
 type MutateUserProfileResult = { success: true } | { success: false; error: string };
@@ -16,6 +21,13 @@ export async function getUserProfile(uid: string): Promise<GetUserProfileResult>
     const errorMsg = "[SERVER ACTION] getUserProfile: Called with undefined, null, or empty UID. User UID is required to fetch profile.";
     console.error(errorMsg);
     return { success: false, error: "User UID is required to fetch profile and was not provided or was empty." };
+  }
+
+  // Synthetic profile for the canonical official site author. This is
+  // virtual — there is no Firestore `users/{OFFICIAL_AUTHOR_UID}` doc —
+  // so visiting /users/system-professor-paradox renders cleanly.
+  if (isOfficialAuthor(uid)) {
+    return { success: true, data: { ...OFFICIAL_AUTHOR_PROFILE, uid: OFFICIAL_AUTHOR_UID } };
   }
 
   if (!db) {
