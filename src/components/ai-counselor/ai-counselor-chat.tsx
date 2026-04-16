@@ -71,7 +71,28 @@ export function AICounselorChat({ sessionId, initialMessages, onMessagesUpdate }
     try {
       const flowInputMessages = [...messages, userMessage].map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }));
       const result = await chatWithCounselor({ messages: flowInputMessages, mode: devilsAdvocateMode ? 'devils-advocate' : 'counselor' });
-      
+
+      // The server action now always resolves with a structured payload.
+      // A populated `error`/`errorCode` means the upstream call failed —
+      // surface the real message instead of the old generic toast.
+      if (result.error) {
+        const friendly =
+          result.errorCode === 'missing_api_key'
+            ? result.error
+            : result.errorCode === 'rate_limited'
+            ? 'The Gemini API is rate-limiting requests right now. Wait a minute and try again.'
+            : result.error || 'The AI counselor could not respond. Please try again.';
+        setError(friendly);
+        const errorResponse: ChatMessage = {
+          id: Date.now().toString() + '-error',
+          role: 'assistant',
+          content: friendly,
+          timestamp: new Date(),
+        };
+        setMessages((prevMessages) => [...prevMessages, errorResponse]);
+        return;
+      }
+
       const aiResponse: ChatMessage = {
         id: Date.now().toString() + '-assistant',
         role: 'assistant',
@@ -81,27 +102,24 @@ export function AICounselorChat({ sessionId, initialMessages, onMessagesUpdate }
       const updatedMessages = [...messages, userMessage, aiResponse];
       setMessages(updatedMessages);
       onMessagesUpdate?.(updatedMessages);
-      
-      // Genkit flows don't typically return quota info in this structure, this is a placeholder
-      // if (result.quotaInformation) { 
-      //   setQuotaInfo(result.quotaInformation);
-      // }
 
     } catch (err: any) {
-      console.error("Error chatting with counselor:", err);
+      // Should now be rare — the action no longer throws — but kept as a
+      // belt-and-braces fallback in case the network itself is down.
+      console.error('Error chatting with counselor:', err);
       const rawMessage: string = err?.message ?? '';
       const isSanitizedServerError =
         rawMessage.includes('Server Components render') ||
         rawMessage.includes('digest property') ||
         rawMessage.includes('omitted in production');
       const friendlyMessage = isSanitizedServerError
-        ? "The AI counselor is temporarily unavailable. Please try again in a moment."
-        : rawMessage || "Failed to get response from AI counselor. Please try again.";
+        ? 'The AI counselor is temporarily unavailable. Please try again in a moment.'
+        : rawMessage || 'Failed to get response from AI counselor. Please try again.';
       setError(friendlyMessage);
       const errorResponse: ChatMessage = {
         id: Date.now().toString() + '-error',
         role: 'assistant',
-        content: "I'm sorry, I encountered an error trying to process your request. Please try again later.",
+        content: friendlyMessage,
         timestamp: new Date(),
       };
       setMessages((prevMessages) => [...prevMessages, errorResponse]);
