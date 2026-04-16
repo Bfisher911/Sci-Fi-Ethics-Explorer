@@ -693,6 +693,25 @@ export interface SciFiMedia {
   meta?: string;
 }
 
+// ─── Blog ───────────────────────────────────────────────────────────
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  body: string;
+  authorId: string;
+  authorName: string;
+  tags?: string[];
+  imageUrl?: string;
+  imageHint?: string;
+  status: 'draft' | 'published';
+  publishedAt?: Date | any;
+  createdAt: Date | any;
+  updatedAt?: Date | any;
+}
+
 // ─── Classroom ──────────────────────────────────────────────────────
 
 export interface Classroom {

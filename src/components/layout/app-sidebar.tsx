@@ -29,6 +29,7 @@ import {
   Search,
   Rocket,
   Clapperboard,
+  Newspaper,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -80,6 +81,7 @@ const scifiNavItems = [
 ];
 
 const footerNavItems = [
+  { href: '/blog', label: 'Blog', icon: Newspaper },
   { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
   { href: '/pricing', label: 'Pricing & Plans', icon: Gem },

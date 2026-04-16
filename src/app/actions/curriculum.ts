@@ -57,13 +57,23 @@ export async function getCurricula(): Promise<ActionResult<CurriculumPath[]>> {
       orderBy('createdAt', 'desc')
     );
     const snapshot = await getDocs(q);
-    const curricula = snapshot.docs.map((d) =>
+    const firestoreCurricula = snapshot.docs.map((d) =>
       curriculumFromDoc(d.id, d.data())
     );
-    return { success: true, data: curricula };
+
+    // Merge preset learning paths that haven't been seeded into Firestore.
+    const { presetCurricula } = await import('@/data/preset-curricula');
+    const existingIds = new Set(firestoreCurricula.map((c) => c.id));
+    const merged = [
+      ...firestoreCurricula,
+      ...presetCurricula.filter((p) => !existingIds.has(p.id)),
+    ];
+
+    return { success: true, data: merged };
   } catch (error) {
-    console.error('[curriculum] getCurricula error:', error);
-    return { success: false, error: String(error) };
+    console.error('[curriculum] getCurricula error, falling back to presets:', error);
+    const { presetCurricula } = await import('@/data/preset-curricula');
+    return { success: true, data: presetCurricula };
   }
 }
 
@@ -75,13 +85,18 @@ export async function getCurriculumById(
 ): Promise<ActionResult<CurriculumPath | null>> {
   try {
     const snap = await getDoc(doc(db, 'curricula', id));
-    if (!snap.exists()) {
-      return { success: true, data: null };
+    if (snap.exists()) {
+      return { success: true, data: curriculumFromDoc(snap.id, snap.data()) };
     }
-    return { success: true, data: curriculumFromDoc(snap.id, snap.data()) };
+    // Fallback to preset curricula
+    const { presetCurricula } = await import('@/data/preset-curricula');
+    const preset = presetCurricula.find((c) => c.id === id) || null;
+    return { success: true, data: preset };
   } catch (error) {
     console.error('[curriculum] getCurriculumById error:', error);
-    return { success: false, error: String(error) };
+    const { presetCurricula } = await import('@/data/preset-curricula');
+    const preset = presetCurricula.find((c) => c.id === id) || null;
+    return { success: true, data: preset };
   }
 }
 
