@@ -11,6 +11,7 @@ import {
   getAllStories,
   getModerationQueue,
 } from '@/app/actions/admin';
+import { getPendingCommunityBlogPosts } from '@/app/actions/blog';
 import {
   FileText,
   Users,
@@ -20,6 +21,7 @@ import {
   History,
   Brain,
   Award,
+  Newspaper,
 } from 'lucide-react';
 
 /**
@@ -31,17 +33,24 @@ export default function AdminDashboardPage() {
   const [usersCount, setUsersCount] = useState<number | null>(null);
   const [storiesCount, setStoriesCount] = useState<number | null>(null);
   const [moderationCount, setModerationCount] = useState<number | null>(null);
+  const [pendingBlogCount, setPendingBlogCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchCounts() {
-      const [dilemmasResult, usersResult, storiesResult, moderationResult] =
-        await Promise.all([
-          getPendingDilemmas(),
-          getAllUsers(),
-          getAllStories(),
-          user ? getModerationQueue(user.uid) : Promise.resolve(null),
-        ]);
+      const [
+        dilemmasResult,
+        usersResult,
+        storiesResult,
+        moderationResult,
+        blogQueueResult,
+      ] = await Promise.all([
+        getPendingDilemmas(),
+        getAllUsers(),
+        getAllStories(),
+        user ? getModerationQueue(user.uid) : Promise.resolve(null),
+        user ? getPendingCommunityBlogPosts(user.uid) : Promise.resolve(null),
+      ]);
 
       if (dilemmasResult.success) setPendingCount(dilemmasResult.data.length);
       if (usersResult.success) setUsersCount(usersResult.data.length);
@@ -56,6 +65,11 @@ export default function AdminDashboardPage() {
         );
       } else {
         setModerationCount(0);
+      }
+      if (blogQueueResult && blogQueueResult.success) {
+        setPendingBlogCount(blogQueueResult.data.length);
+      } else {
+        setPendingBlogCount(0);
       }
 
       setLoading(false);
@@ -78,6 +92,13 @@ export default function AdminDashboardPage() {
       icon: FileText,
       href: '/admin/dilemmas',
       description: 'Dilemmas awaiting moderation',
+    },
+    {
+      title: 'Pending Community Articles',
+      count: pendingBlogCount,
+      icon: Newspaper,
+      href: '/admin/community-blog',
+      description: 'User-submitted blog posts awaiting review',
     },
     {
       title: 'Total Users',

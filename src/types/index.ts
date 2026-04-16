@@ -701,6 +701,23 @@ export interface SciFiMedia {
 
 // ─── Blog ───────────────────────────────────────────────────────────
 
+/**
+ * The platform supports two parallel blog ecosystems:
+ *  - 'official'  — first-party articles published by the platform itself,
+ *                  always attributed to Professor Paradox. Created via the
+ *                  admin editor; visible at /blog.
+ *  - 'community' — articles submitted by logged-in users. Go through a
+ *                  pending → approved/rejected moderation flow that mirrors
+ *                  the existing dilemma queue. Approved posts show up at
+ *                  /community-blog.
+ *
+ * Legacy posts without an explicit `kind` are treated as 'official' if the
+ * authorId resolves to the canonical Professor Paradox UID, otherwise
+ * 'community'. See lib/official-author#isOfficialAuthor.
+ */
+export type BlogKind = 'official' | 'community';
+export type BlogSubmissionStatus = 'pending' | 'approved' | 'rejected';
+
 export interface BlogPost {
   id: string;
   title: string;
@@ -713,6 +730,21 @@ export interface BlogPost {
   imageUrl?: string;
   imageHint?: string;
   status: 'draft' | 'published';
+  /** Publication ecosystem this post belongs to. Defaults to 'official'. */
+  kind?: BlogKind;
+  /** Community-blog only: tracks the moderation pipeline. */
+  submissionStatus?: BlogSubmissionStatus;
+  /** Community-blog only: feed visibility once approved. */
+  globalVisibility?: GlobalVisibility;
+  /** Community-blog only: admin moderation flag, independent of submission. */
+  moderationStatus?: ModerationStatus;
+  /** Community-blog only: optional reviewer notes on a rejection. */
+  rejectionReason?: string;
+  /** Community-blog only: UID of the admin who reviewed the submission. */
+  reviewedBy?: string;
+  /** Community-blog only: cached display name of the reviewer. */
+  reviewedByName?: string;
+  reviewedAt?: Date | any;
   publishedAt?: Date | any;
   createdAt: Date | any;
   updatedAt?: Date | any;

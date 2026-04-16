@@ -5,11 +5,19 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Newspaper, Calendar, User, ArrowRight, PenTool } from 'lucide-react';
+import {
+  Newspaper,
+  Calendar,
+  User,
+  ArrowRight,
+  PenTool,
+  Users,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getPublishedBlogPosts } from '@/app/actions/blog';
 import { useAdmin } from '@/hooks/use-admin';
 import { displayAuthorName } from '@/lib/official-author';
+import { BlogKindBadge } from '@/components/blog/blog-kind-badge';
 import type { BlogPost } from '@/types';
 
 function formatDate(d: any): string {
@@ -34,22 +42,48 @@ export default function BlogPage() {
     <div className="container mx-auto py-8 px-4 max-w-4xl">
       <Card className="mb-8 p-6 bg-card/80 backdrop-blur-sm">
         <CardContent className="p-0">
-          <h1 className="text-4xl font-bold mb-4 text-primary font-headline flex items-center gap-3">
-            <Newspaper className="h-9 w-9" />
-            Blog
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            Articles on science fiction, technology ethics, and the ideas
-            shaping tomorrow's moral landscape.
-          </p>
-          {isAdmin && (
-            <Button asChild className="mt-4">
-              <Link href="/admin/blog/edit">
-                <PenTool className="h-4 w-4 mr-2" />
-                Write New Post
-              </Link>
-            </Button>
-          )}
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <BlogKindBadge kind="official" />
+              </div>
+              <h1 className="text-4xl font-bold mb-3 text-primary font-headline flex items-center gap-3">
+                <Newspaper className="h-9 w-9" />
+                Official Blog
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-2xl">
+                First-party articles from Professor Paradox on science fiction,
+                technology ethics, and the ideas shaping tomorrow's moral
+                landscape.
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Want to contribute your own piece? Read the{' '}
+                <Link
+                  href="/community-blog"
+                  className="text-accent hover:underline inline-flex items-center gap-1"
+                >
+                  <Users className="h-3 w-3" /> Community Blog
+                </Link>
+                .
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button asChild variant="outline">
+                <Link href="/community-blog">
+                  <Users className="h-4 w-4 mr-2" />
+                  Community Blog
+                </Link>
+              </Button>
+              {isAdmin && (
+                <Button asChild>
+                  <Link href="/admin/blog/edit">
+                    <PenTool className="h-4 w-4 mr-2" />
+                    Write Official Post
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -63,8 +97,16 @@ export default function BlogPage() {
         <div className="space-y-6">
           {posts.map((post) => (
             <Link key={post.id} href={`/blog/${post.slug}`} className="block group">
-              <Card className="bg-card/80 backdrop-blur-sm hover:border-primary/40 transition-colors">
+              <Card className="bg-card/80 backdrop-blur-sm hover:border-primary/40 transition-colors border-l-4 border-l-primary/50">
                 <CardHeader>
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <BlogKindBadge kind={post.kind || 'official'} authorId={post.authorId} size="sm" />
+                    {post.tags?.slice(0, 2).map((tag) => (
+                      <Badge key={tag} variant="secondary" className="text-[10px]">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
                     <span className="flex items-center gap-1">
                       <User className="h-3 w-3" />
