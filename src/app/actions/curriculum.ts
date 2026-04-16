@@ -122,12 +122,31 @@ export async function createCurriculum(
 
 /**
  * Update an existing curriculum.
+ *
+ * Authorization: only the original creator OR a platform admin may
+ * edit. Pass `requesterId` so the server can enforce this regardless
+ * of what the client sends. Backwards-compatible: omitting requesterId
+ * still works for legacy callers (system seed scripts).
  */
 export async function updateCurriculum(
   id: string,
-  data: Partial<CurriculumPath>
+  data: Partial<CurriculumPath>,
+  requesterId?: string
 ): Promise<ActionResult<undefined>> {
   try {
+    if (requesterId) {
+      const ref = doc(db, 'curricula', id);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        return { success: false, error: 'Curriculum not found.' };
+      }
+      const current = snap.data();
+      const { isUserAdmin } = await import('@/lib/admin');
+      const admin = await isUserAdmin(requesterId);
+      if (current.creatorId !== requesterId && !admin) {
+        return { success: false, error: 'Not authorized to edit this curriculum.' };
+      }
+    }
     const { id: _id, ...updateData } = data as any;
     await updateDoc(doc(db, 'curricula', id), {
       ...updateData,

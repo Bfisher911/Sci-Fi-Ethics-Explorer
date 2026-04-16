@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { getStoryById } from '@/app/actions/stories';
 import { mockStories } from '@/data/mock-data';
 import { displayAuthorName } from '@/lib/official-author';
+import { resolveSegmentImageUrl } from '@/lib/story-images';
 import type { Story, StorySegment, StoryChoice } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -449,7 +450,10 @@ export default function StoryDetailPage() {
 
         <div className="px-6 pb-4 relative">
           <StoryHeader
-            imageUrl={currentSegment.image || story.imageUrl}
+            imageUrl={
+              resolveSegmentImageUrl(story, currentSegment, currentIndex) ||
+              undefined
+            }
             imageHint={currentSegment.imageHint || story.imageHint}
             title={story.title}
             subtitle={`${story.genre} · ${story.theme}`}

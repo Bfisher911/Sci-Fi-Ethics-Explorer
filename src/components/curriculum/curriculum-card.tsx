@@ -12,9 +12,10 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { BookOpen, Users, Copy, Loader2, Sparkles, User } from 'lucide-react';
+import { BookOpen, Users, Copy, Loader2, Sparkles, User, Pencil } from 'lucide-react';
 import { cloneCurriculum } from '@/app/actions/curriculum';
 import { useAuth } from '@/hooks/use-auth';
+import { useAdmin } from '@/hooks/use-admin';
 import { useToast } from '@/hooks/use-toast';
 import type { CurriculumPath } from '@/types';
 
@@ -24,6 +25,7 @@ interface CurriculumCardProps {
 
 export function CurriculumCard({ curriculum }: CurriculumCardProps) {
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
   const router = useRouter();
   const { toast } = useToast();
   const [duplicating, setDuplicating] = useState(false);
@@ -109,6 +111,18 @@ export function CurriculumCard({ curriculum }: CurriculumCardProps) {
         <Button asChild className="flex-1">
           <Link href={`/curriculum/${curriculum.id}`}>View</Link>
         </Button>
+        {(isOwner || isAdmin) && (
+          <Button
+            asChild
+            variant="outline"
+            title={isOwner ? 'Edit your learning path' : 'Edit (admin)'}
+          >
+            <Link href={`/curriculum/${curriculum.id}/edit`}>
+              <Pencil className="h-4 w-4" />
+              <span className="ml-1 hidden sm:inline">Edit</span>
+            </Link>
+          </Button>
+        )}
         <Button
           variant="outline"
           onClick={handleDuplicate}

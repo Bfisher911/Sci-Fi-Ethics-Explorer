@@ -14,6 +14,9 @@ import {
   getCommunityInvites,
 } from '@/app/actions/communities';
 import { InstructorAnalytics } from '@/components/communities/instructor-analytics';
+import { CommunityGradebookView } from '@/components/communities/community-gradebook';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { BarChart3, GraduationCap } from 'lucide-react';
 import type { Community, CommunityMemberInfo, CommunityInvite } from '@/types';
 import Link from 'next/link';
 
@@ -132,11 +135,31 @@ export default function CommunityAnalyticsPage() {
       </h1>
       <p className="text-muted-foreground mb-6">{community.name}</p>
 
-      <InstructorAnalytics
-        communityId={community.id}
-        members={members}
-        invites={invites}
-      />
+      <Tabs defaultValue="overview">
+        <TabsList>
+          <TabsTrigger value="overview">
+            <BarChart3 className="h-4 w-4 mr-1.5" /> Overview
+          </TabsTrigger>
+          <TabsTrigger value="gradebook">
+            <GraduationCap className="h-4 w-4 mr-1.5" /> Gradebook
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="overview" className="mt-4">
+          <InstructorAnalytics
+            communityId={community.id}
+            members={members}
+            invites={invites}
+          />
+        </TabsContent>
+        <TabsContent value="gradebook" className="mt-4">
+          {user ? (
+            <CommunityGradebookView
+              communityId={community.id}
+              requesterId={user.uid}
+            />
+          ) : null}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

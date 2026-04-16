@@ -22,6 +22,7 @@ import type { Story, GlobalVisibility } from '@/types';
 import { timestampToDate } from '@/lib/firebase/firestore-helpers';
 import { isUserAdmin } from '@/lib/admin';
 import { saveVersion } from '@/lib/versions';
+import { healStoryImages } from '@/lib/story-images';
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -72,7 +73,7 @@ export async function getStories(
     const q = query(storiesRef, ...constraints);
     const snapshot = await getDocs(q);
 
-    const stories = snapshot.docs.map((d) => storyFromDoc(d.id, d.data()));
+    const stories = snapshot.docs.map((d) => healStoryImages(storyFromDoc(d.id, d.data())));
     return { success: true, data: stories };
   } catch (error) {
     console.error('[stories] getStories error:', error);
@@ -94,7 +95,10 @@ export async function getStoryById(
       return { success: true, data: null };
     }
 
-    return { success: true, data: storyFromDoc(snap.id, snap.data()) };
+    return {
+      success: true,
+      data: healStoryImages(storyFromDoc(snap.id, snap.data())),
+    };
   } catch (error) {
     console.error('[stories] getStoryById error:', error);
     return { success: false, error: String(error) };
@@ -206,7 +210,7 @@ export async function getCommunityStories(): Promise<ActionResult<Story[]>> {
     // Filter in memory: authorId must exist (community content is authored
     // by real users, not by the seed/import script which omits authorId).
     const stories = snapshot.docs
-      .map((d) => storyFromDoc(d.id, d.data()))
+      .map((d) => healStoryImages(storyFromDoc(d.id, d.data())))
       .filter((s) => !!s.authorId);
 
     // Newest first by publishedAt (fall back to title for undated records).
@@ -237,7 +241,7 @@ export async function getUserStories(
       orderBy('createdAt', 'desc')
     );
     const snapshot = await getDocs(q);
-    const stories = snapshot.docs.map((d) => storyFromDoc(d.id, d.data()));
+    const stories = snapshot.docs.map((d) => healStoryImages(storyFromDoc(d.id, d.data())));
     return { success: true, data: stories };
   } catch (error) {
     console.error('[stories] getUserStories error:', error);
@@ -264,7 +268,7 @@ export async function getDilemmaOfTheDay(): Promise<ActionResult<Story | null>> 
     );
     const index = dayOfYear % snapshot.docs.length;
     const d = snapshot.docs[index];
-    return { success: true, data: storyFromDoc(d.id, d.data()) };
+    return { success: true, data: healStoryImages(storyFromDoc(d.id, d.data())) };
   } catch (error) {
     console.error('[stories] getDilemmaOfTheDay error:', error);
     return { success: false, error: String(error) };

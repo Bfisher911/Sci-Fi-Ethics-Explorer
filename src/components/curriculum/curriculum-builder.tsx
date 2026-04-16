@@ -302,12 +302,16 @@ export function CurriculumBuilder({ curriculum, onSaved }: CurriculumBuilderProp
     setSaving(true);
 
     if (isEditing && curriculum) {
-      const result = await updateCurriculum(curriculum.id, {
-        title: title.trim(),
-        description: description.trim(),
-        isPublic,
-        modules,
-      });
+      const result = await updateCurriculum(
+        curriculum.id,
+        {
+          title: title.trim(),
+          description: description.trim(),
+          isPublic,
+          modules,
+        },
+        user?.uid
+      );
       setSaving(false);
       if (result.success) {
         setIsDirty(false);

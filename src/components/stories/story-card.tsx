@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { DilemmaImage } from '@/components/community-dilemmas/dilemma-image';
 import { displayAuthorName } from '@/lib/official-author';
+import { resolveStoryCoverUrl } from '@/lib/story-images';
 
 interface StoryCardProps {
   story: Story;
@@ -36,24 +37,30 @@ export function StoryCard({ story, isCommunity }: StoryCardProps) {
         </div>
       </div>
       <div className="relative w-full h-48 bg-muted overflow-hidden">
-        {story.imageUrl ? (
-          <Image
-            src={story.imageUrl}
-            alt={story.title}
-            fill
-            sizes="(max-width: 768px) 100vw, 400px"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            data-ai-hint={story.imageHint || 'sci-fi concept'}
-          />
-        ) : (
-          <DilemmaImage
-            title={story.title}
-            theme={story.theme}
-            hint={story.imageHint}
-            keywords={[story.subGenre, ...(story.ethicalFocus ?? [])]}
-            size="card"
-          />
-        )}
+        {(() => {
+          const cover = resolveStoryCoverUrl(story);
+          if (cover) {
+            return (
+              <Image
+                src={cover}
+                alt={story.title}
+                fill
+                sizes="(max-width: 768px) 100vw, 400px"
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                data-ai-hint={story.imageHint || 'sci-fi concept'}
+              />
+            );
+          }
+          return (
+            <DilemmaImage
+              title={story.title}
+              theme={story.theme}
+              hint={story.imageHint}
+              keywords={[story.subGenre, ...(story.ethicalFocus ?? [])]}
+              size="card"
+            />
+          );
+        })()}
         {isCommunity && (
           <div className="absolute top-2 left-2 z-10">
             <Badge className="bg-accent/90 text-accent-foreground flex items-center gap-1 shadow">

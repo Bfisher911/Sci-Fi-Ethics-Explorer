@@ -25,12 +25,27 @@ import {
   GitCompare,
   BarChart3,
   Award,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useRouter } from 'next/navigation';
 import {
   getCurriculumById,
   getEnrollment,
   enrollInCurriculum,
   updateEnrollmentProgress,
+  deleteCurriculum,
 } from '@/app/actions/curriculum';
 import { issueCertificate, getUserCertificates } from '@/app/actions/certificates';
 import { ModuleProgress } from '@/components/curriculum/module-progress';
@@ -264,12 +279,25 @@ export default function CurriculumDetailPage() {
                   {curriculum.enrollmentCount || 0} enrolled
                 </Badge>
                 {user && (curriculum.creatorId === user.uid || isAdmin) && (
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/curriculum/${id}/dashboard`}>
-                      <BarChart3 className="h-4 w-4 mr-2" />
-                      Dashboard
-                    </Link>
-                  </Button>
+                  <>
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/curriculum/${id}/dashboard`}>
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Dashboard
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/curriculum/${id}/edit`}>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit
+                      </Link>
+                    </Button>
+                    <DeleteCurriculumButton
+                      curriculumId={id}
+                      curriculumTitle={curriculum.title}
+                      requesterId={user.uid}
+                    />
+                  </>
                 )}
                 {!enrollment && (
                   <Button onClick={handleEnroll} disabled={enrolling || !user}>
@@ -400,5 +428,73 @@ export default function CurriculumDetailPage() {
         ))}
       </div>
     </TooltipProvider>
+  );
+}
+
+/**
+ * Confirmation-gated delete button used by both creators and admins.
+ * Calls the existing `deleteCurriculum` server action which already
+ * enforces creator-or-admin authorization.
+ */
+function DeleteCurriculumButton({
+  curriculumId,
+  curriculumTitle,
+  requesterId,
+}: {
+  curriculumId: string;
+  curriculumTitle: string;
+  requesterId: string;
+}) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [busy, setBusy] = useState(false);
+
+  async function handleDelete() {
+    setBusy(true);
+    const res = await deleteCurriculum(curriculumId, requesterId);
+    setBusy(false);
+    if (res.success) {
+      toast({ title: 'Learning path deleted' });
+      router.push('/curriculum');
+    } else {
+      toast({
+        title: 'Could not delete',
+        description: res.error,
+        variant: 'destructive',
+      });
+    }
+  }
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-destructive hover:text-destructive"
+          disabled={busy}
+        >
+          {busy ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Trash2 className="h-4 w-4 mr-2" />
+          )}
+          Delete
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete this learning path?</AlertDialogTitle>
+          <AlertDialogDescription>
+            "{curriculumTitle}" will be removed permanently. Enrolled
+            users will lose access to it. This can't be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
