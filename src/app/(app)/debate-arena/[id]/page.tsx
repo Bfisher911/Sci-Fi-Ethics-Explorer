@@ -28,6 +28,52 @@ import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
 import { AdminActions } from '@/components/admin/admin-actions';
 import { adminDeleteArtifact } from '@/app/actions/admin';
+import { PageWalkthrough } from '@/components/walkthroughs/page-walkthrough';
+
+const DEBATE_WALKTHROUGH_STEPS = [
+  {
+    element: '[data-tour="debate-header"]',
+    title: 'The debate topic',
+    description:
+      'Debates center on a single contested question. Read the description carefully — the exact framing is what arguments will be judged on.',
+    side: 'bottom' as const,
+  },
+  {
+    element: '[data-tour="debate-status"]',
+    title: 'Debate status',
+    description:
+      'Open debates accept new arguments. Voting debates let you rate existing ones. Closed debates are archived with a final tally.',
+    side: 'bottom' as const,
+  },
+  {
+    element: '[data-tour="debate-scores"]',
+    title: 'Live scoreboard',
+    description:
+      'Pro and Con scores are the sum of upvotes minus downvotes on each side\'s arguments. The stronger-supported side leads.',
+    side: 'bottom' as const,
+  },
+  {
+    element: '[data-tour="debate-pro"]',
+    title: 'Pro side',
+    description:
+      'Arguments in favor of the proposition. Strong pros give reasons, cite sources, address obvious objections, and avoid insulting the other side.',
+    side: 'right' as const,
+  },
+  {
+    element: '[data-tour="debate-con"]',
+    title: 'Con side',
+    description:
+      'Arguments against the proposition. Both sides are voted on independently — good counter-arguments can win a debate even for the minority view.',
+    side: 'left' as const,
+  },
+  {
+    element: '[data-tour="debate-submit"]',
+    title: 'Add your voice',
+    description:
+      'Pick a side, write your argument, and submit. You can upvote or downvote arguments on either side. Stay on-topic and civil.',
+    side: 'top' as const,
+  },
+];
 
 const statusVariants: Record<string, { label: string; className: string }> = {
   open: { label: 'Open', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
@@ -158,11 +204,17 @@ export default function DebateDetailPage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <Link href="/debate-arena">
-        <Button variant="ghost" className="mb-4">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Debates
-        </Button>
-      </Link>
+      <div className="flex gap-2 mb-4 flex-wrap">
+        <Link href="/debate-arena">
+          <Button variant="ghost">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Debates
+          </Button>
+        </Link>
+        <PageWalkthrough
+          storageKey="sfe.debateDetail.walkthrough.completed"
+          steps={DEBATE_WALKTHROUGH_STEPS}
+        />
+      </div>
 
       <AdminActions
         artifactLabel="Debate"
@@ -172,13 +224,17 @@ export default function DebateDetailPage() {
       />
 
       {/* Debate Header */}
-      <Card className="mb-8 bg-card/80 backdrop-blur-sm">
+      <Card data-tour="debate-header" className="mb-8 bg-card/80 backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-3 mb-3" data-tour="debate-status">
                 <Swords className="h-6 w-6 text-primary" />
-                <Badge variant="outline" className={statusInfo.className}>
+                <Badge
+                  variant="outline"
+                  className={statusInfo.className}
+                  title={`Debate is ${statusInfo.label.toLowerCase()}. Open debates accept new arguments; closed debates are archived.`}
+                >
                   {statusInfo.label}
                 </Badge>
               </div>
@@ -252,7 +308,11 @@ export default function DebateDetailPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-6 text-center">
+            <div
+              className="grid grid-cols-2 gap-6 text-center"
+              data-tour="debate-scores"
+              title="Scores are the sum of upvotes minus downvotes on each side's arguments"
+            >
               <div>
                 <p className="text-2xl font-bold text-green-400">{proScore}</p>
                 <p className="text-sm text-muted-foreground">Pro Score ({proArgs.length} arguments)</p>
@@ -276,7 +336,7 @@ export default function DebateDetailPage() {
       {/* Arguments Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {/* Pro Column */}
-        <div>
+        <div data-tour="debate-pro">
           <h2 className="text-xl font-semibold text-green-400 mb-4 flex items-center">
             <span className="w-3 h-3 rounded-full bg-green-500 mr-2" />
             Pro Arguments ({proArgs.length})
@@ -297,7 +357,7 @@ export default function DebateDetailPage() {
         </div>
 
         {/* Con Column */}
-        <div>
+        <div data-tour="debate-con">
           <h2 className="text-xl font-semibold text-red-400 mb-4 flex items-center">
             <span className="w-3 h-3 rounded-full bg-red-500 mr-2" />
             Con Arguments ({conArgs.length})
@@ -320,7 +380,9 @@ export default function DebateDetailPage() {
 
       {/* Submit Argument Form */}
       {debate.status !== 'closed' && (
-        <SubmitArgumentForm debateId={debateId} onArgumentSubmitted={fetchData} />
+        <div data-tour="debate-submit">
+          <SubmitArgumentForm debateId={debateId} onArgumentSubmitted={fetchData} />
+        </div>
       )}
     </div>
   );

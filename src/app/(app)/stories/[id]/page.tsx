@@ -31,7 +31,53 @@ import { getMoodTheme } from '@/lib/story-atmosphere';
 import { useAmbientTone } from '@/hooks/use-ambient-tone';
 import { AdminActions } from '@/components/admin/admin-actions';
 import { deleteStory } from '@/app/actions/stories';
+import { PageWalkthrough } from '@/components/walkthroughs/page-walkthrough';
 import { cn } from '@/lib/utils';
+
+const STORY_WALKTHROUGH_STEPS = [
+  {
+    element: '[data-tour="story-progress"]',
+    title: 'Your progress',
+    description:
+      'This bar shows how far you are through the story. Linear stories advance part-by-part; interactive stories track each branch you visit.',
+    side: 'bottom' as const,
+  },
+  {
+    element: '[data-tour="story-segment"]',
+    title: 'The current part',
+    description:
+      'This is the current section of the narrative. For long stories, you may need to subscribe after the first two parts — the lock badge will tell you.',
+    side: 'top' as const,
+  },
+  {
+    element: '[data-tour="story-continue"]',
+    title: 'Advance the story',
+    description:
+      'When a section ends, click "Continue Reading" to go to the next part. On interactive stories, you will see choice buttons instead — each choice leads to a different outcome.',
+    side: 'top' as const,
+  },
+  {
+    element: '[data-tour="story-map"]',
+    title: 'Story Map',
+    description:
+      'Open the map to see every segment you have visited and jump back to earlier decisions. Unvisited branches are fogged out until you find them.',
+    side: 'bottom' as const,
+  },
+  {
+    element: '[data-tour="story-atmosphere"]',
+    title: 'Atmosphere toggle',
+    description:
+      'Turn this on to enable a mood-matched background and a subtle ambient drone keyed to the story\'s theme. Off by default.',
+    side: 'bottom' as const,
+  },
+  {
+    element: '[data-tour="story-impact"]',
+    title: 'Ethical alignment',
+    description:
+      'On interactive stories, this floating panel tracks which ethical frameworks your choices align with — utilitarian, deontological, virtue, and more.',
+    side: 'left' as const,
+  },
+];
 
 export default function StoryDetailPage() {
   const params = useParams();
@@ -290,6 +336,8 @@ export default function StoryDetailPage() {
           variant="outline"
           size="sm"
           onClick={() => setShowStoryMap((v) => !v)}
+          data-tour="story-map"
+          title="See every segment you've visited and jump back to earlier decisions"
         >
           <Map className="mr-2 h-4 w-4" />
           {showStoryMap ? 'Hide' : 'View'} Story Map
@@ -300,6 +348,7 @@ export default function StoryDetailPage() {
           onClick={() => setAtmosphereOn((v) => !v)}
           title={atmosphereOn ? `Atmosphere on — ${mood.label}` : 'Enable atmospheric background + ambient audio'}
           aria-pressed={atmosphereOn}
+          data-tour="story-atmosphere"
         >
           {atmosphereOn ? (
             <Volume2 className="mr-2 h-4 w-4" />
@@ -315,6 +364,10 @@ export default function StoryDetailPage() {
         />
         <ShareToMessageDialog
           artifact={{ type: 'story', id: story.id, title: story.title }}
+        />
+        <PageWalkthrough
+          storageKey="sfe.storyReader.walkthrough.completed"
+          steps={STORY_WALKTHROUGH_STEPS}
         />
       </div>
 
@@ -373,7 +426,12 @@ export default function StoryDetailPage() {
           </CardDescription>
 
           {totalSegments > 1 && (
-            <div className="pt-3 space-y-1.5" aria-label="Reading progress">
+            <div
+              className="pt-3 space-y-1.5"
+              aria-label="Reading progress"
+              data-tour="story-progress"
+              title={`${story.isInteractive ? 'Segments visited' : 'Parts read'}: ${story.isInteractive ? visitedSegments.length : currentIndex + 1} of ${totalSegments}`}
+            >
               <div className="flex items-center justify-between text-[11px] uppercase tracking-widest text-muted-foreground/80">
                 <span>
                   {story.isInteractive ? 'Your Path' : 'Part'}{' '}
@@ -406,6 +464,7 @@ export default function StoryDetailPage() {
         <div
           ref={segmentRef}
           key={currentSegment.id}
+          data-tour="story-segment"
           className={cn(
             'transition-opacity duration-300 ease-out relative',
             isTransitioning ? 'opacity-0' : 'animate-in fade-in opacity-100'
@@ -436,6 +495,8 @@ export default function StoryDetailPage() {
                 <Button
                   onClick={handleContinueReading}
                   size="lg"
+                  data-tour="story-continue"
+                  title="Advance to the next part of the story"
                   className="group relative w-full min-h-14 bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_24px_-6px_hsl(var(--primary)/0.5)] overflow-hidden"
                 >
                   <span className="relative z-10 inline-flex items-center transition-opacity duration-200 group-hover:opacity-0">
@@ -557,7 +618,9 @@ export default function StoryDetailPage() {
       )}
 
       {/* Floating framework counts */}
-      <ChoiceImpactIndicator pickedChoiceTexts={pickedChoiceTexts} />
+      <div data-tour="story-impact">
+        <ChoiceImpactIndicator pickedChoiceTexts={pickedChoiceTexts} />
+      </div>
 
       <LockedFeatureModal
         open={showLockedModal}

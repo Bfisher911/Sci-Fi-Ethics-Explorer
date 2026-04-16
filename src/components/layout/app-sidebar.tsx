@@ -30,6 +30,7 @@ import {
   Rocket,
   Clapperboard,
   Newspaper,
+  Award,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -70,6 +71,7 @@ const communityNavItems = [
 
 const learningNavItems = [
   { href: '/curriculum', label: 'Learning Paths', icon: GraduationCap },
+  { href: '/certificates', label: 'Certificates', icon: Award },
   { href: '/philosophers', label: 'Philosophers', icon: ScrollText },
   { href: '/communities', label: 'Communities', icon: Users },
   { href: '/directory', label: 'Directory', icon: Users },
