@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 600" width="1600" height="600" preserveAspectRatio="xMidYMid slice" role="img">
+  <defs>
+    <linearGradient id="bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="hsl(244.79999999999995, 50%, 14%)" />
+      <stop offset="100%" stop-color="hsl(244.79999999999995, 60%, 8%)" />
+    </linearGradient>
+    <radialGradient id="glow" cx="35.0%" cy="35%" r="55%">
+      <stop offset="0%" stop-color="hsl(205, 100%, 72%)" stop-opacity="0.5" />
+      <stop offset="50%" stop-color="hsl(316, 100%, 70%)" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="hsl(244.79999999999995, 60%, 8%)" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="vignette" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="hsl(244.79999999999995, 60%, 8%)" stop-opacity="0.85" />
+      <stop offset="65%" stop-color="hsl(244.79999999999995, 60%, 8%)" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg-grad)" />
+  <rect width="100%" height="100%" fill="url(#glow)" />
+  <g><ellipse cx="640" cy="300" rx="60" ry="24.0" transform="rotate(0.24 640 300)" fill="none" stroke="hsl(205, 100%, 72%)" stroke-opacity="0.18" stroke-width="0.5" /><ellipse cx="640" cy="300" rx="140" ry="56.0" transform="rotate(-9.68 640 300)" fill="none" stroke="hsl(205, 100%, 72%)" stroke-opacity="0.20" stroke-width="0.6" /><ellipse cx="640" cy="300" rx="220" ry="88.0" transform="rotate(-5.15 640 300)" fill="none" stroke="hsl(205, 100%, 72%)" stroke-opacity="0.22" stroke-width="0.6" /><ellipse cx="640" cy="300" rx="300" ry="120.0" transform="rotate(10.84 640 300)" fill="none" stroke="hsl(205, 100%, 72%)" stroke-opacity="0.24" stroke-width="0.7" /><ellipse cx="640" cy="300" rx="380" ry="152.0" transform="rotate(-4.09 640 300)" fill="none" stroke="hsl(205, 100%, 72%)" stroke-opacity="0.26" stroke-width="0.7" /><ellipse cx="640" cy="300" rx="460" ry="184.0" transform="rotate(-7.41 640 300)" fill="none" stroke="hsl(205, 100%, 72%)" stroke-opacity="0.28" stroke-width="0.8" /><ellipse cx="640" cy="300" rx="540" ry="216.0" transform="rotate(1.69 640 300)" fill="none" stroke="hsl(205, 100%, 72%)" stroke-opacity="0.30" stroke-width="0.8" /><ellipse cx="640" cy="300" rx="620" ry="248.0" transform="rotate(-10.38 640 300)" fill="none" stroke="hsl(205, 100%, 72%)" stroke-opacity="0.32" stroke-width="0.9" /><ellipse cx="640" cy="300" rx="700" ry="280.0" transform="rotate(6.15 640 300)" fill="none" stroke="hsl(205, 100%, 72%)" stroke-opacity="0.34" stroke-width="0.9" /><circle cx="1497.9" cy="90.3" r="3.3" fill="hsl(316, 100%, 70%)" fill-opacity="0.41" /><circle cx="1287.4" cy="368.1" r="1.2" fill="hsl(316, 100%, 70%)" fill-opacity="0.50" /><circle cx="794.8" cy="593.1" r="1.5" fill="hsl(316, 100%, 70%)" fill-opacity="0.50" /><circle cx="1334.6" cy="572.0" r="2.5" fill="hsl(316, 100%, 70%)" fill-opacity="0.55" /><circle cx="404.4" cy="241.0" r="3.9" fill="hsl(316, 100%, 70%)" fill-opacity="0.48" /><circle cx="960.0" cy="572.0" r="4.0" fill="hsl(316, 100%, 70%)" fill-opacity="0.59" /><circle cx="1273.9" cy="257.5" r="4.0" fill="hsl(316, 100%, 70%)" fill-opacity="0.64" /><circle cx="41.8" cy="599.3" r="3.3" fill="hsl(316, 100%, 70%)" fill-opacity="0.32" /><circle cx="367.6" cy="522.8" r="1.8" fill="hsl(316, 100%, 70%)" fill-opacity="0.42" /><circle cx="562.7" cy="348.9" r="1.8" fill="hsl(316, 100%, 70%)" fill-opacity="0.51" /><circle cx="852.4" cy="48.5" r="3.3" fill="hsl(316, 100%, 70%)" fill-opacity="0.65" /><circle cx="286.2" cy="348.5" r="3.8" fill="hsl(316, 100%, 70%)" fill-opacity="0.61" /><circle cx="452.8" cy="501.7" r="2.5" fill="hsl(316, 100%, 70%)" fill-opacity="0.46" /><circle cx="496.0" cy="229.5" r="2.9" fill="hsl(316, 100%, 70%)" fill-opacity="0.40" /></g>
+  <rect width="100%" height="100%" fill="url(#vignette)" />
+  <text x="1540" y="550" text-anchor="end" font-family="Inter, sans-serif" font-weight="700" font-size="160" fill="hsl(205, 100%, 72%)" fill-opacity="0.18">03</text>
+  <text x="60" y="565" font-family="Inter, sans-serif" font-weight="500" font-size="20" fill="hsl(205, 100%, 72%)" fill-opacity="0.45" letter-spacing="3">CHAPTER 3 · DIVINE COMMAND & EUTHYPHRO</text>
+</svg>

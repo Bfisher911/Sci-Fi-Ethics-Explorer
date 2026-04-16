@@ -70,6 +70,7 @@ const communityNavItems = [
 ];
 
 const learningNavItems = [
+  { href: '/textbook', label: 'Textbook', icon: BookText },
   { href: '/curriculum', label: 'Learning Paths', icon: GraduationCap },
   { href: '/certificates', label: 'Certificates', icon: Award },
   { href: '/philosophers', label: 'Philosophers', icon: ScrollText },

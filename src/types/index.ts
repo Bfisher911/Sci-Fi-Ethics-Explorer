@@ -241,7 +241,13 @@ export interface ContentVersion {
 
 // ─── Quizzes (per-philosopher / per-theory comprehension quizzes) ──
 
-export type QuizSubjectType = 'philosopher' | 'theory' | 'scifi-author' | 'scifi-media';
+export type QuizSubjectType =
+  | 'philosopher'
+  | 'theory'
+  | 'scifi-author'
+  | 'scifi-media'
+  | 'book-chapter'
+  | 'book-final';
 export type QuizDifficulty = 'recall' | 'conceptual' | 'applied';
 
 export interface QuizQuestion {

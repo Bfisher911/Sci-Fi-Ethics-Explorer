@@ -12,6 +12,7 @@ import type {
 import { timestampToDate } from '@/lib/firebase/firestore-helpers';
 import { requireAdmin } from '@/lib/admin';
 import { getStaticScifiAuthorQuiz } from '@/data/scifi-author-quizzes';
+import { getStaticTextbookQuiz } from '@/data/textbook/quizzes';
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -83,9 +84,13 @@ export async function getQuizForSubject(
     }
 
     // Static fallbacks for hand-authored quizzes that may not have been
-    // seeded into Firestore yet. Currently only used for sci-fi authors.
+    // seeded into Firestore yet.
     if (subjectType === 'scifi-author') {
       const fallback = getStaticScifiAuthorQuiz(subjectId);
+      if (fallback) return { success: true, data: fallback };
+    }
+    if (subjectType === 'book-chapter' || subjectType === 'book-final') {
+      const fallback = getStaticTextbookQuiz(subjectId);
       if (fallback) return { success: true, data: fallback };
     }
 
@@ -94,6 +99,10 @@ export async function getQuizForSubject(
     console.error('[quizzes] getQuizForSubject error:', error);
     if (subjectType === 'scifi-author') {
       const fallback = getStaticScifiAuthorQuiz(subjectId);
+      if (fallback) return { success: true, data: fallback };
+    }
+    if (subjectType === 'book-chapter' || subjectType === 'book-final') {
+      const fallback = getStaticTextbookQuiz(subjectId);
       if (fallback) return { success: true, data: fallback };
     }
     return { success: false, error: String(error) };
@@ -127,6 +136,9 @@ export async function submitQuizAttempt(input: {
       : null;
     if (!quiz && input.subjectType === 'scifi-author') {
       quiz = getStaticScifiAuthorQuiz(input.subjectId);
+    }
+    if (!quiz && (input.subjectType === 'book-chapter' || input.subjectType === 'book-final')) {
+      quiz = getStaticTextbookQuiz(input.subjectId);
     }
     if (!quiz) return { success: false, error: 'Quiz not found.' };
 
