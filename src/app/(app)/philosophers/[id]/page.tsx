@@ -10,6 +10,8 @@ import Link from 'next/link';
 import { getPhilosopherById } from '@/app/actions/philosophers';
 import { PhilosopherDetail } from '@/components/philosophers/philosopher-detail';
 import { QuizCta } from '@/components/quiz/quiz-cta';
+import { AdminActions } from '@/components/admin/admin-actions';
+import { adminDeleteArtifact } from '@/app/actions/admin';
 import type { Philosopher } from '@/types';
 
 export default function PhilosopherDetailPage() {
@@ -66,6 +68,12 @@ export default function PhilosopherDetailPage() {
           Back to Philosophers
         </Link>
       </Button>
+      <AdminActions
+        artifactLabel="Philosopher"
+        artifactTitle={philosopher.name}
+        onDelete={(uid) => adminDeleteArtifact(uid, 'philosopher', philosopher.id)}
+        afterDeleteHref="/philosophers"
+      />
       <PhilosopherDetail philosopher={philosopher} />
       <div className="mt-6">
         <QuizCta

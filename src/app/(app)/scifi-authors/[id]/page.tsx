@@ -10,6 +10,8 @@ import Link from 'next/link';
 import { getSciFiAuthorById } from '@/app/actions/scifi-authors';
 import { SciFiAuthorDetail } from '@/components/scifi-authors/scifi-author-detail';
 import { QuizCta } from '@/components/quiz/quiz-cta';
+import { AdminActions } from '@/components/admin/admin-actions';
+import { adminDeleteArtifact } from '@/app/actions/admin';
 import type { SciFiAuthor } from '@/types';
 
 export default function SciFiAuthorDetailPage() {
@@ -64,6 +66,12 @@ export default function SciFiAuthorDetailPage() {
           Back to Sci-Fi Authors
         </Link>
       </Button>
+      <AdminActions
+        artifactLabel="Sci-Fi Author"
+        artifactTitle={author.name}
+        onDelete={(uid) => adminDeleteArtifact(uid, 'scifi-author', author.id)}
+        afterDeleteHref="/scifi-authors"
+      />
       <SciFiAuthorDetail author={author} />
       <div className="mt-6">
         <QuizCta

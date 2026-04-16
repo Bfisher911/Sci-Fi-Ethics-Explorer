@@ -31,6 +31,8 @@ import {
   MessageCircle,
   Tag,
 } from 'lucide-react';
+import { AdminActions } from '@/components/admin/admin-actions';
+import { adminDeleteArtifact } from '@/app/actions/admin';
 
 function toDate(value: unknown): Date | null {
   if (!value) return null;
@@ -144,7 +146,7 @@ export default function CommunityDilemmaDetailPage() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
-      <div className="mb-6">
+      <div className="mb-6 space-y-3">
         <Button
           variant="outline"
           onClick={() => router.push('/community-dilemmas')}
@@ -152,6 +154,12 @@ export default function CommunityDilemmaDetailPage() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Community Dilemmas
         </Button>
+        <AdminActions
+          artifactLabel="Dilemma"
+          artifactTitle={dilemma.title}
+          onDelete={(uid) => adminDeleteArtifact(uid, 'dilemma', dilemmaId)}
+          afterDeleteHref="/community-dilemmas"
+        />
       </div>
 
       <Card className="relative overflow-hidden shadow-xl bg-card/80 backdrop-blur-sm">

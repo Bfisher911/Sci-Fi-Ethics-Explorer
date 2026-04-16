@@ -26,6 +26,8 @@ import {
 import type { Debate, DebateArgument } from '@/types';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
+import { AdminActions } from '@/components/admin/admin-actions';
+import { adminDeleteArtifact } from '@/app/actions/admin';
 
 const statusVariants: Record<string, { label: string; className: string }> = {
   open: { label: 'Open', className: 'bg-green-500/20 text-green-400 border-green-500/30' },
@@ -161,6 +163,13 @@ export default function DebateDetailPage() {
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Debates
         </Button>
       </Link>
+
+      <AdminActions
+        artifactLabel="Debate"
+        artifactTitle={debate.title}
+        onDelete={(uid) => adminDeleteArtifact(uid, 'debate', debateId)}
+        afterDeleteHref="/debate-arena"
+      />
 
       {/* Debate Header */}
       <Card className="mb-8 bg-card/80 backdrop-blur-sm">

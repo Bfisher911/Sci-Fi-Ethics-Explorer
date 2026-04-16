@@ -29,6 +29,8 @@ import { ShareToMessageDialog } from '@/components/messages/share-to-message-dia
 import { classifyChoice, FRAMEWORK_INFO } from '@/lib/choice-frameworks';
 import { getMoodTheme } from '@/lib/story-atmosphere';
 import { useAmbientTone } from '@/hooks/use-ambient-tone';
+import { AdminActions } from '@/components/admin/admin-actions';
+import { deleteStory } from '@/app/actions/stories';
 import { cn } from '@/lib/utils';
 
 export default function StoryDetailPage() {
@@ -315,6 +317,14 @@ export default function StoryDetailPage() {
           artifact={{ type: 'story', id: story.id, title: story.title }}
         />
       </div>
+
+      <AdminActions
+        artifactLabel="Story"
+        artifactTitle={story.title}
+        onDelete={(uid) => deleteStory(storyId, uid)}
+        afterDeleteHref="/stories"
+        editHref={`/create-story?edit=${storyId}`}
+      />
 
       {/* Branching Navigator */}
       {story.isInteractive && (

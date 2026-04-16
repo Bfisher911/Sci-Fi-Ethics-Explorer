@@ -22,6 +22,8 @@ import {
   getPhilosophersForTheory,
 } from '@/app/actions/ethical-theories';
 import { QuizCta } from '@/components/quiz/quiz-cta';
+import { AdminActions } from '@/components/admin/admin-actions';
+import { adminDeleteArtifact } from '@/app/actions/admin';
 import type { EthicalTheory, Philosopher } from '@/types';
 
 export default function TheoryDetailPage() {
@@ -93,6 +95,12 @@ export default function TheoryDetailPage() {
           Back to Glossary
         </Link>
       </Button>
+      <AdminActions
+        artifactLabel="Ethical Theory"
+        artifactTitle={theory.name}
+        onDelete={(uid) => adminDeleteArtifact(uid, 'theory', theory.id)}
+        afterDeleteHref="/glossary"
+      />
 
       {/* Header */}
       <Card className="mb-6 overflow-hidden bg-card/80 backdrop-blur-sm">

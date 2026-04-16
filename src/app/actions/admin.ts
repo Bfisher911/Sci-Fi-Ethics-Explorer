@@ -638,3 +638,54 @@ export async function bulkModerate(
     return { success: false, error: error.message };
   }
 }
+
+// ─── Generic admin delete ──────────────────────────────────────────
+
+const COLLECTION_MAP: Record<string, string> = {
+  story: 'stories',
+  dilemma: 'submittedDilemmas',
+  debate: 'debates',
+  philosopher: 'philosophers',
+  theory: 'ethicalTheories',
+  'scifi-author': 'scifiAuthors',
+  analysis: 'analyses',
+  perspective: 'perspectives',
+  workshop: 'workshops',
+  curriculum: 'curriculumPaths',
+};
+
+/**
+ * Admin: delete any document from any supported collection.
+ * Requires super-admin. Used by the AdminActions component on detail pages
+ * so the admin can remove any artifact regardless of ownership.
+ */
+export async function adminDeleteArtifact(
+  adminUid: string,
+  artifactType: string,
+  artifactId: string
+): Promise<ActionResult> {
+  try {
+    await requireAdmin(adminUid);
+    const collectionName = COLLECTION_MAP[artifactType];
+    if (!collectionName) {
+      return { success: false, error: `Unknown artifact type: ${artifactType}` };
+    }
+    const ref = doc(db, collectionName, artifactId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      return { success: false, error: `${artifactType} not found in Firestore. It may only exist in static data.` };
+    }
+    await deleteDoc(ref);
+    await logAdminAction({
+      action: 'delete',
+      actorId: adminUid,
+      targetType: artifactType,
+      targetId: artifactId,
+      note: `Admin deleted ${artifactType} ${artifactId}`,
+    });
+    return { success: true, data: undefined };
+  } catch (error: any) {
+    console.error('[admin] adminDeleteArtifact error:', error);
+    return { success: false, error: error.message || String(error) };
+  }
+}
