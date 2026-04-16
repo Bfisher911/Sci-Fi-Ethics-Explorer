@@ -206,35 +206,60 @@ export async function getUserBestAttempts(userId: string): Promise<ActionResult<
 export async function listMissingQuizSubjects(adminUid: string): Promise<ActionResult<{
   philosophers: { id: string; name: string }[];
   theories: { id: string; name: string }[];
+  scifiAuthors: { id: string; name: string }[];
 }>> {
   try {
     await requireAdmin(adminUid);
 
-    const [philSnap, theorySnap, quizSnap] = await Promise.all([
+    const [philSnap, theorySnap, authorSnap, quizSnap] = await Promise.all([
       getDocs(collection(db, 'philosophers')),
       getDocs(collection(db, 'ethicalTheories')),
+      getDocs(collection(db, 'scifiAuthors')).catch(() => ({ docs: [] as any[] })),
       getDocs(collection(db, 'quizzes')),
     ]);
 
-    const existingQuizIds = new Set(quizSnap.docs.map((d) => d.id));
+    const existingQuizIds = new Set(quizSnap.docs.map((d: any) => d.id));
 
     const missingPhils: { id: string; name: string }[] = [];
-    philSnap.docs.forEach((d) => {
+    philSnap.docs.forEach((d: any) => {
       if (!existingQuizIds.has(`philosopher-${d.id}`)) {
         missingPhils.push({ id: d.id, name: d.data().name || d.id });
       }
     });
 
     const missingTheories: { id: string; name: string }[] = [];
-    theorySnap.docs.forEach((d) => {
+    theorySnap.docs.forEach((d: any) => {
       if (!existingQuizIds.has(`theory-${d.id}`)) {
         missingTheories.push({ id: d.id, name: d.data().name || d.id });
       }
     });
 
+    // Sci-fi authors: check Firestore first; if no docs there, use static
+    // data so the admin page always shows all authors even when they haven't
+    // been seeded into Firestore.
+    const missingAuthors: { id: string; name: string }[] = [];
+    if (authorSnap.docs.length > 0) {
+      authorSnap.docs.forEach((d: any) => {
+        if (!existingQuizIds.has(`scifi-author-${d.id}`)) {
+          missingAuthors.push({ id: d.id, name: d.data().name || d.id });
+        }
+      });
+    } else {
+      const { scifiAuthorData } = await import('@/data/scifi-authors');
+      for (const a of scifiAuthorData) {
+        if (!existingQuizIds.has(`scifi-author-${a.id}`)) {
+          missingAuthors.push({ id: a.id, name: a.name });
+        }
+      }
+    }
+
     return {
       success: true,
-      data: { philosophers: missingPhils, theories: missingTheories },
+      data: {
+        philosophers: missingPhils,
+        theories: missingTheories,
+        scifiAuthors: missingAuthors,
+      },
     };
   } catch (error: any) {
     console.error('[quizzes] listMissingQuizSubjects error:', error);

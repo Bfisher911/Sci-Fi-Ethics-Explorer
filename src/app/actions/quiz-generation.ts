@@ -7,6 +7,7 @@ import { generateQuiz } from '@/ai/flows/generate-quiz';
 import { upsertQuiz } from '@/app/actions/quizzes';
 import { philosopherData } from '@/data/philosophers';
 import { ethicalTheories } from '@/data/ethical-theories';
+import { scifiAuthorData } from '@/data/scifi-authors';
 import type { QuizSubjectType } from '@/types';
 
 type ActionResult<T = void> =
@@ -40,6 +41,30 @@ async function loadSubject(
     const fallback = philosopherData.find((p) => p.id === subjectId);
     if (!fallback) return null;
     return { name: fallback.name, context: fallback.bio };
+  }
+
+  if (subjectType === 'scifi-author') {
+    try {
+      const snap = await getDoc(doc(db, 'scifiAuthors', subjectId));
+      if (snap.exists()) {
+        const d = snap.data();
+        return {
+          name: d.name || subjectId,
+          context: [d.bio, d.techEthicsFocus].filter(Boolean).join('\n\n'),
+        };
+      }
+    } catch (error) {
+      console.warn(
+        '[quiz-generation] scifi-author Firestore lookup failed, falling back:',
+        error
+      );
+    }
+    const fallback = scifiAuthorData.find((a) => a.id === subjectId);
+    if (!fallback) return null;
+    return {
+      name: fallback.name,
+      context: [fallback.bio, fallback.techEthicsFocus].filter(Boolean).join('\n\n'),
+    };
   }
 
   // theory

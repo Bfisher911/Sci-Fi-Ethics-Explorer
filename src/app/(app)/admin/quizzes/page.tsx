@@ -39,6 +39,7 @@ import type { Quiz, QuizSubjectType } from '@/types';
 type MissingSubjects = {
   philosophers: { id: string; name: string }[];
   theories: { id: string; name: string }[];
+  scifiAuthors: { id: string; name: string }[];
 };
 
 type BulkState = {
@@ -65,6 +66,7 @@ export default function AdminQuizzesPage() {
   const [missing, setMissing] = useState<MissingSubjects>({
     philosophers: [],
     theories: [],
+    scifiAuthors: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -248,12 +250,16 @@ export default function AdminQuizzesPage() {
         id: t.id,
         name: t.name,
       })),
+      ...missing.scifiAuthors.map((a) => ({
+        type: 'scifi-author' as const,
+        id: a.id,
+        name: a.name,
+      })),
     ];
     runBulk(targets, 'Generate All Missing');
   };
 
   const handleBulkAll = () => {
-    // Includes existing quizzes (overwrite) plus missing. Safe because upsert is deterministic.
     const existingTargets = quizzes.map((q) => ({
       type: q.subjectType,
       id: q.subjectId,
@@ -270,10 +276,15 @@ export default function AdminQuizzesPage() {
         id: t.id,
         name: t.name,
       })),
+      ...missing.scifiAuthors.map((a) => ({
+        type: 'scifi-author' as const,
+        id: a.id,
+        name: a.name,
+      })),
     ];
     if (
       !confirm(
-        `Regenerate ALL ${existingTargets.length + missingTargets.length} philosopher and theory quizzes? Existing quizzes will be overwritten. This will take several minutes.`
+        `Regenerate ALL ${existingTargets.length + missingTargets.length} quizzes (philosophers, theories, and sci-fi authors)? Existing quizzes will be overwritten. This will take several minutes.`
       )
     )
       return;
@@ -284,7 +295,7 @@ export default function AdminQuizzesPage() {
   };
 
   const totalMissing =
-    missing.philosophers.length + missing.theories.length;
+    missing.philosophers.length + missing.theories.length + missing.scifiAuthors.length;
 
   if (loading) {
     return (
@@ -422,7 +433,7 @@ export default function AdminQuizzesPage() {
             </Alert>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <MissingList
               title="Philosophers without quizzes"
               items={missing.philosophers}
@@ -439,6 +450,14 @@ export default function AdminQuizzesPage() {
               type="theory"
               generatingIds={generatingIds}
               onGenerate={(id, name) => handleGenerateOne('theory', id, name)}
+              disabled={bulk.running}
+            />
+            <MissingList
+              title="Sci-Fi Authors without quizzes"
+              items={missing.scifiAuthors}
+              type="scifi-author"
+              generatingIds={generatingIds}
+              onGenerate={(id, name) => handleGenerateOne('scifi-author', id, name)}
               disabled={bulk.running}
             />
           </div>
@@ -475,6 +494,8 @@ export default function AdminQuizzesPage() {
                     const viewHref =
                       q.subjectType === 'philosopher'
                         ? `/philosophers/${q.subjectId}/quiz`
+                        : q.subjectType === 'scifi-author'
+                        ? `/scifi-authors/${q.subjectId}/quiz`
                         : `/glossary/${q.subjectId}/quiz`;
                     const key = markKey(q.subjectType, q.subjectId);
                     const regenerating = generatingIds.has(key);
