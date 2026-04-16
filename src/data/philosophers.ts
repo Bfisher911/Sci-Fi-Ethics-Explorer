@@ -493,4 +493,247 @@ A modern reader picks up Practical Ethics and meets a voice clear, patient, disq
     ],
     imageHint: 'contemporary philosopher',
   },
+  {
+    id: 'plato',
+    name: 'Plato',
+    era: '428-348 BCE',
+    bio: `Born into an aristocratic Athenian family during the Peloponnesian War, Plato came of age watching his city lose its empire, execute his teacher, and experiment with forms of government that kept failing. All of his dialogues can be read as an attempt to answer one question: what would a political and moral order look like that did not lurch from disaster to disaster? His answer — that justice is a kind of inner harmony, that the highest good is an eternal reality grasped by reason, and that the unexamined life is not worth living — would shape every philosophical generation after him, in the West and far beyond it.
+
+Plato was Socrates' most devoted student and, after his teacher's execution in 399 BCE, his literary executor. Rather than write treatises, he wrote dialogues in which Socrates questions, teases, and embarrasses his interlocutors into realizing how little they actually know. In the Republic he describes a city designed for justice: a class of guardians, a class of auxiliaries, a class of producers, each doing what their nature fits them to do, all ruled by philosopher-kings who have ascended from the cave of ordinary opinion into the sunlight of the Forms. In the Phaedo and Symposium he argues that the soul is immortal and that love, rightly directed, ascends from beautiful bodies to beautiful souls to Beauty itself. In the Apology he gives us the image of the philosopher as a gadfly who will not stop stinging his city even on pain of death.
+
+The central metaphysical commitment — that behind the changeable world of appearances lies a realm of unchanging Forms — made ethics for Plato a matter of aligning the soul with what is truly real. A just person is not one who follows rules or maximizes outcomes but one whose rational, spirited, and appetitive parts have found their proper order under reason's rule. In the Allegory of the Cave, philosophical education is portrayed as a painful ascent out of darkness. In the myth of Er, the choices we make in this life prepare the lot we draw in the next.
+
+Later critics, from Aristotle to Nietzsche, attacked Plato's rejection of the sensible world, his willingness to tell "noble lies" for political stability, and the authoritarian cast of the Republic. Karl Popper accused him of being the first totalitarian. Feminists note his ambivalence about the role of women (he does admit them to guardianship, but on terms that erase the particular) and moderns question whether any society should be organized around a single ideal of the good. Yet it is nearly impossible to do Western philosophy without returning to his dialogues. Whitehead's famous line — that the European philosophical tradition consists of a series of footnotes to Plato — remains less an exaggeration than a confession.`,
+    keyIdeas: [
+      'Theory of Forms',
+      'The tripartite soul',
+      'Justice as inner harmony',
+      'Philosopher-kings',
+      'Allegory of the Cave',
+      'Dialectic as the path to knowledge',
+      'Love as ascent to the Good',
+    ],
+    relatedFrameworks: ['virtue-ethics'],
+    famousWorks: ['Republic', 'Phaedo', 'Symposium', 'Apology', 'Timaeus'],
+    imageHint: 'ancient greek philosopher',
+  },
+  {
+    id: 'mencius',
+    name: 'Mencius',
+    era: '372-289 BCE',
+    bio: `Mengzi, Latinized as Mencius, was the great second-generation Confucian who took Confucius' teachings and gave them a radical theoretical spine: human nature is fundamentally good. Where Confucius had preferred practical exhortation to metaphysical speculation, Mencius argued that every human being is born with four innate "sprouts" that, if cultivated, grow into the full virtues. The sprout of compassion grows into humaneness (ren); the sprout of shame into righteousness (yi); the sprout of courtesy into ritual propriety (li); the sprout of judgment into wisdom (zhi). Evil, on this account, is not something built into us but something that happens when the sprouts are neglected or damaged.
+
+Mencius illustrated his claim with one of the most famous thought experiments in ancient philosophy. If any person, he said, suddenly saw a child about to fall into a well, they would instantly feel alarmed and moved to help — not because they calculated a reward, not because they feared the parents' censure, not because the child's cries were unpleasant, but because the feeling of pity simply surges up. That spontaneous response is the sprout of humaneness revealing itself. Ethics, for Mencius, consists in protecting and extending these natural responses until they shape every part of life.
+
+Like Confucius, Mencius traveled from court to court trying to convince warring rulers that benevolence was not only right but politically effective. A king who truly cared for his people, he insisted, would command a loyalty no tyrant could match. His arguments for humane government — that the state exists for the people, not the people for the state; that a ruler who has lost the Mandate of Heaven may justly be deposed; that economic conditions shape moral character and decent rulers must secure livelihoods before expecting virtue — made him a defender of what we would now call social and economic rights, two millennia before that vocabulary existed.
+
+His debates with Gaozi (who held that human nature is morally neutral, like water that flows wherever it is channeled) and with the Mohists (who preached impartial love) sharpened Chinese ethical thought for generations. Neo-Confucians like Zhu Xi in the Song dynasty placed the Mencius among the "Four Books" that every aspiring scholar had to master, cementing it as a foundational text of East Asian civilization. In contemporary moral psychology, his intuition that moral responses are natural and spontaneous has found unexpected allies in research on empathy, moral emotions, and the universality of certain ethical reactions.`,
+    keyIdeas: [
+      'The innate goodness of human nature',
+      'The four sprouts (siduan)',
+      'Ren (humaneness) as extension of compassion',
+      'Mandate of Heaven and just rebellion',
+      'Humane government (ren zheng)',
+      'Moral cultivation as nourishing what is already within',
+    ],
+    relatedFrameworks: ['virtue-ethics', 'ethics-of-care'],
+    famousWorks: ['Mencius (Mengzi)'],
+    imageHint: 'ancient chinese philosopher',
+  },
+  {
+    id: 'laozi',
+    name: 'Laozi',
+    era: '6th-4th century BCE',
+    bio: `Whether Laozi was one person, several, or a literary composite, the book attributed to him — the Daodejing, the "Book of the Way and its Power" — is one of the most translated works in the world's libraries and one of the strangest. In roughly 5,000 characters of gnomic verse, it advances an ethics almost opposite to the Confucian project dominant in its time. Where Confucius prescribed elaborate rituals, clear hierarchies, and deliberate self-cultivation, the Daodejing counsels wuwei (effortless action), zìrán (spontaneity, being-so-of-itself), and a humility so deep it looks from outside like weakness. The sage does not strive; the sage yields, empties, returns. Water wears down stone not by force but by patient lowness.
+
+The Dao itself is deliberately beyond definition. The first line of the text famously declares that the Dao that can be named is not the eternal Dao. It is the source from which the ten thousand things emerge and to which they return; it operates through wu, emptiness, and de, a virtue-power that is effective precisely because it does not impose. Ethics flows from cosmology: because reality operates through yielding and spontaneous balance, the wise person mirrors that pattern. Ambition, force, moralizing, and clever governance disturb the natural order and bring disaster. The best ruler, in a famous formulation, is the one whose subjects say, "we did it ourselves."
+
+Daoist ethics is not antinomian. It values compassion (ci), frugality (jian), and a refusal to presume oneself above others (budan wei tianxia xian). But it rejects the scaffolding of Confucian propriety as a later, deformed substitute for what was lost when people stopped trusting the Dao. The paradoxes of the text — the highest virtue does not appear virtuous; to know and to not-know is best; the softest overcomes the hardest — are not tricks but exercises in unthinking the categorical habits of the active mind.
+
+The Daodejing shaped East Asian culture in every register — poetry, medicine, martial arts, painting, Chan and later Zen Buddhism (whose practice absorbed Daoist sensibilities), and the long tradition of hermit-sage literature. In the twentieth century it entered Western ecological thought through writers like Alan Watts and Gary Snyder, who heard in it an ethics fit for a planet humans were overreaching to dominate. Critics worry that wuwei can collapse into passivity, that the text's anti-intellectualism disarms needed critique, and that its political counsel suits the quietly privileged more than the oppressed. Defenders point out that yielding is not the same as surrender, that the text directly criticizes rulers who hoard while the people starve, and that the deepest Daoist insight — that much of what we call "doing" is anxious interference — remains as true in an age of algorithmic overreach as it was in the age of warring states.`,
+    keyIdeas: [
+      'The Dao that cannot be named',
+      'Wuwei (effortless, non-coercive action)',
+      'Ziran (spontaneity, self-so)',
+      'The power of yielding',
+      'De (inner virtue-power)',
+      'Simplicity and frugality',
+      'Non-interfering governance',
+    ],
+    relatedFrameworks: ['daoist-ethics', 'virtue-ethics'],
+    famousWorks: ['Daodejing (Tao Te Ching)'],
+    imageHint: 'ancient chinese sage',
+  },
+  {
+    id: 'maimonides',
+    name: 'Moses Maimonides',
+    era: '1138-1204 CE',
+    bio: `Moses ben Maimon — known to Jewish tradition as Rambam and to the Latin West as Maimonides — was born in Córdoba under Almoravid rule and spent most of his adult life in Fustat, outside Cairo, serving as court physician to the household of Saladin. Across two languages and a life of exile, he produced a body of work that still shapes Jewish law, medieval philosophy, and the ethical imagination of three religious traditions. He wrote in Arabic for philosophical readers and in Hebrew for halakhic ones, and he insisted, against the resistance of both audiences, that Aristotle's philosophy and the Torah's commandments were not rivals but companions.
+
+His towering halakhic work, the Mishneh Torah, codified the entire corpus of Jewish law in clear, systematic Hebrew, organized not by the chaos of rabbinic citation but by topic — the first comprehensive attempt to make the law surveyable as a whole. Its ethical sections, especially Hilkhot De'ot (Laws of Character) and Hilkhot Teshuvah (Laws of Repentance), are a Jewish Aristotelianism: virtues are dispositions formed by repeated action, each standing as a mean between extremes, except in a few matters (humility, for instance) where one leans away from the middle toward the safer extreme. His eight levels of charity, ascending from grudging giving to empowering another to self-sufficiency, remain a standard of Jewish ethical practice.
+
+In the Guide of the Perplexed, written for those troubled by apparent conflicts between philosophy and revelation, Maimonides argued that much of what scripture seems to say literally about God — that He is angry, walks, has a face — must be read figuratively, because what God is cannot be captured in human language. The result was a via negativa in which we know God best by saying what He is not. Ethics, on this view, is the cultivation of intellect and character until a person becomes capable of rational communion with the divine, which is the highest human end.
+
+Maimonides' influence ran through Aquinas and scholasticism into the heart of Christian ethics; through Spinoza and Mendelssohn into modern Jewish philosophy; and through contemporary debates on natural law, religious epistemology, and the relation between revelation and reason. Critics have noted that his aristocratic vision of the contemplative life excluded many, that his allegorical readings strained some texts nearly to breaking, and that his confidence in Aristotelian cosmology dated parts of his synthesis. But his insistence that a serious moral life requires both the disciplined practice of law and the freedom of rational inquiry — and that the two are not enemies — remains one of the great examples of religious ethics thinking with philosophy rather than against it.`,
+    keyIdeas: [
+      'Intellectual perfection as the highest end',
+      'Virtues as means between extremes',
+      'The Eight Levels of Charity',
+      'Negative theology (via negativa)',
+      'Harmony of Torah and Aristotelian reason',
+      'Repentance (teshuvah) as ethical transformation',
+    ],
+    relatedFrameworks: ['virtue-ethics', 'natural-law', 'divine-command'],
+    famousWorks: ['Mishneh Torah', 'Guide of the Perplexed', 'Commentary on the Mishnah'],
+    imageHint: 'medieval jewish philosopher',
+  },
+  {
+    id: 'aquinas',
+    name: 'Thomas Aquinas',
+    era: '1225-1274 CE',
+    bio: `When Thomas Aquinas left his noble Italian family to join the newly founded Dominicans, his brothers allegedly kidnapped and imprisoned him for over a year, trying to shake him loose from what they regarded as an embarrassing vocation. They failed. Over the next two decades he produced a body of work — most famously the Summa Theologiae — that welded Aristotelian philosophy to Christian theology with such force that the synthesis, called Thomism, became the official philosophical framework of the Catholic Church for centuries.
+
+Aquinas' ethics is built on four interlocking tiers of law. Eternal law is God's reason ordering all creation. Natural law is eternal law as knowable by human reason reflecting on human nature: we are rational animals who seek our good, and the basic goods of life, procreation, sociability, and knowledge of truth give us natural precepts binding on everyone regardless of faith. Human law translates natural law into the specific codes of particular communities. Divine law is the law revealed through scripture, needed where natural reason cannot reach. On this scheme, moral reasoning is neither pure appeal to authority (Aquinas insists we can derive much of ethics by reason alone) nor pure autonomy (because reason, rightly used, tracks a reality we did not create).
+
+To Aristotle's cardinal virtues — prudence, justice, fortitude, temperance — Aquinas added the three theological virtues of faith, hope, and love. Virtues are dispositions, built by practice; natural ones can be acquired, but the theological ones are infused by grace. His treatment of human action — the doctrine of double effect, the distinction between intending harm and foreseeing harm as a side effect, the analysis of culpability, voluntariness, and ignorance — still shapes contemporary medical ethics, just-war theory, and moral psychology.
+
+Aquinas also wrote with striking range: on whether a Christian may own property (yes, with conditions), on whether usury is permitted (no, with nuance), on the rights of conscience (even an erring conscience must be followed, though it may make one culpable), on capital punishment, on economic justice. His just-war theory — right authority, just cause, right intention, last resort, proportional means, probability of success, discrimination between combatants and non-combatants — remains a core reference in international ethics.
+
+The critics are many. Reformation theologians challenged his confidence that natural reason could reach so much of ethics without revelation. Humean empiricists questioned his derivation of ought from is. Feminist philosophers have taken apart his views on women and on natural sexual order. Yet in every generation, including our own, philosophers return to Aquinas for his extraordinary integration of rigor, charity, and practical wisdom, and for the claim, radical in any age, that human beings have access to a moral order written into the structure of what we are.`,
+    keyIdeas: [
+      'Natural law ethics',
+      'Four-fold scheme of law (eternal, natural, human, divine)',
+      'Cardinal and theological virtues',
+      'Doctrine of double effect',
+      'Just war theory',
+      'Synderesis and conscience',
+    ],
+    relatedFrameworks: ['natural-law', 'virtue-ethics', 'divine-command'],
+    famousWorks: ['Summa Theologiae', 'Summa contra Gentiles', 'Commentary on the Nicomachean Ethics'],
+    imageHint: 'medieval dominican friar',
+  },
+  {
+    id: 'spinoza',
+    name: 'Baruch Spinoza',
+    era: '1632-1677 CE',
+    bio: `Excommunicated from his Amsterdam Jewish community at twenty-three for heresies he had not yet publicly stated, Spinoza spent the rest of his short life grinding lenses for a living — literally and metaphorically clarifying vision — while writing a philosophy that would make him an object of horror to religious orthodoxies of every stripe and a lodestar to the Enlightenment that followed. He lived frugally, refused a prestigious chair at Heidelberg to preserve his intellectual freedom, and died at forty-four, likely of silicosis from lens-grinding dust.
+
+His masterwork, the Ethics, is written in the form of Euclidean geometry: definitions, axioms, propositions, demonstrations. The austere method was meant to free ethical thinking from rhetoric, tradition, and fear. From the opening definitions, Spinoza derives a view of reality so singular it has been called pantheism, panentheism, or Deus sive Natura — God, or Nature, two names for a single infinite substance that expresses itself in infinitely many attributes, of which the human mind perceives only thought and extension. There is no transcendent creator separate from the universe; there is only what there is, expressing itself necessarily in everything that exists.
+
+From this metaphysics flows an ethics utterly unlike anything else in the Western canon. Every being has a conatus, a striving to persevere in its own existence. Virtue is simply acting from one's own nature; vice is being acted upon by forces not one's own. The emotions (affects) are the mind's awareness of increases or decreases in its power of acting; sadness reduces, joy increases, and love is joy accompanied by awareness of its cause. Because we are finite modes of infinite substance, complete self-sufficiency is impossible, but through the intellectual love of God — the understanding of how everything follows from the infinite nature of the whole — we can achieve a kind of serene participation in eternity.
+
+The political implications are striking. Spinoza's Theologico-Political Treatise argued for freedom of thought, separation of religion and state, democratic governance, and historical-critical reading of scripture, centuries before those positions became respectable. He maintained that no state can extinguish what people actually believe, that peace requires liberty, and that power flows from the multitude. Enlightenment thinkers from Lessing to Marx, and later philosophers from Deleuze to contemporary ecologists, have found in him an anti-theological ethics in which freedom is understood, not as doing whatever one wants, but as acting from the clear comprehension of one's place in the whole.
+
+Critics have challenged the necessitarianism (if everything happens by absolute necessity, in what sense am I responsible?), the austerity of the view of the emotions, and the political quietism some readers find in his account. But his intuition that ethics is inseparable from understanding the world, and that the adequate knowledge of reality is itself a kind of liberation, keeps drawing readers back. In a century looking for an ethics that does not depend on religious authority yet takes the inner life seriously, Spinoza remains one of the most interesting options on offer.`,
+    keyIdeas: [
+      'Deus sive Natura (God or Nature)',
+      'Single substance monism',
+      'Conatus (striving to persist)',
+      'Adequate vs inadequate ideas',
+      'The intellectual love of God',
+      'Freedom as understanding necessity',
+      'Democratic politics and intellectual liberty',
+    ],
+    relatedFrameworks: ['existentialist-ethics', 'virtue-ethics', 'natural-law'],
+    famousWorks: ['Ethics', 'Theologico-Political Treatise', 'Political Treatise'],
+    imageHint: 'dutch philosopher lens grinder',
+  },
+  {
+    id: 'wollstonecraft',
+    name: 'Mary Wollstonecraft',
+    era: '1759-1797 CE',
+    bio: `Mary Wollstonecraft wrote her most famous book, A Vindication of the Rights of Woman, in six weeks of furious composition in 1792, responding to a French revolutionary proposal that women's education be limited to the domestic arts. The book opens with a dedication to Talleyrand and an argument that no revolution is truly revolutionary if it liberates only half the species. It is the foundational text of modern feminist philosophy, and its author's short, tumultuous life — poverty, self-education, two suicide attempts, a daughter born out of wedlock, an early death from childbed fever after giving birth to the future Mary Shelley — has tended to eclipse the rigor of its arguments.
+
+Wollstonecraft's philosophical move is to take the Enlightenment seriously enough to apply it consistently. If, as thinkers from Locke to Rousseau insisted, human dignity rests on the capacity for reason, and if education is what develops that capacity, then denying women rigorous education amounts to denying them the conditions of full personhood — and then complaining when the stunted result looks weak, vain, and manipulative. The frivolity of contemporary women, she argued, was not a fact about female nature but a predictable effect of the cages built around them. Her critique of Rousseau's Sophie (who in Émile exists entirely for Émile's benefit) is surgical.
+
+She was not, however, a simple egalitarian of the sort later liberalism would produce. Her Vindication draws on classical republican and dissenting Protestant traditions to argue that genuine virtue requires independence, reason, and the capacity for principled action — that married women economically dependent on their husbands cannot cultivate virtue any more than hereditary kings can. She extends the argument, in A Vindication of the Rights of Men (her response to Burke's Reflections on the Revolution in France), to a broader critique of tradition, deference, and hereditary inequality. She writes on education, travel, imagination, and friendship with an interest that prefigures later feminist care ethicists.
+
+Her reputation suffered for a century after her husband William Godwin, with good intentions, published an honest memoir detailing her unconventional life. Victorian respectability recoiled, and she was dismissed or ignored by the mainstream. Only in the twentieth century did scholars rediscover her as a major political theorist in her own right, not a biographical curiosity. Contemporary philosophers read her as a foundational voice for feminist deontology, for relational conceptions of autonomy, and for the claim — still not fully absorbed — that abstract rights-talk is empty unless the material conditions for exercising those rights are secured. Her daughter's novel Frankenstein, incidentally, is sometimes read as an extended meditation on her mother's preoccupations with creation, education, and responsibility.`,
+    keyIdeas: [
+      'Rights and virtue as grounded in reason',
+      'Education as precondition of full personhood',
+      'Critique of sentimental femininity',
+      'Economic independence as moral requirement',
+      'Republican virtue against hereditary privilege',
+      'Relational autonomy',
+    ],
+    relatedFrameworks: ['deontology', 'social-contract-theory', 'ethics-of-care'],
+    famousWorks: ['A Vindication of the Rights of Woman', 'A Vindication of the Rights of Men', 'Letters Written in Sweden, Norway, and Denmark'],
+    imageHint: 'english enlightenment philosopher',
+  },
+  {
+    id: 'arendt',
+    name: 'Hannah Arendt',
+    era: '1906-1975 CE',
+    bio: `Hannah Arendt was studying with Heidegger at Marburg when she was twenty-two and he was her married professor. What grew from that complicated relationship — intellectual debt, romantic entanglement, later anguish over his Nazi affiliation — never simplified. She fled Germany in 1933, was interned in France, escaped to New York in 1941, and spent the rest of her life writing about totalitarianism, action, evil, and the conditions of political freedom from the perspective of someone who had watched a civilization lose them.
+
+Her first major work, The Origins of Totalitarianism (1951), traced anti-Semitism, imperialism, and the modern nation-state's treatment of the stateless as the soil from which totalitarian movements grew. The question that shaped everything she wrote afterward was how people — ordinary people, not monsters — come to participate in massive systems of harm. In The Human Condition (1958) she distinguished three modes of active life: labor (the repetitive tasks of biological maintenance), work (the fabrication of durable things), and action (the distinctively political activity of appearing among equals, speaking, and beginning something new). Modern mass society, she argued, had collapsed labor and work into the dominant frame and nearly extinguished the space for genuine action.
+
+The book that most inflamed her readers was Eichmann in Jerusalem (1963), her report on the trial of Adolf Eichmann for the New Yorker. She expected to find a demonic figure; she found a self-important mediocrity who spoke in clichés and seemed unable to think from anyone else's perspective. Her phrase "the banality of evil" did not mean that evil was trivial but that catastrophic harm can proceed from thoughtlessness — from the absence of the inner dialogue with oneself that is the basis of conscience. The response was fierce and enduring. She was accused of minimizing the Holocaust, of blaming Jewish victims (especially in passages criticizing the Jewish councils), of arrogance. Some of those critiques landed; the underlying insight has proven indispensable for understanding bureaucracy, complicity, and moral failure in institutional settings.
+
+Arendt refused most of the usual philosophical labels. She rejected being called a philosopher at all, preferring "political theorist," because she thought philosophy's orientation toward the contemplative life had misled it about politics. She drew on Aristotle, Kant, and Augustine while rejecting systems. Her ethics is not a theory of right action so much as an account of the conditions — plurality, natality (the capacity to begin), a public realm — under which ethical life is possible. In scenarios of totalitarian pressure, the one virtue she singled out is thinking itself: the stubborn interior dialogue that preserves the capacity to say "no."
+
+Contemporary readers return to her on surveillance, refugees, statelessness, technocracy, and the shrinking of the public sphere. Her insistence that human dignity is inseparable from "the right to have rights," that statelessness is the deepest political catastrophe, and that thinking is a moral act are as urgent now as when she wrote them.`,
+    keyIdeas: [
+      'Banality of evil',
+      'Labor, work, and action',
+      'Natality and the capacity to begin',
+      'The right to have rights',
+      'Thinking as a moral act',
+      'Plurality as the condition of politics',
+    ],
+    relatedFrameworks: ['discourse-ethics', 'existentialist-ethics', 'social-contract-theory'],
+    famousWorks: ['The Origins of Totalitarianism', 'The Human Condition', 'Eichmann in Jerusalem', 'On Revolution', 'The Life of the Mind'],
+    imageHint: 'twentieth century political theorist',
+  },
+  {
+    id: 'murdoch',
+    name: 'Iris Murdoch',
+    era: '1919-1999 CE',
+    bio: `Iris Murdoch lived two public lives. As a novelist she produced more than two dozen books of dense moral psychology — The Sea, The Sea, A Severed Head, The Black Prince — in which characters blunder through self-deception toward sometimes-devastating self-knowledge. As a philosopher she wrote more quietly, and less voluminously, but her few essays and slim books have done as much as any twentieth-century work to reorient ethics away from the decision procedures of analytic philosophy toward something older and harder: the slow labor of attention.
+
+Her most enduring argument is that the central moral fact is not the moment of choice but the long-running activity of seeing. What a person can see, she argued, determines what they can choose. By the time a decision presents itself, the work of perception has already done most of its ethical business. A jealous woman who hates her daughter-in-law may, over years, learn to look at her again — setting aside vanity, projection, defensiveness — until the girl she once saw as a threat becomes visible as a human being. This, Murdoch thought, is the ordinary texture of ethical life, and no ethics that ignores it can be adequate.
+
+Drawing from Plato, whom she read as the greatest of moralists, she argued that the Good is real, not a projection of will or feeling. Our task is not to invent values but to become capable of perceiving them, and this requires a discipline Murdoch called "unselfing": the steady removal of the greedy self that colors everything it sees with its own fears and desires. Art, love, and contemplation of nature are unselfing activities; so, properly conducted, is moral attention. Her essay "The Idea of Perfection" mounted an extended argument against the Oxford behaviorism of her teachers, which had reduced moral concepts to dispositions to act. The moral life, she insisted, takes place largely in the privacy of perception, and what you become is built there long before you "decide."
+
+Her relationship to religion was sidelong. She called herself a Platonist rather than a theist, though she drew heavily on Christian contemplative traditions, especially the apophatic strand associated with Meister Eckhart and Simone Weil, whose notion of attention as a moral discipline she deepened and extended. Her Metaphysics as a Guide to Morals (1992) is a sprawling, difficult, sometimes maddening book-length meditation on how ethics, metaphysics, and religion have come apart in the modern world and what it would take to think them together again.
+
+Critics have found her insufficiently attentive to structural injustice — her ethics of vision can look, from outside, like an ethics for private gardens. Others have questioned whether "the Good" can do the heavy lifting she asks of it without slipping back into something religious. Defenders reply that her work does not replace politics but reminds ethics what it is talking about when it talks about persons. In an age of hot takes and algorithmic outrage, her insistence that moral perception is slow and difficult, and that we owe the people we judge more looking than we have bothered to do, keeps finding new readers.`,
+    keyIdeas: [
+      'Moral attention',
+      'Unselfing',
+      'Vision rather than choice as the site of ethics',
+      'The reality of the Good',
+      'Fantasy vs imagination',
+      'Love as just and accurate perception',
+    ],
+    relatedFrameworks: ['virtue-ethics', 'ethics-of-care'],
+    famousWorks: ['The Sovereignty of Good', 'Metaphysics as a Guide to Morals', 'Existentialists and Mystics'],
+    imageHint: 'twentieth century british philosopher',
+  },
+  {
+    id: 'appiah',
+    name: 'Kwame Anthony Appiah',
+    era: '1954-present',
+    bio: `Born in London, raised in Kumasi, Ghana, and educated at Cambridge, Kwame Anthony Appiah has written as a philosopher of race, culture, identity, and ethics with a persistent conviction that the sharp lines we draw around peoples and traditions have always been drawn in chalk, and can always be redrawn. His father was a Ghanaian statesman, his mother was the English writer Peggy Cripps, and his extended family stretched from the Asante royal court to British socialist circles — a biographical reality that gave him no alternative but to think cosmopolitanism before he could think clearly about anything else.
+
+His most influential philosophical move has been to rehabilitate cosmopolitanism as a serious ethical and political position, not a vague sentiment. In Cosmopolitanism: Ethics in a World of Strangers (2006) he argued for two commitments held in productive tension: universal concern (we have obligations to all human beings, not only those who share our traditions) and respect for legitimate difference (we cannot insist that everyone be like us to count). The cosmopolitan is not the jet-setter of popular cliché but the person capable of taking strangers seriously as sources of meaning, while still being at home somewhere in particular.
+
+In The Ethics of Identity (2005) he argued that identities — racial, national, religious, sexual — are real, important, and worth taking seriously, but that they are social scripts rather than essences, and that we are free, within limits, to write them into new shapes. His earlier In My Father's House (1992) had already made the case, within African intellectual debates, that authentic engagement with African traditions does not require accepting the reified "African identity" that colonial anthropology and later Pan-Africanist ideology both handed down. The Honor Code (2010) examined moral revolutions — against dueling, against foot-binding, against Atlantic slavery — and argued that each turned less on new moral arguments than on shifts in the sense of what it was honorable to be seen as.
+
+Appiah has been equally at home in analytic philosophy, African and African-American studies, and public writing (he has long contributed the Ethicist column in The New York Times). His style is conversational and generous, and he takes pains not to caricature the positions he disagrees with. Critics from both ends of the culture wars have accused him of being too moderate — of softening the political edges of identity for progressives, of tolerating too much difference for conservatives. His response tends to be that moderation, properly understood, is not the absence of commitment but the conviction that the people on the other side of an argument are people, and that the long work of persuasion has not yet been done.
+
+In the context of science-fiction ethics — where the question of how to live well with genuinely strange minds, biological or digital, human or alien, is the recurring problem — Appiah's cosmopolitanism supplies something like a method: start by taking the other seriously, refuse both sentimental assimilation and defensive essentialism, and ask what obligations survive when the only common ground is that both parties can recognize each other as agents with lives.`,
+    keyIdeas: [
+      'Cosmopolitanism with roots',
+      'Identities as social scripts',
+      'Moral revolutions and honor codes',
+      'Critique of racial essentialism',
+      'Fallibilism in cross-cultural ethics',
+      'Conversation across difference',
+    ],
+    relatedFrameworks: ['cosmopolitanism', 'virtue-ethics', 'social-contract-theory'],
+    famousWorks: ['Cosmopolitanism: Ethics in a World of Strangers', 'The Ethics of Identity', 'In My Father\'s House', 'The Honor Code'],
+    imageHint: 'contemporary ghanaian-british philosopher',
+  },
 ];
