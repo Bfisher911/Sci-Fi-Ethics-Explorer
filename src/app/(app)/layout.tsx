@@ -18,7 +18,7 @@ import { Sparkles } from 'lucide-react';
  * land here from the marketing site (Explore / Archive footer links) and
  * see a slim public shell rather than getting bounced to /login.
  */
-const PUBLIC_PATH_PREFIXES = ['/stories', '/philosophers', '/scifi-authors', '/glossary'];
+const PUBLIC_PATH_PREFIXES = ['/stories', '/philosophers', '/scifi-authors', '/scifi-media', '/glossary'];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATH_PREFIXES.some(

@@ -8,6 +8,7 @@ import { upsertQuiz } from '@/app/actions/quizzes';
 import { philosopherData } from '@/data/philosophers';
 import { ethicalTheories } from '@/data/ethical-theories';
 import { scifiAuthorData } from '@/data/scifi-authors';
+import { scifiMediaData } from '@/data/scifi-media';
 import type { QuizSubjectType } from '@/types';
 
 type ActionResult<T = void> =
@@ -64,6 +65,30 @@ async function loadSubject(
     return {
       name: fallback.name,
       context: [fallback.bio, fallback.techEthicsFocus].filter(Boolean).join('\n\n'),
+    };
+  }
+
+  if (subjectType === 'scifi-media') {
+    try {
+      const snap = await getDoc(doc(db, 'scifiMedia', subjectId));
+      if (snap.exists()) {
+        const d = snap.data();
+        return {
+          name: d.title || subjectId,
+          context: [d.plot, ...(d.ethicsExplored || [])].filter(Boolean).join('\n\n'),
+        };
+      }
+    } catch (error) {
+      console.warn(
+        '[quiz-generation] scifi-media Firestore lookup failed, falling back:',
+        error
+      );
+    }
+    const fallback = scifiMediaData.find((m) => m.id === subjectId);
+    if (!fallback) return null;
+    return {
+      name: fallback.title,
+      context: [fallback.plot, ...fallback.ethicsExplored].filter(Boolean).join('\n\n'),
     };
   }
 

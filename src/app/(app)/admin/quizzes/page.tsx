@@ -40,6 +40,7 @@ type MissingSubjects = {
   philosophers: { id: string; name: string }[];
   theories: { id: string; name: string }[];
   scifiAuthors: { id: string; name: string }[];
+  scifiMedia: { id: string; name: string }[];
 };
 
 type BulkState = {
@@ -67,6 +68,7 @@ export default function AdminQuizzesPage() {
     philosophers: [],
     theories: [],
     scifiAuthors: [],
+    scifiMedia: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -255,6 +257,11 @@ export default function AdminQuizzesPage() {
         id: a.id,
         name: a.name,
       })),
+      ...missing.scifiMedia.map((m) => ({
+        type: 'scifi-media' as const,
+        id: m.id,
+        name: m.name,
+      })),
     ];
     runBulk(targets, 'Generate All Missing');
   };
@@ -281,10 +288,15 @@ export default function AdminQuizzesPage() {
         id: a.id,
         name: a.name,
       })),
+      ...missing.scifiMedia.map((m) => ({
+        type: 'scifi-media' as const,
+        id: m.id,
+        name: m.name,
+      })),
     ];
     if (
       !confirm(
-        `Regenerate ALL ${existingTargets.length + missingTargets.length} quizzes (philosophers, theories, and sci-fi authors)? Existing quizzes will be overwritten. This will take several minutes.`
+        `Regenerate ALL ${existingTargets.length + missingTargets.length} quizzes? Existing quizzes will be overwritten. This will take several minutes.`
       )
     )
       return;
@@ -295,7 +307,7 @@ export default function AdminQuizzesPage() {
   };
 
   const totalMissing =
-    missing.philosophers.length + missing.theories.length + missing.scifiAuthors.length;
+    missing.philosophers.length + missing.theories.length + missing.scifiAuthors.length + missing.scifiMedia.length;
 
   if (loading) {
     return (
@@ -460,6 +472,14 @@ export default function AdminQuizzesPage() {
               onGenerate={(id, name) => handleGenerateOne('scifi-author', id, name)}
               disabled={bulk.running}
             />
+            <MissingList
+              title="Sci-Fi Media without quizzes"
+              items={missing.scifiMedia}
+              type="scifi-media"
+              generatingIds={generatingIds}
+              onGenerate={(id, name) => handleGenerateOne('scifi-media', id, name)}
+              disabled={bulk.running}
+            />
           </div>
         </CardContent>
       </Card>
@@ -496,6 +516,8 @@ export default function AdminQuizzesPage() {
                         ? `/philosophers/${q.subjectId}/quiz`
                         : q.subjectType === 'scifi-author'
                         ? `/scifi-authors/${q.subjectId}/quiz`
+                        : q.subjectType === 'scifi-media'
+                        ? `/scifi-media/${q.subjectId}/quiz`
                         : `/glossary/${q.subjectId}/quiz`;
                     const key = markKey(q.subjectType, q.subjectId);
                     const regenerating = generatingIds.has(key);

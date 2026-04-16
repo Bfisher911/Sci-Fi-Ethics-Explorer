@@ -241,7 +241,7 @@ export interface ContentVersion {
 
 // ─── Quizzes (per-philosopher / per-theory comprehension quizzes) ──
 
-export type QuizSubjectType = 'philosopher' | 'theory' | 'scifi-author';
+export type QuizSubjectType = 'philosopher' | 'theory' | 'scifi-author' | 'scifi-media';
 export type QuizDifficulty = 'recall' | 'conceptual' | 'applied';
 
 export interface QuizQuestion {
@@ -664,6 +664,33 @@ export interface SciFiAuthor {
   notableWorks: string[];
   /** One-sentence summary of how their work bears on technology ethics. */
   techEthicsFocus?: string;
+}
+
+// ─── Sci-Fi Media ───────────────────────────────────────────────────
+
+export type SciFiMediaCategory = 'movie' | 'book' | 'tv' | 'other';
+
+export interface SciFiMedia {
+  id: string;
+  title: string;
+  /** 'movie' | 'book' | 'tv' | 'other' */
+  category: SciFiMediaCategory;
+  /** Release year or range (e.g., "1982", "2016-2022"). */
+  year: string;
+  /** Creator(s): director for films, author for books, showrunner for TV. */
+  creator: string;
+  imageUrl?: string;
+  imageHint?: string;
+  /** Plot summary focused on the ethical stakes. */
+  plot: string;
+  /** Technology-ethics themes explored. */
+  ethicsExplored: string[];
+  /** IDs of SciFiAuthor entries who wrote or inspired this work. */
+  authorIds?: string[];
+  /** Ethical framework IDs this work engages with. */
+  relatedFrameworks: string[];
+  /** Additional metadata (runtime, page count, network, etc.). */
+  meta?: string;
 }
 
 // ─── Classroom ──────────────────────────────────────────────────────

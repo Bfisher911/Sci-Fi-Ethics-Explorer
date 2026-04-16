@@ -28,6 +28,7 @@ import {
   GitCompare,
   Search,
   Rocket,
+  Clapperboard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -69,9 +70,13 @@ const communityNavItems = [
 const learningNavItems = [
   { href: '/curriculum', label: 'Learning Paths', icon: GraduationCap },
   { href: '/philosophers', label: 'Philosophers', icon: ScrollText },
-  { href: '/scifi-authors', label: 'Sci-Fi Authors', icon: Rocket },
   { href: '/communities', label: 'Communities', icon: Users },
   { href: '/directory', label: 'Directory', icon: Users },
+];
+
+const scifiNavItems = [
+  { href: '/scifi-authors', label: 'Sci-Fi Authors', icon: Rocket },
+  { href: '/scifi-media', label: 'Sci-Fi Media', icon: Clapperboard },
 ];
 
 const footerNavItems = [
@@ -164,6 +169,31 @@ export function AppSidebar() {
             </SidebarGroupLabel>
             <SidebarMenu>
               {learningNavItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname.startsWith(item.href)}
+                    tooltip={item.label}
+                    className="group-data-[collapsible=icon]:justify-center"
+                  >
+                    <Link href={item.href}>
+                      <item.icon className="h-5 w-5 group-data-[collapsible=icon]:m-auto" />
+                      {state === 'expanded' && <span>{item.label}</span>}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+
+          <SidebarSeparator className="my-3" />
+
+          <SidebarGroup className="p-0">
+            <SidebarGroupLabel className="px-2 pb-1 text-xs text-sidebar-foreground/70 group-data-[collapsible=icon]:hidden">
+              Science Fiction
+            </SidebarGroupLabel>
+            <SidebarMenu>
+              {scifiNavItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild

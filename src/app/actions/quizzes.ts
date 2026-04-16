@@ -207,6 +207,7 @@ export async function listMissingQuizSubjects(adminUid: string): Promise<ActionR
   philosophers: { id: string; name: string }[];
   theories: { id: string; name: string }[];
   scifiAuthors: { id: string; name: string }[];
+  scifiMedia: { id: string; name: string }[];
 }>> {
   try {
     await requireAdmin(adminUid);
@@ -253,12 +254,40 @@ export async function listMissingQuizSubjects(adminUid: string): Promise<ActionR
       }
     }
 
+    // Sci-fi media
+    const missingMedia: { id: string; name: string }[] = [];
+    try {
+      const mediaSnap = await getDocs(collection(db, 'scifiMedia'));
+      if (mediaSnap.docs.length > 0) {
+        mediaSnap.docs.forEach((d: any) => {
+          if (!existingQuizIds.has(`scifi-media-${d.id}`)) {
+            missingMedia.push({ id: d.id, name: d.data().title || d.id });
+          }
+        });
+      } else {
+        const { scifiMediaData } = await import('@/data/scifi-media');
+        for (const m of scifiMediaData) {
+          if (!existingQuizIds.has(`scifi-media-${m.id}`)) {
+            missingMedia.push({ id: m.id, name: m.title });
+          }
+        }
+      }
+    } catch {
+      const { scifiMediaData } = await import('@/data/scifi-media');
+      for (const m of scifiMediaData) {
+        if (!existingQuizIds.has(`scifi-media-${m.id}`)) {
+          missingMedia.push({ id: m.id, name: m.title });
+        }
+      }
+    }
+
     return {
       success: true,
       data: {
         philosophers: missingPhils,
         theories: missingTheories,
         scifiAuthors: missingAuthors,
+        scifiMedia: missingMedia,
       },
     };
   } catch (error: any) {

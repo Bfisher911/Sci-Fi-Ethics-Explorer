@@ -648,6 +648,7 @@ const COLLECTION_MAP: Record<string, string> = {
   philosopher: 'philosophers',
   theory: 'ethicalTheories',
   'scifi-author': 'scifiAuthors',
+  'scifi-media': 'scifiMedia',
   analysis: 'analyses',
   perspective: 'perspectives',
   workshop: 'workshops',
