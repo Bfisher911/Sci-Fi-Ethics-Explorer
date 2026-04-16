@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   GitCompare,
   Search,
+  Rocket,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -68,6 +69,7 @@ const communityNavItems = [
 const learningNavItems = [
   { href: '/curriculum', label: 'Learning Paths', icon: GraduationCap },
   { href: '/philosophers', label: 'Philosophers', icon: ScrollText },
+  { href: '/scifi-authors', label: 'Sci-Fi Authors', icon: Rocket },
   { href: '/communities', label: 'Communities', icon: Users },
   { href: '/directory', label: 'Directory', icon: Users },
 ];

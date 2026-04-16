@@ -644,6 +644,28 @@ export interface Philosopher {
   famousWorks: string[];
 }
 
+// ─── Sci-Fi Authors ─────────────────────────────────────────────────
+
+export interface SciFiAuthor {
+  id: string;
+  name: string;
+  /** Years active (e.g., "1797-1851"). */
+  era: string;
+  imageUrl?: string;
+  imageHint?: string;
+  bio: string;
+  /** Recurring ethical/technological themes in the author's work. */
+  themes: string[];
+  /** Sub-genres or movements (Cyberpunk, Hard SF, Afrofuturism, etc.). */
+  subgenres?: string[];
+  /** Ethical frameworks their work engages with. Uses EthicalTheory IDs. */
+  relatedFrameworks: string[];
+  /** Landmark novels, stories, or collections. */
+  notableWorks: string[];
+  /** One-sentence summary of how their work bears on technology ethics. */
+  techEthicsFocus?: string;
+}
+
 // ─── Classroom ──────────────────────────────────────────────────────
 
 export interface Classroom {
