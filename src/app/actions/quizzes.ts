@@ -11,6 +11,7 @@ import type {
 } from '@/types';
 import { timestampToDate } from '@/lib/firebase/firestore-helpers';
 import { requireAdmin } from '@/lib/admin';
+import { getStaticScifiAuthorQuiz } from '@/data/scifi-author-quizzes';
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -77,10 +78,24 @@ export async function getQuizForSubject(
   try {
     const id = `${subjectType}-${subjectId}`;
     const snap = await getDoc(doc(db, 'quizzes', id));
-    if (!snap.exists()) return { success: true, data: null };
-    return { success: true, data: quizFromDoc(snap.id, snap.data()) };
+    if (snap.exists()) {
+      return { success: true, data: quizFromDoc(snap.id, snap.data()) };
+    }
+
+    // Static fallbacks for hand-authored quizzes that may not have been
+    // seeded into Firestore yet. Currently only used for sci-fi authors.
+    if (subjectType === 'scifi-author') {
+      const fallback = getStaticScifiAuthorQuiz(subjectId);
+      if (fallback) return { success: true, data: fallback };
+    }
+
+    return { success: true, data: null };
   } catch (error) {
     console.error('[quizzes] getQuizForSubject error:', error);
+    if (subjectType === 'scifi-author') {
+      const fallback = getStaticScifiAuthorQuiz(subjectId);
+      if (fallback) return { success: true, data: fallback };
+    }
     return { success: false, error: String(error) };
   }
 }
@@ -107,8 +122,13 @@ export async function submitQuizAttempt(input: {
 }): Promise<ActionResult<QuizAttempt>> {
   try {
     const quizSnap = await getDoc(doc(db, 'quizzes', input.quizId));
-    if (!quizSnap.exists()) return { success: false, error: 'Quiz not found.' };
-    const quiz = quizFromDoc(quizSnap.id, quizSnap.data());
+    let quiz: Quiz | null = quizSnap.exists()
+      ? quizFromDoc(quizSnap.id, quizSnap.data())
+      : null;
+    if (!quiz && input.subjectType === 'scifi-author') {
+      quiz = getStaticScifiAuthorQuiz(input.subjectId);
+    }
+    if (!quiz) return { success: false, error: 'Quiz not found.' };
 
     const total = quiz.questions.length;
     let correct = 0;

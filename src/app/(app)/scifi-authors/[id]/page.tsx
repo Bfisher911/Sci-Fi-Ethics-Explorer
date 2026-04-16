@@ -9,6 +9,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { getSciFiAuthorById } from '@/app/actions/scifi-authors';
 import { SciFiAuthorDetail } from '@/components/scifi-authors/scifi-author-detail';
+import { QuizCta } from '@/components/quiz/quiz-cta';
 import type { SciFiAuthor } from '@/types';
 
 export default function SciFiAuthorDetailPage() {
@@ -64,6 +65,13 @@ export default function SciFiAuthorDetailPage() {
         </Link>
       </Button>
       <SciFiAuthorDetail author={author} />
+      <div className="mt-6">
+        <QuizCta
+          subjectType="scifi-author"
+          subjectId={author.id}
+          href={`/scifi-authors/${author.id}/quiz`}
+        />
+      </div>
     </div>
   );
 }
