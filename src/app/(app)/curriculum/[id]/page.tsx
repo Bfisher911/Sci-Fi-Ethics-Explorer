@@ -27,6 +27,15 @@ import {
   Award,
   Pencil,
   Trash2,
+  ScrollText as ScrollTextIcon,
+  BookText as BookTextIcon,
+  Rocket,
+  Clapperboard,
+  Newspaper,
+  BookOpenCheck,
+  StickyNote,
+  MessageSquarePlus,
+  Share2,
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -73,10 +82,34 @@ function itemIcon(type: CurriculumItem['type']): React.ReactNode {
       return <FlaskConical className="h-4 w-4" />;
     case 'discussion':
       return <GitCompare className="h-4 w-4" />;
+    case 'perspective':
+      return <GitCompare className="h-4 w-4" />;
+    case 'philosopher':
+      return <ScrollTextIcon className="h-4 w-4" />;
+    case 'theory':
+      return <BookTextIcon className="h-4 w-4" />;
+    case 'scifi-author':
+      return <Rocket className="h-4 w-4" />;
+    case 'scifi-media':
+      return <Clapperboard className="h-4 w-4" />;
+    case 'blog':
+      return <Newspaper className="h-4 w-4" />;
+    case 'textbook-chapter':
+      return <BookOpenCheck className="h-4 w-4" />;
+    case 'instructions':
+      return <StickyNote className="h-4 w-4" />;
+    case 'reflection':
+      return <MessageSquarePlus className="h-4 w-4" />;
+    default:
+      return <BookOpen className="h-4 w-4" />;
   }
 }
 
 function itemHref(item: CurriculumItem): string | null {
+  if (item.type === 'instructions' || item.type === 'reflection') return null;
+  // Analyzer + perspective don't need a reference — they open the tool
+  if (item.type === 'analysis') return '/analyzer';
+  if (item.type === 'perspective') return '/perspective-comparison';
   if (!item.referenceId) return null;
   switch (item.type) {
     case 'story':
@@ -85,10 +118,20 @@ function itemHref(item: CurriculumItem): string | null {
       return `/quizzes/${item.referenceId}`;
     case 'debate':
       return `/debate-arena/${item.referenceId}`;
-    case 'analysis':
-      return `/dilemma-analyzer/${item.referenceId}`;
     case 'discussion':
       return `/stories/${item.referenceId}`;
+    case 'philosopher':
+      return `/philosophers/${item.referenceId}`;
+    case 'theory':
+      return `/glossary/${item.referenceId}`;
+    case 'scifi-author':
+      return `/scifi-authors/${item.referenceId}`;
+    case 'scifi-media':
+      return `/scifi-media/${item.referenceId}`;
+    case 'blog':
+      return `/blog/${item.referenceId}`;
+    case 'textbook-chapter':
+      return `/textbook/chapters/${item.referenceId}`;
     default:
       return null;
   }
@@ -107,6 +150,12 @@ export default function CurriculumDetailPage() {
   const [enrolling, setEnrolling] = useState(false);
   const [marking, setMarking] = useState<string | null>(null);
   const [issuedCert, setIssuedCert] = useState<Certificate | null>(null);
+  const [attachedCommunityId, setAttachedCommunityId] = useState<string | null>(
+    null
+  );
+  const [attachedCommunityName, setAttachedCommunityName] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     async function fetchData(): Promise<void> {
@@ -124,6 +173,25 @@ export default function CurriculumDetailPage() {
           if (certRes.success) {
             const existing = certRes.data.find((c) => c.curriculumId === id);
             if (existing) setIssuedCert(existing);
+          }
+          // Find a community this learner is in whose curriculumPathId
+          // matches this curriculum — lets reflections share back.
+          try {
+            const { getUserCommunities } = await import(
+              '@/app/actions/communities'
+            );
+            const commsRes = await getUserCommunities(user.uid);
+            if (commsRes.success) {
+              const match = commsRes.data.find(
+                (c: any) => c.curriculumPathId === id
+              );
+              if (match) {
+                setAttachedCommunityId(match.id);
+                setAttachedCommunityName(match.name);
+              }
+            }
+          } catch (err) {
+            console.warn('[curriculum] community lookup failed:', err);
           }
         }
       }
@@ -166,7 +234,15 @@ export default function CurriculumDetailPage() {
       target.length > 0 &&
       target.every((it) => nextCompleted.includes(it.id));
 
-    if (allDone && !issuedCert) {
+    // Respect the per-curriculum certificate toggle. If a creator
+    // marked a path as "no certificate", finishing it shouldn't mint
+    // one. When `certificate` is missing (legacy records) we preserve
+    // the old behaviour and always award.
+    const certEnabled = curriculum.certificate
+      ? curriculum.certificate.enabled === true
+      : true;
+
+    if (allDone && !issuedCert && certEnabled) {
       try {
         // Resolve a display name — fall back to email / 'Explorer'
         let userName = user.displayName || '';
@@ -184,11 +260,13 @@ export default function CurriculumDetailPage() {
         }
         if (!userName) userName = 'Explorer';
 
+        const certTitle =
+          curriculum.certificate?.title?.trim() || curriculum.title;
         const certRes = await issueCertificate({
           userId: user.uid,
           userName,
           curriculumId: id,
-          curriculumTitle: curriculum.title,
+          curriculumTitle: certTitle,
         });
         if (certRes.success) {
           setIssuedCert(certRes.data);
@@ -341,6 +419,36 @@ export default function CurriculumDetailPage() {
                   .some((p) => p.isRequired && !completed.includes(p.id));
                 const locked = item.isRequired && priorRequiredIncomplete;
 
+                // Instructions blocks render as inline prose, not clickable rows.
+                if (item.type === 'instructions') {
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex gap-3 p-4 rounded-md border border-primary/20 bg-primary/5"
+                    >
+                      <StickyNote className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                      <div className="text-sm text-foreground/90 whitespace-pre-wrap">
+                        {item.instructions || item.title || 'Instructions'}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // Reflection items render with an inline textarea + submit.
+                if (item.type === 'reflection') {
+                  return (
+                    <CurriculumReflection
+                      key={item.id}
+                      item={item}
+                      isCompleted={isCompleted}
+                      locked={locked}
+                      communityId={attachedCommunityId}
+                      communityName={attachedCommunityName}
+                      onMarkComplete={() => handleMarkComplete(item.id)}
+                    />
+                  );
+                }
+
                 const href = itemHref(item);
                 const clickable = !locked && Boolean(href);
 
@@ -400,28 +508,38 @@ export default function CurriculumDetailPage() {
                   </div>
                 );
 
-                if (locked) {
-                  return (
-                    <Tooltip key={item.id}>
-                      <TooltipTrigger asChild>
-                        <div>{body}</div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Complete the previous required item to unlock
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                }
+                // Optional per-item instructions render ABOVE the row
+                // as a subtle prose block.
+                const instructionsBlock = item.instructions ? (
+                  <div className="flex gap-2 text-xs text-muted-foreground italic pl-1 pr-1 pb-1">
+                    <StickyNote className="h-3 w-3 mt-0.5 shrink-0 text-primary/70" />
+                    <span className="whitespace-pre-wrap">{item.instructions}</span>
+                  </div>
+                ) : null;
 
-                if (clickable && href) {
-                  return (
-                    <Link key={item.id} href={href} className="block">
-                      {body}
-                    </Link>
-                  );
-                }
+                const row = locked ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div>{body}</div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Complete the previous required item to unlock
+                    </TooltipContent>
+                  </Tooltip>
+                ) : clickable && href ? (
+                  <Link href={href} className="block">
+                    {body}
+                  </Link>
+                ) : (
+                  <div>{body}</div>
+                );
 
-                return <div key={item.id}>{body}</div>;
+                return (
+                  <div key={item.id} className="space-y-1">
+                    {instructionsBlock}
+                    {row}
+                  </div>
+                );
               })}
             </CardContent>
           </Card>
@@ -496,5 +614,163 @@ function DeleteCurriculumButton({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  );
+}
+
+/**
+ * Inline reflection row — used for CurriculumItem.type === 'reflection'.
+ * Lets the learner write a free-text response, optionally share it to
+ * the community whose curriculum this is, and mark the item complete.
+ */
+function CurriculumReflection({
+  item,
+  isCompleted,
+  locked,
+  communityId,
+  communityName,
+  onMarkComplete,
+}: {
+  item: CurriculumItem;
+  isCompleted: boolean;
+  locked: boolean;
+  communityId: string | null;
+  communityName: string | null;
+  onMarkComplete: () => Promise<void> | void;
+}) {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [text, setText] = useState('');
+  const [share, setShare] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const prompt = (item.prompt || item.instructions || '').trim();
+
+  async function handleSubmit() {
+    if (!user) return;
+    if (!text.trim()) {
+      toast({
+        title: 'Write a reflection first',
+        description: 'Share a few sentences before marking this item complete.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setBusy(true);
+    try {
+      // Optionally share to the community feed so the instructor sees it.
+      if (share && communityId) {
+        const { createContribution } = await import(
+          '@/app/actions/contributions'
+        );
+        await createContribution({
+          communityId,
+          type: 'analysis',
+          contributorId: user.uid,
+          contributorName: user.displayName || user.email || 'Anonymous Explorer',
+          title: item.title || 'Learning-path reflection',
+          summary: text.trim().slice(0, 280),
+          content: { reflection: text.trim(), prompt, itemId: item.id },
+        });
+      }
+      await onMarkComplete();
+      toast({
+        title: 'Reflection saved',
+        description:
+          share && communityId
+            ? `Shared to ${communityName || 'your community'}.`
+            : 'Marked complete.',
+      });
+    } catch (err) {
+      toast({
+        title: 'Could not save reflection',
+        description: err instanceof Error ? err.message : String(err),
+        variant: 'destructive',
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      className={`rounded-md border p-4 space-y-3 ${
+        locked
+          ? 'opacity-60 border-muted bg-muted/10'
+          : isCompleted
+            ? 'border-primary/30 bg-primary/5'
+            : 'border-accent/30 bg-accent/5'
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        <MessageSquarePlus className="h-4 w-4 text-accent mt-0.5" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-medium text-sm text-foreground">
+              {item.title || 'Reflection'}
+            </span>
+            <Badge variant="outline" className="text-[10px]">
+              Reflection
+            </Badge>
+            {item.isRequired && (
+              <Badge variant="destructive" className="text-[10px] h-4">
+                Required
+              </Badge>
+            )}
+            {isCompleted && (
+              <Badge variant="default" className="text-[10px] h-4">
+                <CheckCircle className="h-3 w-3 mr-1" /> Complete
+              </Badge>
+            )}
+          </div>
+          {prompt && (
+            <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">
+              {prompt}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {!isCompleted && !locked && (
+        <>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Write your reflection…"
+            rows={4}
+            className="w-full text-sm rounded-md border border-input bg-background/60 p-2 focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          {communityId && (
+            <label className="flex items-start gap-2 text-xs text-muted-foreground cursor-pointer">
+              <input
+                type="checkbox"
+                checked={share}
+                onChange={(e) => setShare(e.target.checked)}
+                className="mt-0.5"
+              />
+              <span className="inline-flex items-center gap-1">
+                <Share2 className="h-3 w-3" />
+                Share to{' '}
+                <span className="text-foreground font-medium">
+                  {communityName || 'my community'}
+                </span>{' '}
+                so instructors can review it
+              </span>
+            </label>
+          )}
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              size="sm"
+              onClick={handleSubmit}
+              disabled={busy}
+            >
+              {busy ? (
+                <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
+              ) : null}
+              {share && communityId ? 'Submit & share' : 'Submit reflection'}
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
   );
 }

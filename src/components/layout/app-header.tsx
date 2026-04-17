@@ -12,7 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Moon, Sun, User as UserIcon, LogOut, Search as SearchIcon, PanelLeft, MessageCircle } from 'lucide-react';
+import { Moon, Sun, User as UserIcon, LogOut, Search as SearchIcon, PanelLeft, MessageCircle, Route as RouteIcon } from 'lucide-react';
+import { JourneyTourDialog } from './journey-tour-dialog';
 import { useAuth } from '@/hooks/use-auth';
 import { auth } from '@/lib/firebase/config';
 import { signOut } from 'firebase/auth';
@@ -137,6 +138,19 @@ export function AppHeader() {
           {/* Spacer */}
         </div>
         <div className="flex items-center gap-4">
+          <JourneyTourDialog
+            trigger={
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label="Take the tour"
+                className="gap-1.5 text-xs uppercase tracking-wider"
+              >
+                <RouteIcon className="h-4 w-4 text-primary" />
+                <span className="hidden sm:inline">Tour</span>
+              </Button>
+            }
+          />
           <Button
             variant="ghost"
             size="icon"

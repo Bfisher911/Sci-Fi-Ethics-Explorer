@@ -73,6 +73,7 @@ const communityNavItems = [
 const learningNavItems = [
   { href: '/textbook', label: 'Textbook', icon: BookText },
   { href: '/curriculum', label: 'Learning Paths', icon: GraduationCap },
+  { href: '/master-exam', label: 'Master Exam', icon: Trophy },
   { href: '/certificates', label: 'Certificates', icon: Award },
   { href: '/philosophers', label: 'Philosophers', icon: ScrollText },
   { href: '/communities', label: 'Communities', icon: Users },

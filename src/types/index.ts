@@ -594,13 +594,66 @@ export interface Bookmark {
 
 // ─── Curriculum & Learning Paths ────────────────────────────────────
 
+/**
+ * Types of artifacts a learning-path module can reference.
+ *
+ *   - 'instructions'      inline text header / notes (no referenceId used)
+ *   - 'story'             → /stories/{id}
+ *   - 'quiz'              → /philosophers/{id}/quiz etc (resolved by subject)
+ *   - 'debate'            → /debate-arena/{id}
+ *   - 'analysis'          → /analyzer with optional starter scenario
+ *   - 'discussion'        → open discussion prompt
+ *   - 'perspective'       → /perspective-comparison with starter scenario
+ *   - 'philosopher'       → /philosophers/{id}
+ *   - 'theory'            → /glossary/{id}
+ *   - 'scifi-author'      → /scifi-authors/{id}
+ *   - 'scifi-media'       → /scifi-media/{id}
+ *   - 'blog'              → /blog/{slug} (official blog posts only)
+ *   - 'textbook-chapter'  → /textbook/chapters/{slug}
+ *   - 'reflection'        learner writes a free-text response, optionally
+ *                         shareable to the containing community
+ */
+export type CurriculumItemType =
+  | 'instructions'
+  | 'story'
+  | 'quiz'
+  | 'debate'
+  | 'analysis'
+  | 'discussion'
+  | 'perspective'
+  | 'philosopher'
+  | 'theory'
+  | 'scifi-author'
+  | 'scifi-media'
+  | 'blog'
+  | 'textbook-chapter'
+  | 'reflection';
+
 export interface CurriculumItem {
   id: string;
-  type: 'story' | 'quiz' | 'debate' | 'analysis' | 'discussion';
+  type: CurriculumItemType;
+  /**
+   * Slug/id of the referenced artifact. Empty string for items that
+   * don't reference an external page (e.g. 'instructions',
+   * 'reflection', 'analysis' with a freeform prompt).
+   */
   referenceId: string;
   title: string;
   order: number;
   isRequired: boolean;
+  /**
+   * Optional free-text instructions shown above the item on the
+   * curriculum detail page. Useful for "before you read this story,
+   * think about…" framing or explicit prompts for reflections and
+   * perspective exercises.
+   */
+  instructions?: string;
+  /**
+   * For 'analysis' / 'perspective' / 'reflection' items: an optional
+   * starter prompt passed to the target tool. Lets an instructor say
+   * "use this scenario in the Analyzer".
+   */
+  prompt?: string;
 }
 
 export interface CurriculumModule {
@@ -609,6 +662,19 @@ export interface CurriculumModule {
   description: string;
   order: number;
   items: CurriculumItem[];
+}
+
+/**
+ * Configuration for the certificate (if any) awarded on completion of
+ * this learning path. When `enabled` is false the path behaves as a
+ * self-paced guide without any cert.
+ */
+export interface CurriculumCertificateConfig {
+  enabled: boolean;
+  /** Defaults to the curriculum title when unset. */
+  title?: string;
+  /** Shown as the curriculum title on the issued certificate. */
+  description?: string;
 }
 
 export interface CurriculumPath {
@@ -622,6 +688,14 @@ export interface CurriculumPath {
   isTemplate?: boolean;
   /** Stable reference back to the source curriculum if this was cloned. */
   clonedFrom?: string;
+  /** Set to true on system-curated "Official Learning Paths". */
+  isOfficial?: boolean;
+  /**
+   * Certificate configuration. When absent, treated as `{ enabled: false }`
+   * for backwards compatibility with legacy records. Callers that issue a
+   * cert should check `certificate?.enabled === true`.
+   */
+  certificate?: CurriculumCertificateConfig;
   modules: CurriculumModule[];
   enrollmentCount?: number;
   createdAt: Date | any;

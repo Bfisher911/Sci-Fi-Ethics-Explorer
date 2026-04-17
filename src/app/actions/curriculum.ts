@@ -35,7 +35,9 @@ function curriculumFromDoc(
     creatorName: data.creatorName || '',
     isPublic: data.isPublic ?? true,
     isTemplate: data.isTemplate ?? false,
+    isOfficial: data.isOfficial ?? false,
     clonedFrom: data.clonedFrom,
+    certificate: data.certificate,
     modules: data.modules || [],
     enrollmentCount: data.enrollmentCount || 0,
     createdAt: timestampToDate(data.createdAt),
@@ -61,10 +63,16 @@ export async function getCurricula(): Promise<ActionResult<CurriculumPath[]>> {
       curriculumFromDoc(d.id, d.data())
     );
 
-    // Merge preset learning paths that haven't been seeded into Firestore.
+    // Merge preset + official learning paths that haven't been seeded
+    // into Firestore. Official paths are prepended so they float to the
+    // top of the listing where curated content belongs.
     const { presetCurricula } = await import('@/data/preset-curricula');
+    const { officialLearningPaths } = await import(
+      '@/data/official-learning-paths'
+    );
     const existingIds = new Set(firestoreCurricula.map((c) => c.id));
     const merged = [
+      ...officialLearningPaths.filter((p) => !existingIds.has(p.id)),
       ...firestoreCurricula,
       ...presetCurricula.filter((p) => !existingIds.has(p.id)),
     ];
@@ -73,7 +81,13 @@ export async function getCurricula(): Promise<ActionResult<CurriculumPath[]>> {
   } catch (error) {
     console.error('[curriculum] getCurricula error, falling back to presets:', error);
     const { presetCurricula } = await import('@/data/preset-curricula');
-    return { success: true, data: presetCurricula };
+    const { officialLearningPaths } = await import(
+      '@/data/official-learning-paths'
+    );
+    return {
+      success: true,
+      data: [...officialLearningPaths, ...presetCurricula],
+    };
   }
 }
 
@@ -88,14 +102,26 @@ export async function getCurriculumById(
     if (snap.exists()) {
       return { success: true, data: curriculumFromDoc(snap.id, snap.data()) };
     }
-    // Fallback to preset curricula
+    // Fallback to preset + official curricula
     const { presetCurricula } = await import('@/data/preset-curricula');
-    const preset = presetCurricula.find((c) => c.id === id) || null;
+    const { officialLearningPaths } = await import(
+      '@/data/official-learning-paths'
+    );
+    const preset =
+      officialLearningPaths.find((c) => c.id === id) ||
+      presetCurricula.find((c) => c.id === id) ||
+      null;
     return { success: true, data: preset };
   } catch (error) {
     console.error('[curriculum] getCurriculumById error:', error);
     const { presetCurricula } = await import('@/data/preset-curricula');
-    const preset = presetCurricula.find((c) => c.id === id) || null;
+    const { officialLearningPaths } = await import(
+      '@/data/official-learning-paths'
+    );
+    const preset =
+      officialLearningPaths.find((c) => c.id === id) ||
+      presetCurricula.find((c) => c.id === id) ||
+      null;
     return { success: true, data: preset };
   }
 }

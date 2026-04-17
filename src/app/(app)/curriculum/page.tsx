@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BookOpen, Plus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { BookOpen, Plus, Sparkles } from 'lucide-react';
 import { getCurricula } from '@/app/actions/curriculum';
 import { CurriculumCard } from '@/components/curriculum/curriculum-card';
 import { CurriculumBuilder } from '@/components/curriculum/curriculum-builder';
@@ -76,11 +77,69 @@ function CurriculumPageInner() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {curricula.map((c) => (
-            <CurriculumCard key={c.id} curriculum={c} />
-          ))}
-        </div>
+        <CurriculaList curricula={curricula} />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Two-tier listing: Official Learning Paths (platform-curated, big,
+ * certificate-awarding) rendered first, then everything else — including
+ * community-authored paths and legacy presets.
+ */
+function CurriculaList({ curricula }: { curricula: CurriculumPath[] }) {
+  const { official, rest } = useMemo(() => {
+    const official: CurriculumPath[] = [];
+    const rest: CurriculumPath[] = [];
+    for (const c of curricula) {
+      if (c.isOfficial) official.push(c);
+      else rest.push(c);
+    }
+    return { official, rest };
+  }, [curricula]);
+
+  return (
+    <div className="space-y-10">
+      {official.length > 0 && (
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <Sparkles className="h-5 w-5 text-primary" />
+            <h2 className="text-2xl font-headline font-semibold text-primary">
+              Official Learning Paths
+            </h2>
+            <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">
+              Platform-curated
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
+            Structured paths built by the platform. Each one walks you through
+            textbook chapters, philosopher pages, stories, analyzer exercises,
+            and reflection prompts — and awards a certificate on completion.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {official.map((c) => (
+              <CurriculumCard key={c.id} curriculum={c} />
+            ))}
+          </div>
+        </section>
+      )}
+      {rest.length > 0 && (
+        <section>
+          {official.length > 0 && (
+            <div className="flex items-center gap-3 mb-4">
+              <BookOpen className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-2xl font-headline font-semibold">
+                Community Learning Paths
+              </h2>
+            </div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {rest.map((c) => (
+              <CurriculumCard key={c.id} curriculum={c} />
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );

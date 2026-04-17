@@ -64,6 +64,30 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { ArtifactPicker, artifactTypeIcon, type PickedArtifact } from './artifact-picker';
+import {
+  StaticContentPicker,
+  type StaticPickedArtifact,
+} from './static-content-picker';
+import {
+  BookText as BookTextIcon,
+  ScrollText,
+  Rocket,
+  Clapperboard,
+  Newspaper,
+  BookOpen,
+  MessageSquarePlus,
+  StickyNote,
+  Sparkles as SparklesIcon,
+  BookOpenCheck,
+} from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import type { CurriculumItemType } from '@/types';
 
 interface CurriculumBuilderProps {
   /** If provided, builder loads existing curriculum and updates on save. */
@@ -78,6 +102,54 @@ function itemKey(item: CurriculumItem): string {
   return `${item.type}:${item.referenceId}`;
 }
 
+/** The subset of types served by the existing ArtifactPicker (Firestore). */
+const ARTIFACT_PICKER_TYPES: CurriculumItemType[] = [
+  'story',
+  'quiz',
+  'debate',
+  'analysis',
+  'discussion',
+];
+/** The subset served by the new StaticContentPicker. */
+const STATIC_PICKER_TYPES: CurriculumItemType[] = [
+  'philosopher',
+  'theory',
+  'scifi-author',
+  'scifi-media',
+  'textbook-chapter',
+];
+/** Types authored inline with no external reference. */
+const INLINE_TYPES: CurriculumItemType[] = [
+  'instructions',
+  'reflection',
+  'perspective',
+];
+
+const ITEM_TYPE_META: Record<
+  CurriculumItemType,
+  { label: string; icon: typeof ScrollText }
+> = {
+  story: { label: 'Story', icon: BookOpen },
+  quiz: { label: 'Quiz', icon: SparklesIcon },
+  debate: { label: 'Debate', icon: SparklesIcon },
+  analysis: { label: 'Analyzer exercise', icon: SparklesIcon },
+  discussion: { label: 'Discussion', icon: SparklesIcon },
+  perspective: { label: 'Perspective comparison', icon: SparklesIcon },
+  philosopher: { label: 'Philosopher page', icon: ScrollText },
+  theory: { label: 'Ethical theory', icon: BookTextIcon },
+  'scifi-author': { label: 'Sci-fi author', icon: Rocket },
+  'scifi-media': { label: 'Sci-fi media', icon: Clapperboard },
+  blog: { label: 'Official blog post', icon: Newspaper },
+  'textbook-chapter': { label: 'Textbook chapter', icon: BookOpenCheck },
+  instructions: { label: 'Instructions / header', icon: StickyNote },
+  reflection: { label: 'Reflection prompt', icon: MessageSquarePlus },
+};
+
+function itemTypeIcon(type: CurriculumItemType, className = 'h-4 w-4') {
+  const Icon = ITEM_TYPE_META[type]?.icon || BookOpen;
+  return <Icon className={className} />;
+}
+
 export function CurriculumBuilder({ curriculum, onSaved }: CurriculumBuilderProps) {
   const { user } = useAuth();
   const router = useRouter();
@@ -87,6 +159,15 @@ export function CurriculumBuilder({ curriculum, onSaved }: CurriculumBuilderProp
   const [title, setTitle] = useState(curriculum?.title ?? '');
   const [description, setDescription] = useState(curriculum?.description ?? '');
   const [isPublic, setIsPublic] = useState(curriculum?.isPublic ?? true);
+  const [certificateEnabled, setCertificateEnabled] = useState(
+    curriculum?.certificate?.enabled ?? false
+  );
+  const [certificateTitle, setCertificateTitle] = useState(
+    curriculum?.certificate?.title ?? ''
+  );
+  const [certificateDescription, setCertificateDescription] = useState(
+    curriculum?.certificate?.description ?? ''
+  );
   const [modules, setModules] = useState<CurriculumModule[]>(curriculum?.modules ?? []);
   const [saving, setSaving] = useState(false);
   const [cloning, setCloning] = useState(false);
@@ -301,6 +382,14 @@ export function CurriculumBuilder({ curriculum, onSaved }: CurriculumBuilderProp
     setValidationErrors([]);
     setSaving(true);
 
+    const certificate = {
+      enabled: certificateEnabled,
+      ...(certificateTitle.trim() ? { title: certificateTitle.trim() } : {}),
+      ...(certificateDescription.trim()
+        ? { description: certificateDescription.trim() }
+        : {}),
+    };
+
     if (isEditing && curriculum) {
       const result = await updateCurriculum(
         curriculum.id,
@@ -308,6 +397,7 @@ export function CurriculumBuilder({ curriculum, onSaved }: CurriculumBuilderProp
           title: title.trim(),
           description: description.trim(),
           isPublic,
+          certificate,
           modules,
         },
         user?.uid
@@ -329,6 +419,7 @@ export function CurriculumBuilder({ curriculum, onSaved }: CurriculumBuilderProp
       creatorId: user.uid,
       creatorName: user.displayName || user.email || 'Unknown',
       isPublic,
+      certificate,
       modules,
       createdAt: new Date(),
     });
@@ -443,6 +534,61 @@ export function CurriculumBuilder({ curriculum, onSaved }: CurriculumBuilderProp
                   When on, this curriculum appears in the public Learning Paths gallery.
                 </p>
               </div>
+            </div>
+
+            <div className="space-y-3 p-3 rounded-md border border-primary/30 bg-primary/5">
+              <div className="flex items-start gap-3">
+                <Switch
+                  id="cert-enabled"
+                  checked={certificateEnabled}
+                  onCheckedChange={setCertificateEnabled}
+                />
+                <div className="flex-1">
+                  <Label htmlFor="cert-enabled" className="cursor-pointer flex items-center gap-2">
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-primary">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="h-3 w-3"
+                      >
+                        <path d="M12 2l2.39 4.84 5.34.78-3.87 3.77.91 5.32L12 14.77l-4.77 2.51.91-5.32L4.27 8.62l5.34-.78L12 2z" />
+                      </svg>
+                    </span>
+                    Awards a Certificate on Completion
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    When on, learners who finish every required item earn a shareable
+                    certificate with the title and description below.
+                  </p>
+                </div>
+              </div>
+              {certificateEnabled && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-1">
+                  <div>
+                    <Label htmlFor="cert-title" className="text-xs">
+                      Certificate title (optional)
+                    </Label>
+                    <Input
+                      id="cert-title"
+                      value={certificateTitle}
+                      onChange={(e) => setCertificateTitle(e.target.value)}
+                      placeholder={title || 'Defaults to the curriculum title'}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cert-desc" className="text-xs">
+                      Certificate description (optional)
+                    </Label>
+                    <Input
+                      id="cert-desc"
+                      value={certificateDescription}
+                      onChange={(e) => setCertificateDescription(e.target.value)}
+                      placeholder="e.g. Completed the AI Ethics learning path"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -752,39 +898,161 @@ function SortableItem({
           <GripVertical className="h-4 w-4" />
         </button>
 
-        {/* Picked artifact chip + picker trigger */}
+        {/* Type selector */}
+        <Select
+          value={item.type}
+          onValueChange={(v) => {
+            const next = v as CurriculumItemType;
+            onUpdate('type', next);
+            // Reset reference when switching between incompatible pickers
+            if (item.referenceId) onUpdate('referenceId', '');
+            // Seed a sensible title for inline types
+            if (INLINE_TYPES.includes(next) && !item.title) {
+              onUpdate(
+                'title',
+                next === 'instructions'
+                  ? 'Module instructions'
+                  : next === 'reflection'
+                  ? 'Reflection prompt'
+                  : 'Perspective comparison'
+              );
+            }
+          }}
+        >
+          <SelectTrigger className="h-8 w-[180px] shrink-0 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+              Artifacts
+            </div>
+            {ARTIFACT_PICKER_TYPES.map((t) => (
+              <SelectItem key={t} value={t}>
+                <span className="inline-flex items-center gap-2">
+                  {itemTypeIcon(t)}
+                  {ITEM_TYPE_META[t].label}
+                </span>
+              </SelectItem>
+            ))}
+            <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+              Pages
+            </div>
+            {STATIC_PICKER_TYPES.map((t) => (
+              <SelectItem key={t} value={t}>
+                <span className="inline-flex items-center gap-2">
+                  {itemTypeIcon(t)}
+                  {ITEM_TYPE_META[t].label}
+                </span>
+              </SelectItem>
+            ))}
+            <SelectItem value="blog">
+              <span className="inline-flex items-center gap-2">
+                {itemTypeIcon('blog')}
+                {ITEM_TYPE_META.blog.label}
+              </span>
+            </SelectItem>
+            <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+              Inline
+            </div>
+            {INLINE_TYPES.map((t) => (
+              <SelectItem key={t} value={t}>
+                <span className="inline-flex items-center gap-2">
+                  {itemTypeIcon(t)}
+                  {ITEM_TYPE_META[t].label}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Reference chooser — depends on selected type */}
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          {item.referenceId ? (
+          {INLINE_TYPES.includes(item.type) ? (
+            <Input
+              value={item.title}
+              onChange={(e) => onUpdate('title', e.target.value)}
+              placeholder={
+                item.type === 'instructions'
+                  ? 'e.g. Before you start, read these instructions…'
+                  : item.type === 'reflection'
+                  ? 'Short label for this reflection (e.g. Week 1 reflection)'
+                  : 'Short label (e.g. Compare utilitarian and deontological lenses)'
+              }
+              className="h-8 text-sm"
+            />
+          ) : item.referenceId ? (
             <div className="flex items-center gap-2 px-2 py-1 rounded-md border border-border bg-background/60 flex-1 min-w-0">
-              {artifactTypeIcon(item.type as ArtifactType, 'h-4 w-4 text-primary flex-shrink-0')}
+              {itemTypeIcon(item.type, 'h-4 w-4 text-primary flex-shrink-0')}
               <span className="text-sm truncate flex-1">
                 {item.title || 'Untitled artifact'}
               </span>
               <Badge variant="outline" className="text-[10px] capitalize">
-                {item.type}
+                {ITEM_TYPE_META[item.type]?.label || item.type}
               </Badge>
-              <ArtifactPicker
-                currentUserId={currentUserId}
-                onPick={onPick}
-                trigger={
-                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
-                    Change
-                  </Button>
-                }
-              />
+              {ARTIFACT_PICKER_TYPES.includes(item.type) ? (
+                <ArtifactPicker
+                  currentUserId={currentUserId}
+                  onPick={onPick}
+                  trigger={
+                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
+                      Change
+                    </Button>
+                  }
+                />
+              ) : STATIC_PICKER_TYPES.includes(item.type) ? (
+                <StaticContentPicker
+                  types={[item.type]}
+                  onPick={(a: StaticPickedArtifact) =>
+                    onPick({
+                      type: a.type as ArtifactType,
+                      id: a.id,
+                      title: a.title,
+                    })
+                  }
+                  trigger={
+                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs">
+                      Change
+                    </Button>
+                  }
+                />
+              ) : null}
             </div>
-          ) : (
+          ) : ARTIFACT_PICKER_TYPES.includes(item.type) ? (
             <ArtifactPicker
               currentUserId={currentUserId}
               onPick={onPick}
               trigger={
                 <Button variant="outline" size="sm" className="flex-1 justify-start">
                   <Link2 className="h-3 w-3 mr-2" />
-                  Select Artifact
+                  Select {ITEM_TYPE_META[item.type].label.toLowerCase()}
                 </Button>
               }
             />
-          )}
+          ) : STATIC_PICKER_TYPES.includes(item.type) ? (
+            <StaticContentPicker
+              types={[item.type]}
+              onPick={(a: StaticPickedArtifact) =>
+                onPick({
+                  type: a.type as ArtifactType,
+                  id: a.id,
+                  title: a.title,
+                })
+              }
+              trigger={
+                <Button variant="outline" size="sm" className="flex-1 justify-start">
+                  <Link2 className="h-3 w-3 mr-2" />
+                  Select {ITEM_TYPE_META[item.type].label.toLowerCase()}
+                </Button>
+              }
+            />
+          ) : item.type === 'blog' ? (
+            <Input
+              value={item.referenceId}
+              onChange={(e) => onUpdate('referenceId', e.target.value)}
+              placeholder="Official blog post slug (e.g. why-ai-ethics-matters)"
+              className="h-8 text-sm font-mono"
+            />
+          ) : null}
         </div>
 
         <div className="flex items-center gap-1">
@@ -811,6 +1079,38 @@ function SortableItem({
           </TooltipTrigger>
           <TooltipContent>Remove item</TooltipContent>
         </Tooltip>
+      </div>
+
+      {/* Instructions + optional prompt */}
+      <div className="pl-8 space-y-2">
+        <Textarea
+          value={item.instructions || ''}
+          onChange={(e) => onUpdate('instructions', e.target.value)}
+          placeholder={
+            item.type === 'instructions'
+              ? 'Write the instructional text learners will read here…'
+              : 'Optional instructions for this item (shown above it in the learner view)'
+          }
+          rows={item.type === 'instructions' ? 4 : 2}
+          className="text-xs bg-background/60"
+        />
+        {(item.type === 'reflection' ||
+          item.type === 'perspective' ||
+          item.type === 'analysis') && (
+          <Textarea
+            value={item.prompt || ''}
+            onChange={(e) => onUpdate('prompt', e.target.value)}
+            placeholder={
+              item.type === 'reflection'
+                ? 'Prompt: what should the learner reflect on?'
+                : item.type === 'analysis'
+                ? 'Starter scenario: e.g. "A city installs AI-run triage in its ERs…"'
+                : 'Prompt: what scenario should they compare across ethical lenses?'
+            }
+            rows={2}
+            className="text-xs bg-background/60"
+          />
+        )}
       </div>
 
       {isBroken && (

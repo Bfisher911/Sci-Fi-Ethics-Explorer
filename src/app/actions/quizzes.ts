@@ -14,6 +14,7 @@ import { requireAdmin } from '@/lib/admin';
 import { getStaticScifiAuthorQuiz } from '@/data/scifi-author-quizzes';
 import { getStaticTextbookQuiz } from '@/data/textbook/quizzes';
 import { getStaticEthicalTheoryQuiz } from '@/data/theory-quizzes';
+import { masterExamQuiz } from '@/data/master-exam';
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -97,6 +98,12 @@ export async function getQuizForSubject(
     if (subjectType === 'book-chapter' || subjectType === 'book-final') {
       const fallback = getStaticTextbookQuiz(subjectId);
       if (fallback) return { success: true, data: fallback };
+      // The Master Technology Ethicist exam shares the 'book-final'
+      // subjectType so it threads through the same UI. It lives in
+      // src/data/master-exam.ts.
+      if (subjectId === 'master-technology-ethicist') {
+        return { success: true, data: masterExamQuiz };
+      }
     }
 
     return { success: true, data: null };
@@ -151,6 +158,9 @@ export async function submitQuizAttempt(input: {
     }
     if (!quiz && (input.subjectType === 'book-chapter' || input.subjectType === 'book-final')) {
       quiz = getStaticTextbookQuiz(input.subjectId);
+      if (!quiz && input.subjectId === 'master-technology-ethicist') {
+        quiz = masterExamQuiz;
+      }
     }
     if (!quiz) return { success: false, error: 'Quiz not found.' };
 

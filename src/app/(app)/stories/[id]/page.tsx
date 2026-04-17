@@ -266,9 +266,6 @@ export default function StoryDetailPage() {
     story.segments.findIndex((s) => s.id === currentSegment.id)
   );
   const totalSegments = story.segments.length;
-  const progressPercent = totalSegments > 0
-    ? Math.round(((story.isInteractive ? visitedSegments.length : currentIndex + 1) / totalSegments) * 100)
-    : 0;
 
   // A segment's "next" neighbor is the one immediately after it in the
   // author's segment array — we auto-flow to it when the current segment
@@ -288,12 +285,29 @@ export default function StoryDetailPage() {
   const hasOwnChoices =
     Array.isArray(currentSegment.choices) && currentSegment.choices.length > 0;
   const isBranchLanding = choiceTargetIds.has(currentSegment.id);
+  const isExplicitEnding = Boolean(currentSegment.reflectionTrigger);
+
+  // When the user lands on a branch segment that has no choices of its
+  // own AND isn't an explicit ending, the author intended the story to
+  // rejoin the main thread on the next non-branch segment in array
+  // order — skipping over this branch's siblings. Without this, the
+  // reader dead-ends on text like "alg_truth" because canFlowLinearly
+  // returns false for branch landings.
+  function findResumePoint(fromIdx: number): StorySegment | null {
+    const segs = story!.segments;
+    for (let i = fromIdx + 1; i < segs.length; i++) {
+      const s = segs[i];
+      if (!choiceTargetIds.has(s.id)) return s;
+    }
+    return null;
+  }
+
   const canFlowLinearly =
-    !hasOwnChoices &&
-    !isBranchLanding &&
-    currentIndex + 1 < totalSegments;
+    !hasOwnChoices && !isExplicitEnding && currentIndex + 1 < totalSegments;
   const nextLinearSegment = canFlowLinearly
-    ? story.segments[currentIndex + 1]
+    ? isBranchLanding
+      ? findResumePoint(currentIndex)
+      : story.segments[currentIndex + 1]
     : null;
 
   const isStoryEnd =
@@ -303,6 +317,24 @@ export default function StoryDetailPage() {
       !nextLinearSegment &&
       !isLoadingReflection &&
       Boolean(reflection));
+
+  // Interactive progress is tricky because a branching story has far
+  // more segments than any single playthrough visits. Honor the two
+  // cases cleanly: once the user reaches a real ending, jump to 100%;
+  // otherwise show how deep they are in their current path.
+  const progressPercent = (() => {
+    if (totalSegments <= 0) return 0;
+    if (isStoryEnd) return 100;
+    if (!story.isInteractive) {
+      return Math.round(((currentIndex + 1) / totalSegments) * 100);
+    }
+    // For interactive stories, use the deeper of "segments visited on
+    // this path" vs "author-order position of the current node". Cap
+    // at 95% so the 100% jump at the real ending still feels earned.
+    const pathRatio = visitedSegments.length / totalSegments;
+    const orderRatio = (currentIndex + 1) / totalSegments;
+    return Math.min(95, Math.round(Math.max(pathRatio, orderRatio) * 100));
+  })();
 
   const storyEndingText = currentSegment.text.substring(0, 200);
 
