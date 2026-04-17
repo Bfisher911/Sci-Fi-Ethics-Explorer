@@ -115,8 +115,29 @@ const chatWithCounselorFlow = ai.defineFlow(
         ? DEVILS_ADVOCATE_SYSTEM_PROMPT
         : COUNSELOR_SYSTEM_PROMPT;
 
+    // Gemini requires the first history message to be a 'user' turn
+    // and disallows two messages in a row from the same role. The
+    // chat UI seeds the conversation with an assistant welcome bubble,
+    // which violates the first rule, so drop any leading assistant
+    // turns and collapse consecutive same-role turns before sending.
+    const normalized: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+    for (const m of input.messages) {
+      // Skip leading assistant messages until we see the first user turn.
+      if (normalized.length === 0 && m.role !== 'user') continue;
+      // Merge consecutive same-role messages so alternation holds.
+      const last = normalized[normalized.length - 1];
+      if (last && last.role === m.role) {
+        last.content = `${last.content}\n\n${m.content}`;
+      } else {
+        normalized.push({ role: m.role, content: m.content });
+      }
+    }
+    if (normalized.length === 0) {
+      return { response: '' };
+    }
+
     // Use Genkit's native messages format (role + content pairs).
-    const messages = input.messages.map((m) => ({
+    const messages = normalized.map((m) => ({
       role: m.role === 'assistant' ? ('model' as const) : ('user' as const),
       content: [{ text: m.content }],
     }));
