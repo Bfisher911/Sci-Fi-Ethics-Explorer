@@ -8,6 +8,7 @@ import {
   FlaskConical,
   BookText,
   Compass,
+  Home,
   MessageSquare,
   MessageCircle,
   FilePlus2,
@@ -51,6 +52,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useAdmin } from '@/hooks/use-admin';
 
 const mainNavItems = [
+  { href: '/', label: 'Home', icon: Home },
   { href: '/stories', label: 'Stories', icon: BookOpen },
   { href: '/analyzer', label: 'Scenario Analyzer', icon: FlaskConical },
   { href: '/glossary', label: 'Ethical Glossary', icon: BookText },
@@ -104,7 +106,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r">
       <SidebarHeader className="p-4">
-        <Link href="/stories" className="flex items-center gap-2 font-semibold text-lg text-primary">
+        <Link href="/" className="flex items-center gap-2 font-semibold text-lg text-primary">
           <Orbit className="h-7 w-7" />
           {state === 'expanded' && <span>Sci-Fi Ethics</span>}
         </Link>
@@ -117,7 +119,12 @@ export function AppSidebar() {
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === item.href || (item.href !== '/stories' && pathname.startsWith(item.href))}
+                  isActive={
+                    item.href === '/'
+                      ? pathname === '/'
+                      : pathname === item.href ||
+                        (item.href !== '/stories' && pathname.startsWith(item.href))
+                  }
                   tooltip={item.label}
                   className="group-data-[collapsible=icon]:justify-center"
                 >
