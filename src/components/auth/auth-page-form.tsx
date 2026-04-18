@@ -125,17 +125,128 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
         }
         toast({ title: 'Signed in with Google', description: 'Welcome!' });
         router.push('/stories');
-      } catch (err) {
+      } catch (err: any) {
         console.error('Google redirect sign-in error:', err);
+        // Surface the underlying Firebase error to the UI so the user
+        // sees the real cause (e.g. unauthorized-domain) instead of a
+        // silent failure after the redirect roundtrip.
+        const code = err?.code ?? '';
+        const host =
+          typeof window !== 'undefined'
+            ? window.location.host
+            : '(this domain)';
+        const description =
+          code === 'auth/unauthorized-domain'
+            ? `Firebase rejected this domain. Add "${host}" to Firebase Console → Authentication → Settings → Authorized domains, then retry.`
+            : code === 'auth/operation-not-allowed'
+              ? 'Google sign-in is disabled on this Firebase project. Enable it under Authentication → Sign-in method → Google.'
+              : err?.message || 'Google sign-in failed.';
+        setError(description);
+        toast({
+          title: 'Google Sign-In Error',
+          description,
+          variant: 'destructive',
+        });
       }
     })();
     return () => { cancelled = true; };
   }, [router, toast]);
 
+  /**
+   * Map a raw Firebase Auth error code to a clear, actionable message
+   * for the end user. The defaults Firebase ships with (e.g. "Firebase:
+   * Error (auth/unauthorized-domain)") tell admins what's wrong but
+   * leave end users staring at a stack-trace string.
+   */
+  function describeAuthError(err: any): { title: string; description: string } {
+    const code: string = err?.code ?? '';
+    const host =
+      typeof window !== 'undefined' ? window.location.host : '(this domain)';
+    switch (code) {
+      case 'auth/unauthorized-domain':
+        return {
+          title: 'Domain not authorized for Google sign-in',
+          description:
+            `This Firebase project doesn't have "${host}" in its Authorized Domains list. ` +
+            `Open Firebase Console → Authentication → Settings → Authorized domains and add "${host}", ` +
+            'then try again.',
+        };
+      case 'auth/operation-not-allowed':
+        return {
+          title: 'Google sign-in is not enabled',
+          description:
+            'The Google provider is disabled on this Firebase project. ' +
+            'Open Firebase Console → Authentication → Sign-in method → Google and enable it, then try again.',
+        };
+      case 'auth/configuration-not-found':
+        return {
+          title: 'Auth provider not configured',
+          description:
+            'Firebase reports that no Google sign-in configuration was found for this project. ' +
+            'Confirm Authentication is initialized in the Firebase console and that the Google provider is enabled.',
+        };
+      case 'auth/popup-blocked':
+        return {
+          title: 'Pop-up blocked',
+          description:
+            'Your browser blocked the Google sign-in popup. Switching to full-page redirect now…',
+        };
+      case 'auth/popup-closed-by-user':
+        return {
+          title: 'Sign-in cancelled',
+          description: 'You closed the Google sign-in window before finishing.',
+        };
+      case 'auth/network-request-failed':
+        return {
+          title: 'Network error',
+          description:
+            'The browser could not reach Firebase. Check your connection and try again.',
+        };
+      case 'auth/internal-error':
+        return {
+          title: 'Firebase internal error',
+          description:
+            err?.message ||
+            'Something went wrong on the Firebase side. Try again in a moment.',
+        };
+      default:
+        return {
+          title: 'Google Sign-In Error',
+          description:
+            (code ? `[${code}] ` : '') +
+            (err?.message || 'Google sign-in failed.'),
+        };
+    }
+  }
+
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     setError(null);
     setMessage(null);
+
+    // Quick pre-flight: if the deployed authDomain doesn't match the
+    // Firebase project's authDomain, the popup will reliably reject with
+    // auth/unauthorized-domain. Warn loud + early so the developer knows.
+    if (typeof window !== 'undefined') {
+      const host = window.location.host;
+      const isLocal = host.startsWith('localhost') || host.startsWith('127.');
+      const fbAuthDomain =
+        (auth as any)?.app?.options?.authDomain ?? '';
+      if (!isLocal && fbAuthDomain && !host.endsWith(fbAuthDomain) &&
+          host !== fbAuthDomain) {
+        // This is OK *if* the host has been added to Firebase's
+        // authorized-domains list. We still proceed — Firebase will
+        // confirm/deny — but log a hint for the developer.
+        console.info(
+          '[GoogleSignIn] Host',
+          host,
+          'differs from Firebase authDomain',
+          fbAuthDomain,
+          '— ensure this host is added to Authentication → Settings → Authorized domains.'
+        );
+      }
+    }
+
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
 
@@ -151,9 +262,10 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
       toast({ title: 'Signed in with Google', description: 'Welcome!' });
       router.push('/stories');
     } catch (err: any) {
-      // Common failure modes: popup blocked, popup closed, third-party
-      // cookies blocked. Fall back to full-page redirect so the flow works
-      // even in restrictive browsers (mobile Safari, in-app webviews).
+      console.error('[GoogleSignIn] popup failed:', err);
+      // Common failure modes that warrant a redirect-mode retry: the
+      // browser blocked the popup, the user closed it, or the in-app
+      // webview doesn't support popups.
       const code = err?.code ?? '';
       const shouldRedirect =
         code === 'auth/popup-blocked' ||
@@ -167,18 +279,21 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
           await signInWithRedirect(auth, provider);
           return;
         } catch (redirectErr: any) {
-          setError(redirectErr.message || 'Google sign-in failed.');
+          console.error('[GoogleSignIn] redirect failed:', redirectErr);
+          const desc = describeAuthError(redirectErr);
+          setError(desc.description);
           toast({
-            title: 'Google Sign-In Error',
-            description: redirectErr.message,
+            title: desc.title,
+            description: desc.description,
             variant: 'destructive',
           });
         }
       } else {
-        setError(err.message || 'Google sign-in failed.');
+        const desc = describeAuthError(err);
+        setError(desc.description);
         toast({
-          title: 'Google Sign-In Error',
-          description: err.message,
+          title: desc.title,
+          description: desc.description,
           variant: 'destructive',
         });
       }
