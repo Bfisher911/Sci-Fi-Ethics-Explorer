@@ -182,6 +182,9 @@ export function AppHeader() {
                 <DropdownMenuItem asChild>
                   <Link href="/profile">Profile</Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/billing">Billing &amp; Seats</Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout

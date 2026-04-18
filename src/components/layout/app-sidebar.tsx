@@ -31,6 +31,7 @@ import {
   Clapperboard,
   Newspaper,
   Award,
+  CreditCard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -90,6 +91,7 @@ const footerNavItems = [
   { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
   { href: '/pricing', label: 'Pricing & Plans', icon: Gem },
+  { href: '/billing', label: 'Billing & Seats', icon: CreditCard },
   { href: '/profile', label: 'Profile', icon: User },
 ];
 

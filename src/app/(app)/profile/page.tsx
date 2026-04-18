@@ -2,6 +2,7 @@ import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { PrivacySettingsCard } from '@/components/profile/privacy-settings-card';
 import { ProgressDashboard } from '@/components/profile/progress-dashboard';
 import { AchievementsSection } from '@/components/profile/achievements-section';
+import { LicenseStatusCard } from '@/components/profile/license-status-card';
 import { TextbookProgressCard } from '@/components/textbook/textbook-progress-card';
 import { Card, CardContent } from '@/components/ui/card';
 import { auth } from '@/lib/firebase/config';
@@ -32,6 +33,7 @@ export default async function ProfilePage() {
         </CardContent>
       </Card>
       <UserProfileCard />
+      <LicenseStatusCard />
       <PrivacySettingsCard />
       <div className="mt-8">
         <TextbookProgressCard />
