@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useSubscription } from '@/hooks/use-subscription';
 import { AppHeader } from '@/components/layout/app-header';
 import { AppSidebar } from '@/components/layout/app-sidebar';
+import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -28,14 +29,27 @@ function isPublicPath(pathname: string): boolean {
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
-  const { subscriptionStatus, loading: subLoading } = useSubscription();
+  const {
+    subscriptionStatus,
+    loading: subLoading,
+    isPaid,
+    activeLicenseId,
+  } = useSubscription();
   const router = useRouter();
   const pathname = usePathname();
   const publicPath = isPublicPath(pathname);
 
+  // Only nudge users into onboarding when they truly have no paid path
+  // — no active subscription, no license, no super-admin status. The
+  // previous condition (`subscriptionStatus === 'none'`) was the
+  // visible symptom of the seat-activation race: fresh seat recipients
+  // would land here and be told to "complete setup" even though their
+  // seat had already been claimed.
   const showOnboardingBanner =
     !subLoading &&
     user &&
+    !isPaid &&
+    !activeLicenseId &&
     subscriptionStatus === 'none' &&
     pathname !== '/onboarding';
 
@@ -73,6 +87,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   if (!user && publicPath) {
     return (
       <div className="flex flex-col min-h-screen bg-background">
+        <ImpersonationBanner />
         <header className="border-b border-border/60 bg-card/40 backdrop-blur-sm">
           <div className="container mx-auto flex items-center justify-between px-4 py-3">
             <Link href="/" className="flex items-center gap-2 group">
@@ -133,6 +148,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <SidebarProvider defaultOpen={true}>
       <AppSidebar />
       <SidebarInset className="flex flex-col">
+        <ImpersonationBanner />
         <AppHeader />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           {showOnboardingBanner && (

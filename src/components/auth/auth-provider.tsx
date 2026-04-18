@@ -60,6 +60,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await Promise.race([refreshClaims(currentUser), claimsTimeout])
             .catch(err => console.warn("Auth Provider: Claims fetch failed or timed out, continuing without fresh claims:", err));
 
+          // Idempotently ensure the users/{uid} doc exists BEFORE we
+          // try to claim a seat onto it. createUserProfile is a no-op
+          // for the immutable identity fields when the doc is already
+          // there (it carefully avoids clobbering subscription /
+          // license / onboarding state). The signup form also calls
+          // this — running it twice in a row is fine and prevents the
+          // race where claimPendingSeats writes a doc, then the signup
+          // form's createUserProfile races in afterwards and overwrites
+          // those fields.
+          try {
+            const { createUserProfile } = await import('@/app/actions/user');
+            await createUserProfile(
+              currentUser.uid,
+              currentUser.email,
+              currentUser.displayName,
+            );
+          } catch (err) {
+            console.warn('Auth Provider: createUserProfile (ensure) failed:', err);
+          }
+
           // If an instructor pre-assigned a seat to this user's email
           // BEFORE they had an account, link the seat to their new uid
           // and activate their subscription. No-ops when nothing matches.
@@ -79,6 +99,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           } catch (err) {
             console.warn('Auth Provider: claimPendingSeats failed:', err);
+          }
+
+          // If this is the canonical super-admin signing in, make sure
+          // their unmetered owner license exists. Idempotent.
+          try {
+            const { isSuperAdminEmail } = await import('@/lib/super-admins');
+            if (isSuperAdminEmail(currentUser.email)) {
+              const { ensureSuperAdminLicense } = await import(
+                '@/app/actions/licenses'
+              );
+              await ensureSuperAdminLicense(currentUser.uid);
+            }
+          } catch (err) {
+            console.warn(
+              'Auth Provider: ensureSuperAdminLicense failed:',
+              err,
+            );
           }
         } else {
           setClaims(null);

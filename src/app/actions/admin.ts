@@ -16,6 +16,10 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { requireAdmin } from '@/lib/admin';
+import {
+  getActorContext,
+  canMutateArtifact,
+} from '@/lib/permissions/scope';
 import { notifyOnDilemmaReviewed } from '@/lib/notifications-dispatch';
 import { logAdminAction } from '@/lib/audit-log';
 import type {
@@ -300,7 +304,9 @@ export async function getAllUsers(
 }
 
 /**
- * Sets or removes admin status for a target user. Requires admin privileges.
+ * Sets or removes admin status for a target user. Reserved for the
+ * platform super-admin — license admins do NOT get to promote others
+ * to admin (their power stays bounded to their license group).
  */
 export async function setUserAdmin(
   targetUid: string,
@@ -308,7 +314,14 @@ export async function setUserAdmin(
   adminUid: string
 ): Promise<ActionResult> {
   try {
-    await requireAdmin(adminUid);
+    const actor = await getActorContext(adminUid);
+    if (actor.tier !== 'super-admin') {
+      return {
+        success: false,
+        error:
+          'Unauthorized: only the platform super-admin can change admin status.',
+      };
+    }
     const userRef = doc(db, 'users', targetUid);
     await updateDoc(userRef, { isAdmin });
     return { success: true, data: undefined };
@@ -657,9 +670,15 @@ const COLLECTION_MAP: Record<string, string> = {
 };
 
 /**
- * Admin: delete any document from any supported collection.
- * Requires super-admin. Used by the AdminActions component on detail pages
- * so the admin can remove any artifact regardless of ownership.
+ * Delete any document from any supported collection. Authorization
+ * routes through the tiered scope model (see lib/permissions/scope.ts):
+ *
+ *   - Super-admin              → can delete any artifact
+ *   - License-admin            → can delete artifacts authored by themselves
+ *                                 OR by any user in their license group
+ *   - Plain user / member      → can only delete their own artifacts
+ *
+ * Used by the AdminActions component on detail pages.
  */
 export async function adminDeleteArtifact(
   adminUid: string,
@@ -667,7 +686,9 @@ export async function adminDeleteArtifact(
   artifactId: string
 ): Promise<ActionResult> {
   try {
-    await requireAdmin(adminUid);
+    if (!adminUid) {
+      return { success: false, error: 'Unauthorized: not signed in.' };
+    }
     const collectionName = COLLECTION_MAP[artifactType];
     if (!collectionName) {
       return { success: false, error: `Unknown artifact type: ${artifactType}` };
@@ -675,19 +696,114 @@ export async function adminDeleteArtifact(
     const ref = doc(db, collectionName, artifactId);
     const snap = await getDoc(ref);
     if (!snap.exists()) {
-      return { success: false, error: `${artifactType} not found in Firestore. It may only exist in static data.` };
+      return {
+        success: false,
+        error: `${artifactType} not found in Firestore. It may only exist in static data.`,
+      };
     }
+    const data = snap.data();
+    // Different artifact collections store the author's UID under
+    // slightly different field names; check the common ones.
+    const authorUid: string | null =
+      data?.authorId ??
+      data?.authorUid ??
+      data?.userId ??
+      data?.createdBy ??
+      data?.purchaserId ??
+      null;
+
+    const actor = await getActorContext(adminUid);
+    if (!canMutateArtifact(actor, authorUid)) {
+      return {
+        success: false,
+        error:
+          'Unauthorized: you can only delete content you authored, or content authored by users in your license group.',
+      };
+    }
+
     await deleteDoc(ref);
     await logAdminAction({
       action: 'delete',
       actorId: adminUid,
       targetType: artifactType,
       targetId: artifactId,
-      note: `Admin deleted ${artifactType} ${artifactId}`,
+      note: `${actor.tier} deleted ${artifactType} ${artifactId}`,
     });
     return { success: true, data: undefined };
   } catch (error: any) {
     console.error('[admin] adminDeleteArtifact error:', error);
+    return { success: false, error: error.message || String(error) };
+  }
+}
+
+/**
+ * Returns the list of users the calling actor can manage:
+ *
+ *   - Super-admin → every users/{uid} doc on the platform
+ *   - License-admin → users who have claimed seats from any license they own
+ *                     (plus themselves)
+ *   - Anyone else → empty list
+ *
+ * Used by the admin User Management page so a regular license admin
+ * doesn't see the entire platform's user roster.
+ */
+export async function getManagedUsers(
+  callerUid: string,
+  limitCount: number = 200,
+): Promise<ActionResult<UserProfile[]>> {
+  try {
+    if (!callerUid) {
+      return { success: false, error: 'Not signed in.' };
+    }
+    const actor = await getActorContext(callerUid);
+    if (actor.tier === 'member') {
+      return { success: true, data: [] };
+    }
+
+    // Super admin: same firehose getAllUsers exposes.
+    if (actor.tier === 'super-admin') {
+      return getAllUsers(limitCount);
+    }
+
+    // License admin: load every uid in scope, individually fetch their
+    // user docs. This is fine for realistic class/cohort sizes.
+    const uids = Array.from(actor.licenseGroupUids);
+    if (uids.length === 0) return { success: true, data: [] };
+
+    const docs = await Promise.all(
+      uids.slice(0, limitCount).map(async (uid) => {
+        try {
+          const snap = await getDoc(doc(db, 'users', uid));
+          if (!snap.exists()) return null;
+          const data = snap.data();
+          const profile: UserProfile = {
+            uid: snap.id,
+            email: data.email || null,
+            displayName: data.name || data.displayName || null,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            bio: data.bio,
+            avatarUrl: data.avatarUrl,
+            role: data.role,
+            isAdmin: data.isAdmin ?? false,
+            createdAt: data.createdAt?.toDate
+              ? data.createdAt.toDate().toISOString()
+              : data.createdAt,
+            lastUpdated: data.lastUpdated?.toDate
+              ? data.lastUpdated.toDate().toISOString()
+              : data.lastUpdated,
+          };
+          return profile;
+        } catch {
+          return null;
+        }
+      }),
+    );
+
+    const profiles = docs.filter((p): p is UserProfile => p !== null);
+    return { success: true, data: profiles };
+  } catch (error: any) {
+    console.error('[admin] getManagedUsers error:', error);
     return { success: false, error: error.message || String(error) };
   }
 }

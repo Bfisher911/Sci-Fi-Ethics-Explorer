@@ -63,7 +63,7 @@ export function LicenseStatusCard() {
   if (!activeLicenseId || !license) return null;
 
   const usedPct =
-    license.totalSeats > 0
+    !license.unmetered && license.totalSeats > 0
       ? Math.round((license.usedSeats / license.totalSeats) * 100)
       : 0;
 
@@ -107,10 +107,19 @@ export function LicenseStatusCard() {
               Seats used
             </span>
             <span className="font-mono">
-              {license.usedSeats} / {license.totalSeats} ({usedPct}%)
+              {license.unmetered
+                ? `${license.usedSeats} \u00b7 unlimited`
+                : `${license.usedSeats} / ${license.totalSeats} (${usedPct}%)`}
             </span>
           </div>
-          <Progress value={usedPct} className="h-2" />
+          {!license.unmetered && (
+            <Progress value={usedPct} className="h-2" />
+          )}
+          {license.unmetered && (
+            <p className="text-[11px] text-muted-foreground italic">
+              Platform owner license &mdash; no seat cap.
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2">

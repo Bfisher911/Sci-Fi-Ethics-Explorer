@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { useAdmin } from '@/hooks/use-admin';
 import { useToast } from '@/hooks/use-toast';
 import type { UserProfile } from '@/types';
-import { getAllUsers, setUserAdmin } from '@/app/actions/admin';
+import { getManagedUsers, setUserAdmin } from '@/app/actions/admin';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -25,15 +26,21 @@ import { Users, Inbox, AlertCircle, ShieldCheck } from 'lucide-react';
  */
 export default function AdminUsersPage() {
   const { user } = useAuth();
+  const { isSuperAdmin } = useAdmin();
   const { toast } = useToast();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
     async function fetchUsers() {
       setLoading(true);
-      const result = await getAllUsers();
+      // Scope-aware: super-admins get every user; license admins get
+      // only the users in their license group.
+      const result = await getManagedUsers(user!.uid);
+      if (cancelled) return;
       if (result.success) {
         setUsers(result.data);
       } else {
@@ -42,7 +49,8 @@ export default function AdminUsersPage() {
       setLoading(false);
     }
     fetchUsers();
-  }, []);
+    return () => { cancelled = true; };
+  }, [user]);
 
   const handleToggleAdmin = async (targetUser: UserProfile) => {
     if (!user) return;
@@ -80,7 +88,9 @@ export default function AdminUsersPage() {
             </h1>
           </div>
           <p className="text-muted-foreground">
-            View all registered users and manage admin privileges.
+            {isSuperAdmin
+              ? 'View every registered user across the platform and manage admin privileges.'
+              : 'View the users in your license group. Only users who have claimed seats from a license you own appear here.'}
           </p>
         </CardContent>
       </Card>
@@ -154,13 +164,19 @@ export default function AdminUsersPage() {
                       : 'N/A'}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      variant={u.isAdmin ? 'destructive' : 'outline'}
-                      onClick={() => handleToggleAdmin(u)}
-                    >
-                      {u.isAdmin ? 'Remove Admin' : 'Make Admin'}
-                    </Button>
+                    {isSuperAdmin ? (
+                      <Button
+                        size="sm"
+                        variant={u.isAdmin ? 'destructive' : 'outline'}
+                        onClick={() => handleToggleAdmin(u)}
+                      >
+                        {u.isAdmin ? 'Remove Admin' : 'Make Admin'}
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground italic">
+                        Super-admin only
+                      </span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

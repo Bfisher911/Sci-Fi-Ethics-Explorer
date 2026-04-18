@@ -3,15 +3,129 @@
 
 import { db } from '@/lib/firebase/config';
 import {
-  collection, doc, getDoc, getDocs, addDoc, updateDoc,
+  collection, doc, getDoc, getDocs, addDoc, setDoc, updateDoc,
   query, where, limit as fsLimit, increment, serverTimestamp,
 } from 'firebase/firestore';
 import type { License, SeatAssignment, LicenseTerm, LicenseStatus } from '@/types';
 import { timestampToDate } from '@/lib/firebase/firestore-helpers';
+import { isSuperAdminEmail } from '@/lib/super-admins';
+
+/**
+ * Effectively-infinite seat count used for super-admin licenses (and
+ * any other license we want to mark as unmetered). Big enough that a
+ * usedSeats counter will never approach it; small enough that we can
+ * still arithmetic on it without overflow surprises.
+ */
+const UNLIMITED_SEATS = 1_000_000;
 
 type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
+
+/**
+ * Returns true when the given license document is unmetered (super-admin
+ * owned OR explicitly tagged with `unmetered: true`). Unmetered licenses
+ * skip the totalSeats cap during seat assignment.
+ *
+ * Accepts a Firestore data object (the body of a `licenses/{id}` doc).
+ */
+async function isUnmeteredLicense(license: Record<string, any>): Promise<boolean> {
+  if (license?.unmetered === true) return true;
+  const purchaserId = license?.purchaserId as string | undefined;
+  if (!purchaserId) return false;
+  try {
+    const purchaserSnap = await getDoc(doc(db, 'users', purchaserId));
+    if (!purchaserSnap.exists()) return false;
+    return isSuperAdminEmail(purchaserSnap.data().email);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Idempotently ensure the super-admin always has an unmetered "owner"
+ * license they can assign seats from. Safe to call from anywhere — if
+ * an unmetered license already exists for this purchaser it returns
+ * the existing id; otherwise it creates one.
+ *
+ * Use this from the super admin's billing page so they don't have to
+ * "purchase" anything to unlock seat management.
+ */
+export async function ensureSuperAdminLicense(
+  purchaserId: string,
+): Promise<ActionResult<string>> {
+  try {
+    if (!purchaserId) return { success: false, error: 'purchaserId required' };
+    const userSnap = await getDoc(doc(db, 'users', purchaserId));
+    if (!userSnap.exists()) {
+      return { success: false, error: 'User profile not found.' };
+    }
+    const userData = userSnap.data();
+    if (!isSuperAdminEmail(userData.email)) {
+      return {
+        success: false,
+        error: 'Only the platform super-admin can hold an unmetered license.',
+      };
+    }
+
+    // Check for an existing active unmetered license owned by this uid.
+    const existingQ = query(
+      collection(db, 'licenses'),
+      where('purchaserId', '==', purchaserId),
+      where('status', '==', 'active'),
+      where('unmetered', '==', true),
+      fsLimit(1),
+    );
+    const existingSnap = await getDocs(existingQ);
+    if (!existingSnap.empty) {
+      return { success: true, data: existingSnap.docs[0].id };
+    }
+
+    // Mint a fresh unmetered license. Far-future endDate so it never
+    // appears expired in the UI.
+    const now = new Date();
+    const farFuture = new Date(now);
+    farFuture.setFullYear(now.getFullYear() + 100);
+
+    const purchaserName =
+      userData.name || userData.displayName || 'Platform Owner';
+
+    const ref = await addDoc(collection(db, 'licenses'), {
+      organizationName: 'Sci-Fi Ethics Explorer (Platform)',
+      purchaserId,
+      purchaserName,
+      planId: 'super-admin-unmetered',
+      totalSeats: UNLIMITED_SEATS,
+      usedSeats: 0,
+      term: 'annual' as LicenseTerm,
+      startDate: now,
+      endDate: farFuture,
+      status: 'active' as LicenseStatus,
+      priceTotal: 0,
+      unmetered: true,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    // Wire the license onto the super-admin's profile so the existing
+    // billing UI surfaces seat management for them.
+    await setDoc(
+      doc(db, 'users', purchaserId),
+      {
+        activeLicenseId: ref.id,
+        subscriptionStatus: 'active',
+        onboardingComplete: true,
+        lastUpdated: serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    return { success: true, data: ref.id };
+  } catch (error) {
+    console.error('[licenses] ensureSuperAdminLicense error:', error);
+    return { success: false, error: String(error) };
+  }
+}
 
 /**
  * Purchase a new seat-based license.
@@ -85,6 +199,7 @@ export async function getLicense(
         startDate: timestampToDate(d.startDate),
         endDate: timestampToDate(d.endDate),
         status: d.status,
+        unmetered: d.unmetered === true,
         createdAt: timestampToDate(d.createdAt),
         updatedAt: timestampToDate(d.updatedAt),
       } as License,
@@ -122,6 +237,7 @@ export async function getUserLicenses(
         startDate: timestampToDate(data.startDate),
         endDate: timestampToDate(data.endDate),
         status: data.status,
+        unmetered: data.unmetered === true,
         createdAt: timestampToDate(data.createdAt),
         updatedAt: timestampToDate(data.updatedAt),
       } as License;
@@ -160,11 +276,15 @@ export async function assignSeat(data: {
     if (!licenseSnap.exists()) return { success: false, error: 'License not found.' };
 
     const license = licenseSnap.data();
-    if (license.usedSeats >= license.totalSeats) {
-      return { success: false, error: 'No seats available. All seats are in use.' };
-    }
     if (license.status !== 'active') {
       return { success: false, error: 'License is not active.' };
+    }
+    // Skip the seat-cap check when the license is owned by the super
+    // admin OR explicitly flagged as unmetered. Super-admin licenses
+    // are unlimited by policy (see CLAUDE.md / lib/super-admins.ts).
+    const isUnmetered = await isUnmeteredLicense(license);
+    if (!isUnmetered && license.usedSeats >= license.totalSeats) {
+      return { success: false, error: 'No seats available. All seats are in use.' };
     }
 
     // Resolve recipient uid:
@@ -307,12 +427,23 @@ export async function claimPendingSeats(
       licenseId = licenseId || data.licenseId;
     }
     if (claimed > 0 && licenseId) {
-      await updateDoc(doc(db, 'users', uid), {
-        activeLicenseId: licenseId,
-        subscriptionStatus: 'active',
-        onboardingComplete: true,
-        lastUpdated: serverTimestamp(),
-      });
+      // setDoc(merge:true) instead of updateDoc so this works even if
+      // the users/{uid} doc hasn't been created yet (the auth-state
+      // listener can race with createUserProfile during signup). The
+      // create rule on users/{uid} is permissive (server-action writes
+      // have no Auth context — see firestore.rules), so this is safe.
+      await setDoc(
+        doc(db, 'users', uid),
+        {
+          uid,
+          email: lower,
+          activeLicenseId: licenseId,
+          subscriptionStatus: 'active',
+          onboardingComplete: true,
+          lastUpdated: serverTimestamp(),
+        },
+        { merge: true },
+      );
     }
     return { success: true, data: { claimed } };
   } catch (error) {
@@ -346,12 +477,23 @@ export async function revokeSeat(
       updatedAt: serverTimestamp(),
     });
 
-    // Remove license from user profile
-    await updateDoc(doc(db, 'users', seat.userId), {
-      activeLicenseId: null,
-      subscriptionStatus: 'none',
-      lastUpdated: serverTimestamp(),
-    });
+    // Remove the license from the user profile only when we actually
+    // have a uid to target. Seats assigned by email before signup have
+    // userId=null; revoking those just clears the reservation, nothing
+    // to rewrite on the user doc.
+    if (seat.userId) {
+      try {
+        await updateDoc(doc(db, 'users', seat.userId), {
+          activeLicenseId: null,
+          subscriptionStatus: 'none',
+          lastUpdated: serverTimestamp(),
+        });
+      } catch (err) {
+        // User doc may have been deleted between seat-assign and
+        // seat-revoke — not fatal, the seat is still revoked.
+        console.warn('[licenses] revokeSeat: user profile update failed:', err);
+      }
+    }
 
     return { success: true, data: undefined };
   } catch (error) {

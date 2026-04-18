@@ -199,32 +199,78 @@ export async function createUserProfile(
       lastUpdated: now,
     };
 
-    // Prepare the actual data to write to Firestore.
-    // We will use 'name' field in Firestore for what UserProfile calls 'displayName'.
-    firestoreDataToWrite = {
-      uid: internalUserProfileObject.uid,
-      email: internalUserProfileObject.email,
-      name: internalUserProfileObject.displayName, // Map UserProfile's displayName to Firestore 'name'
-      firstName: internalUserProfileObject.firstName,
-      lastName: internalUserProfileObject.lastName,
-      bio: internalUserProfileObject.bio,
-      avatarUrl: internalUserProfileObject.avatarUrl,
-      favoriteGenre: internalUserProfileObject.favoriteGenre,
-      storiesCompleted: internalUserProfileObject.storiesCompleted,
-      dilemmasAnalyzed: internalUserProfileObject.dilemmasAnalyzed,
-      communitySubmissions: internalUserProfileObject.communitySubmissions,
-      role: internalUserProfileObject.role,
-      isAdmin: internalUserProfileObject.isAdmin,
-      createdAt: internalUserProfileObject.createdAt,
-      lastUpdated: internalUserProfileObject.lastUpdated,
-      // The 'displayName' field itself is NOT included in this object sent to Firestore.
-      subscriptionStatus: 'none',
-      onboardingComplete: false,
-      ...(accountRole ? { accountRole } : {}),
-    };
+    // Critical: do NOT clobber subscription / onboarding / license fields
+    // when the user doc already exists. Two concurrent flows write here
+    // on signup:
+    //   (a) the signup page calls createUserProfile, defaulting these
+    //       fields to "unpaid"
+    //   (b) the auth provider calls claimPendingSeats which sets them
+    //       to "active + license attached" if a seat was waiting
+    // Whichever ran second was overwriting the other. Now we check
+    // whether the doc exists; if it does we ONLY write the immutable
+    // identity fields and leave seat/subscription/onboarding state alone.
+    const existing = await getDoc(userDocRef);
+    const docExists = existing.exists();
 
-    await setDoc(userDocRef, firestoreDataToWrite, { merge: true }); 
-    console.log(`[SERVER ACTION] createUserProfile: Successfully created/merged profile for UID: ${uid}`);
+    if (docExists) {
+      // Merge only identity fields; preserve everything else verbatim.
+      // Notably, do not touch subscriptionStatus, onboardingComplete,
+      // activeLicenseId, isAdmin — those are owned by other flows.
+      firestoreDataToWrite = {
+        uid: internalUserProfileObject.uid,
+        email: internalUserProfileObject.email,
+        // Only fill in name/firstName/lastName/avatar if they're empty
+        // upstream — never blank a user's existing display data.
+        ...(existing.data()?.name
+          ? {}
+          : { name: internalUserProfileObject.displayName }),
+        ...(existing.data()?.firstName
+          ? {}
+          : { firstName: internalUserProfileObject.firstName }),
+        ...(existing.data()?.lastName
+          ? {}
+          : { lastName: internalUserProfileObject.lastName }),
+        ...(existing.data()?.avatarUrl || !internalUserProfileObject.avatarUrl
+          ? {}
+          : { avatarUrl: internalUserProfileObject.avatarUrl }),
+        lastUpdated: internalUserProfileObject.lastUpdated,
+        ...(accountRole && !existing.data()?.accountRole
+          ? { accountRole }
+          : {}),
+      };
+    } else {
+      // First-ever write for this uid — full profile, defaults included.
+      // The unpaid subscription default is harmless because (a) if a
+      // seat is waiting, claimPendingSeats will flip it to active in
+      // the same auth-state cycle, and (b) the super-admin path is
+      // resolved client-side via email allowlist regardless of doc
+      // contents.
+      firestoreDataToWrite = {
+        uid: internalUserProfileObject.uid,
+        email: internalUserProfileObject.email,
+        name: internalUserProfileObject.displayName,
+        firstName: internalUserProfileObject.firstName,
+        lastName: internalUserProfileObject.lastName,
+        bio: internalUserProfileObject.bio,
+        avatarUrl: internalUserProfileObject.avatarUrl,
+        favoriteGenre: internalUserProfileObject.favoriteGenre,
+        storiesCompleted: internalUserProfileObject.storiesCompleted,
+        dilemmasAnalyzed: internalUserProfileObject.dilemmasAnalyzed,
+        communitySubmissions: internalUserProfileObject.communitySubmissions,
+        role: internalUserProfileObject.role,
+        isAdmin: internalUserProfileObject.isAdmin,
+        createdAt: internalUserProfileObject.createdAt,
+        lastUpdated: internalUserProfileObject.lastUpdated,
+        subscriptionStatus: 'none',
+        onboardingComplete: false,
+        ...(accountRole ? { accountRole } : {}),
+      };
+    }
+
+    await setDoc(userDocRef, firestoreDataToWrite, { merge: true });
+    console.log(
+      `[SERVER ACTION] createUserProfile: ${docExists ? 'updated identity fields on existing' : 'created new'} profile for UID: ${uid}`,
+    );
     return { success: true };
   } catch (error) {
     console.error(`[SERVER ACTION] createUserProfile: Error creating user profile for UID ${uid}:`, error);

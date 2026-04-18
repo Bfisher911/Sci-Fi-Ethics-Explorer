@@ -23,6 +23,7 @@ import {
   Award,
   Newspaper,
 } from 'lucide-react';
+import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 
 /**
  * Admin Dashboard landing page showing summary cards and quick links.
@@ -154,29 +155,37 @@ export default function AdminDashboardPage() {
       </Card>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {cards.map((card) => (
-          <Link key={card.title} href={card.href}>
-            <Card className="bg-card/80 backdrop-blur-sm hover:bg-card/90 transition-colors cursor-pointer">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {card.title}
-                </CardTitle>
-                <card.icon className="h-5 w-5 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                {loading && card.count !== null ? (
-                  <Skeleton className="h-8 w-16" />
-                ) : card.count === null ? (
-                  <div className="text-lg font-semibold text-primary">View →</div>
-                ) : (
-                  <div className="text-3xl font-bold">{card.count}</div>
-                )}
-                <p className="text-xs text-muted-foreground mt-1">
-                  {card.description}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
+        {cards.map((card, i) => (
+          <RevealOnScroll
+            key={card.title}
+            from="up"
+            delay={Math.min(i * 60, 360)}
+            distance={14}
+            duration={500}
+          >
+            <Link href={card.href}>
+              <Card className="bg-card/80 backdrop-blur-sm hover:bg-card/90 hover:-translate-y-0.5 transition-all cursor-pointer">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {card.title}
+                  </CardTitle>
+                  <card.icon className="h-5 w-5 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  {loading && card.count !== null ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : card.count === null ? (
+                    <div className="text-lg font-semibold text-primary">View →</div>
+                  ) : (
+                    <div className="text-3xl font-bold">{card.count}</div>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {card.description}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          </RevealOnScroll>
         ))}
       </div>
     </div>

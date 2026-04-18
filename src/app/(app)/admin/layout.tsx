@@ -1,18 +1,49 @@
 'use client';
 
-import { type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/hooks/use-admin';
+import { useAuth } from '@/hooks/use-auth';
+import { hasOwnedLicenses } from '@/app/actions/scope';
 import { ShieldCheck, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 /**
  * Admin layout that gates access to admin sub-pages.
- * Redirects non-admin users to /stories.
+ *
+ * Three tiers may enter:
+ *   - Super-admin (email allowlist) — sees everything
+ *   - `isAdmin === true` flag holders — legacy admin users
+ *   - License admins — anyone who purchased a seat license; their
+ *     scope is filtered to their license group inside each page
+ *
+ * Anyone else is redirected to /stories.
  */
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  const { isAdmin, loading } = useAdmin();
+  const { isAdmin, isSuperAdmin, loading: adminLoading } = useAdmin();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+
+  const [licenseAdmin, setLicenseAdmin] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setLicenseAdmin(false);
+      return;
+    }
+    let cancelled = false;
+    hasOwnedLicenses(user.uid).then((res) => {
+      if (cancelled) return;
+      setLicenseAdmin(res.success ? res.data : false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, authLoading]);
+
+  const loading =
+    adminLoading || authLoading || (user !== null && licenseAdmin === null);
 
   if (loading) {
     return (
@@ -25,8 +56,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!isAdmin) {
-    // Redirect non-admins after a brief display
+  const allowed = isAdmin || isSuperAdmin || licenseAdmin === true;
+
+  if (!allowed) {
     router.push('/stories');
     return (
       <div className="container mx-auto py-16 px-4 max-w-lg">
@@ -46,7 +78,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <div className="mb-6 flex items-center gap-2 text-primary">
         <ShieldCheck className="h-5 w-5" />
         <span className="text-sm font-medium uppercase tracking-wider">
-          Admin Panel
+          {isSuperAdmin ? 'Super-Admin Panel' : 'Admin Panel'}
         </span>
       </div>
       {children}

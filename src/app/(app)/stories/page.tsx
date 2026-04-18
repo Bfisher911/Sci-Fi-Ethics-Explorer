@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Filter, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 
 const ALL_GENRES_INTERNAL_VALUE = "__all_genres__";
 const ALL_THEMES_INTERNAL_VALUE = "__all_themes__";
@@ -117,8 +118,16 @@ export default function StoriesPage() {
         </div>
       ) : filteredStories.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredStories.map((story) => (
-            <StoryCard key={story.id} story={story} />
+          {filteredStories.map((story, i) => (
+            <RevealOnScroll
+              key={story.id}
+              from="up"
+              delay={Math.min(i * 50, 400)}
+              distance={14}
+              duration={550}
+            >
+              <StoryCard story={story} />
+            </RevealOnScroll>
           ))}
         </div>
       ) : (

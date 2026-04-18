@@ -371,7 +371,9 @@ export type AuditAction =
   | 'delete'
   | 'restore_version'
   | 'admin_grant'
-  | 'admin_revoke';
+  | 'admin_revoke'
+  | 'impersonation_start'
+  | 'impersonation_stop';
 
 export interface AuditLogEntry {
   id: string;
@@ -1016,6 +1018,13 @@ export interface License {
   startDate: Date | any;
   endDate: Date | any;
   status: LicenseStatus;
+  /**
+   * When true, the totalSeats cap is ignored — assigning seats never
+   * fails with "no seats available". Reserved for the platform owner's
+   * super-admin license (see ensureSuperAdminLicense). Regular org /
+   * department / institutional licenses must always have a finite cap.
+   */
+  unmetered?: boolean;
   createdAt: Date | any;
   updatedAt?: Date | any;
 }

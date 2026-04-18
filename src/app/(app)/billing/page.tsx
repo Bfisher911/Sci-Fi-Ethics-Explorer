@@ -197,14 +197,19 @@ export default function BillingPage() {
                   Seat Management
                 </CardTitle>
                 <CardDescription className="mt-1">
-                  {license.usedSeats} of {license.totalSeats} seats assigned
+                  {license.unmetered
+                    ? `${license.usedSeats} seats assigned \u2014 unlimited capacity`
+                    : `${license.usedSeats} of ${license.totalSeats} seats assigned`}
                 </CardDescription>
               </div>
               <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
                 <DialogTrigger asChild>
                   <Button
                     size="sm"
-                    disabled={license.usedSeats >= license.totalSeats}
+                    disabled={
+                      !license.unmetered &&
+                      license.usedSeats >= license.totalSeats
+                    }
                   >
                     <UserPlus className="mr-2 h-4 w-4" />
                     Assign Seat
@@ -261,23 +266,35 @@ export default function BillingPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Seat usage bar */}
-            <div className="mb-6">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Seats used</span>
-                <span className="font-medium">
-                  {license.usedSeats} / {license.totalSeats}
-                </span>
+            {/* Seat usage bar — hidden for unmetered (super-admin) licenses */}
+            {!license.unmetered && (
+              <div className="mb-6">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-muted-foreground">Seats used</span>
+                  <span className="font-medium">
+                    {license.usedSeats} / {license.totalSeats}
+                  </span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2.5">
+                  <div
+                    className="bg-accent rounded-full h-2.5 transition-all"
+                    style={{
+                      width: `${Math.min((license.usedSeats / license.totalSeats) * 100, 100)}%`,
+                    }}
+                  />
+                </div>
               </div>
-              <div className="w-full bg-muted rounded-full h-2.5">
-                <div
-                  className="bg-accent rounded-full h-2.5 transition-all"
-                  style={{
-                    width: `${Math.min((license.usedSeats / license.totalSeats) * 100, 100)}%`,
-                  }}
-                />
+            )}
+            {license.unmetered && (
+              <div className="mb-6 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
+                <p className="font-medium text-primary">
+                  Platform owner license &mdash; unlimited seats
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  This license has no seat cap. Assign as many seats as you need.
+                </p>
               </div>
-            </div>
+            )}
 
             {/* Seats Table */}
             {seats.length > 0 ? (

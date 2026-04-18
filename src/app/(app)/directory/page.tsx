@@ -2,12 +2,17 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Users, Search, UserCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Users, Search, UserCircle, Eye, Loader2 } from 'lucide-react';
 
 import {
   getDirectoryUsers,
   type DirectoryUser,
 } from '@/app/actions/directory';
+import { startImpersonation } from '@/app/actions/impersonation';
+import { useAuth } from '@/hooks/use-auth';
+import { useAdmin } from '@/hooks/use-admin';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
@@ -21,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 
 /** Supported framework names shown in the directory filter. */
 const FRAMEWORK_OPTIONS: string[] = [
@@ -50,11 +56,26 @@ function UserCardSkeleton(): React.ReactElement {
   );
 }
 
-function UserMiniCard({ user }: { user: DirectoryUser }): React.ReactElement {
+interface UserMiniCardProps {
+  user: DirectoryUser;
+  /** When true, render the super-admin "Impersonate" control. */
+  showImpersonate: boolean;
+  /** Called when the super-admin clicks Impersonate; parent owns the action. */
+  onImpersonate?: (uid: string) => void;
+  impersonatingUid?: string | null;
+}
+
+function UserMiniCard({
+  user,
+  showImpersonate,
+  onImpersonate,
+  impersonatingUid,
+}: UserMiniCardProps): React.ReactElement {
   const initial =
     user.displayName && user.displayName.length > 0
       ? user.displayName.charAt(0).toUpperCase()
       : '?';
+  const isImpersonatingThis = impersonatingUid === user.uid;
 
   return (
     <Card className="bg-card/80 backdrop-blur-sm hover:border-primary/40 transition-colors">
@@ -83,15 +104,37 @@ function UserMiniCard({ user }: { user: DirectoryUser }): React.ReactElement {
             </p>
           )}
         </div>
-        <Button asChild size="sm" variant="outline" className="mt-2">
-          <Link href={`/users/${user.uid}`}>View Profile</Link>
-        </Button>
+        <div className="flex flex-col gap-2 w-full mt-2">
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/users/${user.uid}`}>View Profile</Link>
+          </Button>
+          {showImpersonate && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-amber-400 hover:text-amber-300 hover:bg-amber-500/10"
+              onClick={() => onImpersonate?.(user.uid)}
+              disabled={isImpersonatingThis}
+            >
+              {isImpersonatingThis ? (
+                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+              ) : (
+                <Eye className="h-3.5 w-3.5 mr-1.5" />
+              )}
+              Impersonate User
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
 }
 
 export default function DirectoryPage(): React.ReactElement {
+  const router = useRouter();
+  const { user } = useAuth();
+  const { isSuperAdmin } = useAdmin();
+  const { toast } = useToast();
   const [allUsers, setAllUsers] = useState<DirectoryUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -99,6 +142,38 @@ export default function DirectoryPage(): React.ReactElement {
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [frameworkFilter, setFrameworkFilter] = useState<string>(ALL_VALUE);
+  const [impersonatingUid, setImpersonatingUid] = useState<string | null>(null);
+
+  const handleImpersonate = async (targetUid: string) => {
+    if (!user || !isSuperAdmin) return;
+    setImpersonatingUid(targetUid);
+    try {
+      const res = await startImpersonation(user.uid, targetUid);
+      if (res.success) {
+        toast({
+          title: `Now viewing as ${res.data.asName}`,
+          description: 'Writes will still be attributed to you.',
+        });
+        // Hard refresh so every component re-reads cookie state.
+        if (typeof window !== 'undefined') window.location.href = '/profile';
+        else router.refresh();
+      } else {
+        toast({
+          title: 'Could not start impersonation',
+          description: res.error,
+          variant: 'destructive',
+        });
+        setImpersonatingUid(null);
+      }
+    } catch (err) {
+      toast({
+        title: 'Could not start impersonation',
+        description: err instanceof Error ? err.message : String(err),
+        variant: 'destructive',
+      });
+      setImpersonatingUid(null);
+    }
+  };
 
   // Debounce the search input (250ms).
   useEffect(() => {
@@ -209,7 +284,22 @@ export default function DirectoryPage(): React.ReactElement {
             </CardContent>
           </Card>
         ) : (
-          filteredUsers.map((user) => <UserMiniCard key={user.uid} user={user} />)
+          filteredUsers.map((u, i) => (
+            <RevealOnScroll
+              key={u.uid}
+              from="up"
+              delay={Math.min(i * 40, 320)}
+              distance={12}
+              duration={500}
+            >
+              <UserMiniCard
+                user={u}
+                showImpersonate={isSuperAdmin && !!user && u.uid !== user.uid}
+                onImpersonate={handleImpersonate}
+                impersonatingUid={impersonatingUid}
+              />
+            </RevealOnScroll>
+          ))
         )}
       </div>
     </div>

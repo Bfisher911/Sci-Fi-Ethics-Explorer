@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +17,7 @@ import {
 import { useAdmin } from '@/hooks/use-admin';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import { canActorMutate } from '@/app/actions/permissions';
 import { Pencil, Trash2, Loader2, ShieldAlert } from 'lucide-react';
 
 interface AdminActionsProps {
@@ -24,6 +25,16 @@ interface AdminActionsProps {
   artifactLabel: string;
   /** The artifact's title, shown in the delete-confirmation dialog. */
   artifactTitle: string;
+  /**
+   * Author UID of the artifact being shown. When provided, the
+   * Edit/Delete controls render only if the current actor can mutate
+   * artifacts authored by this UID under the tiered scope rules
+   * (super-admin: any; license-admin: own + license-group authors;
+   * member: only own). When omitted, the legacy behavior of
+   * "show-if-isAdmin" is used (compatible with existing call sites
+   * that haven't been updated yet).
+   */
+  artifactAuthorUid?: string | null;
   /** Called when the admin confirms deletion. Return a promise that resolves
    *  to `{ success: boolean; error?: string }`. */
   onDelete: (adminUid: string) => Promise<{ success: boolean; error?: string }>;
@@ -36,24 +47,63 @@ interface AdminActionsProps {
 }
 
 /**
- * Admin-only edit + delete controls for any content detail page.
- * Only renders when the current user is a super-admin.
+ * Edit + delete controls for any content detail page.
+ *
+ * Renders only when the current actor is allowed to mutate the
+ * specific artifact (per the tiered scope rules in
+ * src/lib/permissions/scope.ts). When `artifactAuthorUid` is omitted
+ * the legacy `isAdmin === true` gate is used so older call sites
+ * continue to work unchanged.
  */
 export function AdminActions({
   artifactLabel,
   artifactTitle,
+  artifactAuthorUid,
   onDelete,
   afterDeleteHref = '/',
   editHref,
   onEdit,
 }: AdminActionsProps): JSX.Element | null {
-  const { isAdmin, loading: adminLoading } = useAdmin();
+  const { isAdmin, isSuperAdmin, loading: adminLoading } = useAdmin();
   const { user } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
 
-  if (adminLoading || !isAdmin || !user) return null;
+  // Scope-aware permission probe. Super-admin and the legacy isAdmin
+  // path skip the probe entirely; everyone else has to ask the server.
+  const [scopeAllowed, setScopeAllowed] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (adminLoading || !user) return;
+    if (artifactAuthorUid === undefined) {
+      // Legacy mode: gate on isAdmin only.
+      setScopeAllowed(isAdmin);
+      return;
+    }
+    // Super-admin shortcut — always yes, no round trip needed.
+    if (isSuperAdmin) {
+      setScopeAllowed(true);
+      return;
+    }
+    let cancelled = false;
+    canActorMutate(user.uid, artifactAuthorUid).then((res) => {
+      if (cancelled) return;
+      setScopeAllowed(res.success ? res.data : false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    adminLoading,
+    user,
+    isAdmin,
+    isSuperAdmin,
+    artifactAuthorUid,
+  ]);
+
+  if (adminLoading || !user) return null;
+  if (scopeAllowed === null) return null; // probe still running
+  if (!scopeAllowed) return null;
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -86,7 +136,9 @@ export function AdminActions({
   return (
     <div className="flex items-center gap-2 p-3 rounded-lg border border-destructive/30 bg-destructive/5">
       <ShieldAlert className="h-4 w-4 text-destructive shrink-0" />
-      <span className="text-xs text-destructive font-medium mr-auto">Admin</span>
+      <span className="text-xs text-destructive font-medium mr-auto">
+        {isSuperAdmin ? 'Super-Admin' : 'Admin'}
+      </span>
 
       {(editHref || onEdit) && (
         <Button

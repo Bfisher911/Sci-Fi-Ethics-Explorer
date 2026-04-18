@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useSubscription } from '@/hooks/use-subscription';
@@ -29,9 +29,19 @@ import { cn } from '@/lib/utils';
  */
 export default function OnboardingPage() {
   const { user } = useAuth();
-  const { loading: subLoading } = useSubscription();
+  const { loading: subLoading, isPaid } = useSubscription();
   const router = useRouter();
   const { toast } = useToast();
+
+  // If the user already has a paid plan or a claimed seat (or is the
+  // super-admin), skip onboarding entirely. Without this, fresh seat
+  // recipients land here every sign-in even though they don't owe a
+  // dime.
+  useEffect(() => {
+    if (!subLoading && isPaid) {
+      router.replace('/stories');
+    }
+  }, [subLoading, isPaid, router]);
 
   // Single-tier platform: every account uses the unified Member plan.
   const plan = MEMBER_PLAN;
