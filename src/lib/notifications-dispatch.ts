@@ -145,3 +145,92 @@ export async function notifyOnDilemmaReviewed(input: {
     }).catch(() => {});
   }
 }
+
+/**
+ * Send a seat-assignment invite email to the recipient. Includes the
+ * inviter's name, the org name, and a sign-in CTA.
+ *
+ * Idempotent at the messaging level only — the caller decides whether
+ * to re-send. No-ops silently when RESEND_API_KEY is unset, matching
+ * the rest of the email pipeline.
+ */
+export async function notifyOnSeatAssigned(input: {
+  recipientEmail: string;
+  inviterName: string;
+  organizationName: string;
+  /** Optional: which community the seat was scoped to. */
+  communityName?: string;
+}): Promise<void> {
+  const baseUrl =
+    process.env.APP_BASE_URL || 'https://scifi-ethics-explorer.netlify.app';
+  const signInUrl = `${baseUrl}/login?next=${encodeURIComponent('/profile')}`;
+  const orgLine = input.organizationName
+    ? `under "${input.organizationName}"`
+    : 'on the platform';
+  const scopeLine = input.communityName
+    ? ` You'll join their community: ${input.communityName}.`
+    : '';
+
+  const subject = `${input.inviterName} added you to Sci-Fi Ethics Explorer`;
+  const text =
+    `Hi,\n\n` +
+    `${input.inviterName} just assigned you a paid seat ${orgLine} on Sci-Fi Ethics Explorer — ` +
+    `an interactive course in the ethics of technology, taught through the science fiction that's been wrestling with these questions for two centuries.\n\n` +
+    `Your seat is already active. To start exploring, sign in (or sign up if it's your first time) with this email at:\n\n` +
+    `${signInUrl}\n\n` +
+    `Once you're in, you'll have full access to the textbook, every learning path, the AI ethics counselor, ` +
+    `the scenario analyzer, and your community's gradebook and discussions.${scopeLine}\n\n` +
+    `Welcome aboard,\n` +
+    `Sci-Fi Ethics Explorer`;
+
+  const html = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0a0e27;">
+      <h2 style="color:#0a0e27;margin:0 0 12px;font-size:22px;">
+        ${escape(input.inviterName)} added you to Sci-Fi Ethics Explorer
+      </h2>
+      <p style="color:#334;line-height:1.55;">
+        ${escape(input.inviterName)} just assigned you a paid seat ${escape(orgLine)} on
+        <strong>Sci-Fi Ethics Explorer</strong> — an interactive course in the ethics of
+        technology, taught through the science fiction that's been wrestling with these
+        questions for two centuries.
+      </p>
+      <p style="color:#334;line-height:1.55;">
+        Your seat is already active. To start exploring, sign in (or sign up if it's your
+        first time) with this email:
+      </p>
+      <p style="margin:24px 0;">
+        <a href="${signInUrl}"
+           style="display:inline-block;background:#7DF9FF;color:#0a0e27;font-weight:600;
+                  padding:12px 24px;border-radius:6px;text-decoration:none;">
+          Sign in to claim your seat
+        </a>
+      </p>
+      <p style="color:#334;line-height:1.55;">
+        Once you're in, you'll have full access to the textbook, every learning path,
+        the AI ethics counselor, the scenario analyzer, and your community's gradebook
+        and discussions.${escape(scopeLine)}
+      </p>
+      <p style="color:#777;font-size:12px;margin-top:32px;">
+        Welcome aboard.<br/>— Sci-Fi Ethics Explorer
+      </p>
+    </div>
+  `;
+
+  await sendEmail({
+    to: input.recipientEmail,
+    subject,
+    text,
+    html,
+  }).catch((err) => {
+    console.error('[notifications-dispatch] notifyOnSeatAssigned failed:', err);
+  });
+}
+
+function escape(s: string): string {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}

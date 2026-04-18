@@ -230,6 +230,48 @@ export async function assignSeat(data: {
       });
     }
 
+    // Fire-and-forget invite email via Resend. No-ops silently when
+    // RESEND_API_KEY isn't set, so seat assignment never blocks on
+    // email infra. Look up the inviter's display name for
+    // personalization, plus the community name when scoped.
+    try {
+      const { notifyOnSeatAssigned } = await import(
+        '@/lib/notifications-dispatch'
+      );
+      let inviterName = 'A Sci-Fi Ethics Explorer instructor';
+      try {
+        const purchaserSnap = await getDoc(
+          doc(db, 'users', license.purchaserId)
+        );
+        if (purchaserSnap.exists()) {
+          const u = purchaserSnap.data();
+          inviterName =
+            u.name || u.displayName || license.purchaserName || inviterName;
+        } else if (license.purchaserName) {
+          inviterName = license.purchaserName;
+        }
+      } catch {
+        // best-effort
+      }
+      let communityName: string | undefined;
+      if (data.communityId) {
+        try {
+          const cSnap = await getDoc(doc(db, 'communities', data.communityId));
+          if (cSnap.exists()) communityName = cSnap.data().name;
+        } catch {
+          // best-effort
+        }
+      }
+      void notifyOnSeatAssigned({
+        recipientEmail: email,
+        inviterName,
+        organizationName: license.organizationName || 'their organization',
+        communityName,
+      });
+    } catch (err) {
+      console.warn('[licenses] seat-invite email dispatch failed:', err);
+    }
+
     return { success: true, data: seatRef.id };
   } catch (error) {
     console.error('[licenses] assignSeat error:', error);
