@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { getPhilosopherById } from '@/app/actions/philosophers';
 import { PhilosopherDetail } from '@/components/philosophers/philosopher-detail';
 import { QuizCta } from '@/components/quiz/quiz-cta';
+import { InfographicCta } from '@/components/infographic/infographic-cta';
 import { AdminActions } from '@/components/admin/admin-actions';
 import { adminDeleteArtifact } from '@/app/actions/admin';
 import type { Philosopher } from '@/types';
@@ -75,7 +76,12 @@ export default function PhilosopherDetailPage() {
         afterDeleteHref="/philosophers"
       />
       <PhilosopherDetail philosopher={philosopher} />
-      <div className="mt-6">
+      <div className="mt-6 space-y-3">
+        <InfographicCta
+          href={`/philosophers/${philosopher.id}/infographic`}
+          subjectName={philosopher.name}
+          kindLabel="philosopher"
+        />
         <QuizCta
           subjectType="philosopher"
           subjectId={philosopher.id}

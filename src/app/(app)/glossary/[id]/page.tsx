@@ -22,6 +22,7 @@ import {
   getPhilosophersForTheory,
 } from '@/app/actions/ethical-theories';
 import { QuizCta } from '@/components/quiz/quiz-cta';
+import { InfographicCta } from '@/components/infographic/infographic-cta';
 import { AdminActions } from '@/components/admin/admin-actions';
 import { adminDeleteArtifact } from '@/app/actions/admin';
 import type { EthicalTheory, Philosopher } from '@/types';
@@ -192,7 +193,12 @@ export default function TheoryDetailPage() {
       </Card>
 
       {/* Test Your Knowledge */}
-      <div className="mb-6">
+      <div className="mb-6 space-y-3">
+        <InfographicCta
+          href={`/glossary/${theory.id}/infographic`}
+          subjectName={theory.name}
+          kindLabel="ethical theory"
+        />
         <QuizCta
           subjectType="theory"
           subjectId={theory.id}

@@ -10,6 +10,7 @@ import { ArrowLeft } from 'lucide-react';
 import { getSciFiMediaById } from '@/app/actions/scifi-media';
 import { MediaDetail } from '@/components/scifi-media/media-detail';
 import { QuizCta } from '@/components/quiz/quiz-cta';
+import { InfographicCta } from '@/components/infographic/infographic-cta';
 import { AdminActions } from '@/components/admin/admin-actions';
 import { adminDeleteArtifact } from '@/app/actions/admin';
 import type { SciFiMedia } from '@/types';
@@ -70,7 +71,12 @@ export default function SciFiMediaDetailPage() {
         afterDeleteHref="/scifi-media"
       />
       <MediaDetail media={media} />
-      <div className="mt-6">
+      <div className="mt-6 space-y-3">
+        <InfographicCta
+          href={`/scifi-media/${media.id}/infographic`}
+          subjectName={media.title}
+          kindLabel="sci-fi work"
+        />
         <QuizCta
           subjectType="scifi-media"
           subjectId={media.id}

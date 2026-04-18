@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { getSciFiAuthorById } from '@/app/actions/scifi-authors';
 import { SciFiAuthorDetail } from '@/components/scifi-authors/scifi-author-detail';
 import { QuizCta } from '@/components/quiz/quiz-cta';
+import { InfographicCta } from '@/components/infographic/infographic-cta';
 import { AdminActions } from '@/components/admin/admin-actions';
 import { adminDeleteArtifact } from '@/app/actions/admin';
 import type { SciFiAuthor } from '@/types';
@@ -73,7 +74,12 @@ export default function SciFiAuthorDetailPage() {
         afterDeleteHref="/scifi-authors"
       />
       <SciFiAuthorDetail author={author} />
-      <div className="mt-6">
+      <div className="mt-6 space-y-3">
+        <InfographicCta
+          href={`/scifi-authors/${author.id}/infographic`}
+          subjectName={author.name}
+          kindLabel="sci-fi author"
+        />
         <QuizCta
           subjectType="scifi-author"
           subjectId={author.id}
