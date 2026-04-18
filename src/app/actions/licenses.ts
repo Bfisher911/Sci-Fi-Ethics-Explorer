@@ -341,13 +341,25 @@ export async function assignSeat(data: {
     // Only update the recipient's profile if we resolved a real uid.
     // Otherwise leave a clean trail for the recipient to pick up at
     // sign-in (see claimPendingSeats).
+    //
+    // setDoc(merge:true) instead of updateDoc so this never throws
+    // NOT_FOUND when the user has a Firebase Auth account but no
+    // users/{uid} doc yet (created lazily on first sign-in). The
+    // create rule on users/{userId} accepts server-action writes
+    // (no auth context) — see firestore.rules.
     if (resolvedUid) {
-      await updateDoc(doc(db, 'users', resolvedUid), {
-        activeLicenseId: data.licenseId,
-        subscriptionStatus: 'active',
-        onboardingComplete: true,
-        lastUpdated: serverTimestamp(),
-      });
+      await setDoc(
+        doc(db, 'users', resolvedUid),
+        {
+          uid: resolvedUid,
+          email,
+          activeLicenseId: data.licenseId,
+          subscriptionStatus: 'active',
+          onboardingComplete: true,
+          lastUpdated: serverTimestamp(),
+        },
+        { merge: true },
+      );
     }
 
     // Fire-and-forget invite email via Resend. No-ops silently when
@@ -417,21 +429,37 @@ export async function claimPendingSeats(
       where('status', '==', 'active')
     );
     const snap = await getDocs(q);
-    let claimed = 0;
+    // Two counters:
+    //   - `claimedNew` = seats that needed their userId stamped now
+    //                    (the recipient just signed in for the first time)
+    //   - `matched`    = total active seats for this email, regardless
+    //                    of whether the userId field already pointed
+    //                    at us. The user profile reconcile MUST run
+    //                    whenever matched > 0, otherwise we'd silently
+    //                    leave a fully-paid seat holder on the unpaid
+    //                    gate just because assignSeat had pre-resolved
+    //                    their uid. (That was the original bug.)
+    let claimedNew = 0;
+    let matched = 0;
     let licenseId: string | null = null;
     for (const d of snap.docs) {
       const data = d.data();
-      if (data.userId === uid) continue; // already linked
-      await updateDoc(doc(db, 'seatAssignments', d.id), { userId: uid });
-      claimed++;
+      matched++;
       licenseId = licenseId || data.licenseId;
+      if (data.userId !== uid) {
+        await updateDoc(doc(db, 'seatAssignments', d.id), { userId: uid });
+        claimedNew++;
+      }
     }
-    if (claimed > 0 && licenseId) {
-      // setDoc(merge:true) instead of updateDoc so this works even if
-      // the users/{uid} doc hasn't been created yet (the auth-state
-      // listener can race with createUserProfile during signup). The
-      // create rule on users/{uid} is permissive (server-action writes
-      // have no Auth context — see firestore.rules), so this is safe.
+    if (matched > 0 && licenseId) {
+      // Always reconcile the user profile when an active seat exists
+      // for this email. Idempotent — overwriting with the same values
+      // is a no-op except for the lastUpdated timestamp.
+      //
+      // setDoc(merge:true) so this works even if the users/{uid} doc
+      // hasn't been created yet, and so it never trips the
+      // updateDoc-NOT_FOUND error path. The create rule on
+      // users/{uid} accepts server-action writes (no auth context).
       await setDoc(
         doc(db, 'users', uid),
         {
@@ -445,7 +473,7 @@ export async function claimPendingSeats(
         { merge: true },
       );
     }
-    return { success: true, data: { claimed } };
+    return { success: true, data: { claimed: claimedNew } };
   } catch (error) {
     console.error('[licenses] claimPendingSeats error:', error);
     return { success: false, error: String(error) };
