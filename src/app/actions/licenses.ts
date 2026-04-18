@@ -4,7 +4,7 @@
 import { db } from '@/lib/firebase/config';
 import {
   collection, doc, getDoc, getDocs, addDoc, updateDoc,
-  query, where, increment, serverTimestamp,
+  query, where, limit as fsLimit, increment, serverTimestamp,
 } from 'firebase/firestore';
 import type { License, SeatAssignment, LicenseTerm, LicenseStatus } from '@/types';
 import { timestampToDate } from '@/lib/firebase/firestore-helpers';
@@ -135,14 +135,26 @@ export async function getUserLicenses(
 
 /**
  * Assign a seat from a license to a user.
+ *
+ * `userId` is optional — when omitted (or when it doesn't resolve to
+ * an existing users/{uid} doc) the action looks the recipient up by
+ * `userEmail`. If no account exists yet, the seat is still allocated
+ * (the recipient sees it the moment they sign in with that email)
+ * but the users/{uid} write is skipped to avoid creating a stub doc
+ * with the email as its id.
  */
 export async function assignSeat(data: {
   licenseId: string;
-  userId: string;
+  userId?: string;
   userEmail: string;
   communityId?: string;
 }): Promise<ActionResult<string>> {
   try {
+    if (!data.userEmail || !data.userEmail.trim()) {
+      return { success: false, error: 'Email is required.' };
+    }
+    const email = data.userEmail.trim().toLowerCase();
+
     // Check license has available seats
     const licenseSnap = await getDoc(doc(db, 'licenses', data.licenseId));
     if (!licenseSnap.exists()) return { success: false, error: 'License not found.' };
@@ -151,16 +163,50 @@ export async function assignSeat(data: {
     if (license.usedSeats >= license.totalSeats) {
       return { success: false, error: 'No seats available. All seats are in use.' };
     }
-
     if (license.status !== 'active') {
       return { success: false, error: 'License is not active.' };
+    }
+
+    // Resolve recipient uid:
+    //   1. trust an explicit userId IF that doc exists
+    //   2. else look up by email in the users collection
+    //   3. else fall through with no uid (we'll still record the seat)
+    let resolvedUid: string | null = null;
+    if (data.userId) {
+      const passed = await getDoc(doc(db, 'users', data.userId));
+      if (passed.exists()) resolvedUid = data.userId;
+    }
+    if (!resolvedUid) {
+      const q = query(
+        collection(db, 'users'),
+        where('email', '==', email),
+        fsLimit(1)
+      );
+      const found = await getDocs(q);
+      if (!found.empty) resolvedUid = found.docs[0].id;
+    }
+
+    // Reject if this license already has an active seat for the same
+    // recipient (uid OR email) — keeps usedSeats honest.
+    const dupQ = query(
+      collection(db, 'seatAssignments'),
+      where('licenseId', '==', data.licenseId),
+      where('status', '==', 'active'),
+      where('userEmail', '==', email)
+    );
+    const dupSnap = await getDocs(dupQ);
+    if (!dupSnap.empty) {
+      return {
+        success: false,
+        error: `That email is already assigned a seat on this license.`,
+      };
     }
 
     // Create seat assignment
     const seatRef = await addDoc(collection(db, 'seatAssignments'), {
       licenseId: data.licenseId,
-      userId: data.userId,
-      userEmail: data.userEmail,
+      userId: resolvedUid, // may be null if the recipient hasn't signed up yet
+      userEmail: email,
       communityId: data.communityId || null,
       assignedAt: serverTimestamp(),
       status: 'active',
@@ -172,17 +218,63 @@ export async function assignSeat(data: {
       updatedAt: serverTimestamp(),
     });
 
-    // Update user's profile to reflect license coverage
-    await updateDoc(doc(db, 'users', data.userId), {
-      activeLicenseId: data.licenseId,
-      subscriptionStatus: 'active',
-      onboardingComplete: true,
-      lastUpdated: serverTimestamp(),
-    });
+    // Only update the recipient's profile if we resolved a real uid.
+    // Otherwise leave a clean trail for the recipient to pick up at
+    // sign-in (see claimPendingSeats).
+    if (resolvedUid) {
+      await updateDoc(doc(db, 'users', resolvedUid), {
+        activeLicenseId: data.licenseId,
+        subscriptionStatus: 'active',
+        onboardingComplete: true,
+        lastUpdated: serverTimestamp(),
+      });
+    }
 
     return { success: true, data: seatRef.id };
   } catch (error) {
     console.error('[licenses] assignSeat error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Called from the auth flow after sign-in. If a seat was pre-assigned
+ * to the user's email before they had an account, link it now: stamp
+ * the uid onto the seat doc and flip the new profile to active.
+ */
+export async function claimPendingSeats(
+  uid: string,
+  email: string | null | undefined
+): Promise<ActionResult<{ claimed: number }>> {
+  try {
+    if (!uid || !email) return { success: true, data: { claimed: 0 } };
+    const lower = email.trim().toLowerCase();
+    const q = query(
+      collection(db, 'seatAssignments'),
+      where('userEmail', '==', lower),
+      where('status', '==', 'active')
+    );
+    const snap = await getDocs(q);
+    let claimed = 0;
+    let licenseId: string | null = null;
+    for (const d of snap.docs) {
+      const data = d.data();
+      if (data.userId === uid) continue; // already linked
+      await updateDoc(doc(db, 'seatAssignments', d.id), { userId: uid });
+      claimed++;
+      licenseId = licenseId || data.licenseId;
+    }
+    if (claimed > 0 && licenseId) {
+      await updateDoc(doc(db, 'users', uid), {
+        activeLicenseId: licenseId,
+        subscriptionStatus: 'active',
+        onboardingComplete: true,
+        lastUpdated: serverTimestamp(),
+      });
+    }
+    return { success: true, data: { claimed } };
+  } catch (error) {
+    console.error('[licenses] claimPendingSeats error:', error);
     return { success: false, error: String(error) };
   }
 }

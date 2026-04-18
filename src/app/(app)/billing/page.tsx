@@ -126,9 +126,10 @@ export default function BillingPage() {
     setAssignError(null);
 
     try {
+      // The server action resolves email → uid (or leaves the seat
+      // unlinked until the recipient signs in for the first time).
       const result = await assignSeat({
         licenseId: license.id,
-        userId: assignEmail.trim(), // In production, look up user by email first
         userEmail: assignEmail.trim(),
       });
 

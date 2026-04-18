@@ -59,6 +59,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.log("Auth Provider: Fetching claims...");
           await Promise.race([refreshClaims(currentUser), claimsTimeout])
             .catch(err => console.warn("Auth Provider: Claims fetch failed or timed out, continuing without fresh claims:", err));
+
+          // If an instructor pre-assigned a seat to this user's email
+          // BEFORE they had an account, link the seat to their new uid
+          // and activate their subscription. No-ops when nothing matches.
+          try {
+            const { claimPendingSeats } = await import('@/app/actions/licenses');
+            const claimRes = await claimPendingSeats(
+              currentUser.uid,
+              currentUser.email
+            );
+            if (claimRes.success && claimRes.data.claimed > 0) {
+              console.log(
+                'Auth Provider: claimed',
+                claimRes.data.claimed,
+                'pending seat(s) for',
+                currentUser.email
+              );
+            }
+          } catch (err) {
+            console.warn('Auth Provider: claimPendingSeats failed:', err);
+          }
         } else {
           setClaims(null);
         }
