@@ -63,6 +63,23 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
   }, [searchParams]);
 
   /**
+   * Where to send the user after a successful sign-in / sign-up.
+   * Honors an explicit `?next=...` on the URL (set by deep links that
+   * bounced the user through login), otherwise lands them on the
+   * dashboard — the real logged-in home.
+   *
+   * Only relative paths are accepted so an attacker can't craft a
+   * login link like `?next=https://evil.example.com` to phish users.
+   */
+  function postAuthDestination(): string {
+    const raw = searchParams?.get('next');
+    if (raw && raw.startsWith('/') && !raw.startsWith('//')) {
+      return raw;
+    }
+    return '/dashboard';
+  }
+
+  /**
    * Centralized error setter so every auth failure path renders the
    * same friendlier alert UI (title + description + optional CTA)
    * instead of a raw Firebase string.
@@ -104,7 +121,7 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
       }
 
       toast({ title: "Account Created", description: "Welcome to Sci-Fi Ethics Explorer!" });
-      router.push('/stories'); // Or redirect to profile or a welcome page
+      router.push(postAuthDestination());
     } catch (err: any) {
       showError(err);
     } finally {
@@ -120,7 +137,7 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: "Login Successful", description: "Welcome back!" });
-      router.push('/stories'); // Or previous page
+      router.push(postAuthDestination());
     } catch (err: any) {
       showError(err);
     } finally {
@@ -160,7 +177,7 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
           console.warn('Google redirect: profile creation fallback:', profileResult.error);
         }
         toast({ title: 'Signed in with Google', description: 'Welcome!' });
-        router.push('/stories');
+        router.push(postAuthDestination());
       } catch (err: any) {
         console.error('Google redirect sign-in error:', err);
         // Route through the centralized describeAuthError so the user
@@ -381,7 +398,7 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
       } else {
         toast({ title: 'Signed in with Google', description: 'Welcome!' });
       }
-      router.push('/stories');
+      router.push(postAuthDestination());
     } catch (err: any) {
       console.error('[GoogleSignIn] popup failed:', err);
       // Common failure modes that warrant a redirect-mode retry: the

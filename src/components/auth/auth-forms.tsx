@@ -75,7 +75,7 @@ export function AuthForms() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: "Login Successful", description: "Welcome back!" });
-      router.push('/stories');
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message);
       toast({ title: "Login Error", description: err.message, variant: "destructive" });
@@ -127,7 +127,7 @@ export function AuthForms() {
       } else {
         toast({ title: "Signed in with Google", description: "Welcome back!" });
       }
-      router.push('/stories');
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message);
       toast({ title: "Google Sign-In Error", description: err.message, variant: "destructive" });

@@ -1,17 +1,15 @@
 'use client';
 
 /**
- * Logged-in dashboard ("Mission Control" + "Editorial Deck").
+ * Logged-in dashboard ("Mission Control").
  *
  * Implementation of the Sci-Fi Ethics Explorer dashboard redesign
- * (Variant C with Variant A's editorial pieces appended). The design
- * brief and HTML/JSX prototype lived in the `Dashboard Redesign`
- * handoff bundle from Claude Design — see commit history for the
- * reference files. This file recreates the visual fidelity using
- * Tailwind + the existing design tokens (--primary cyan, --accent
- * magenta, --card / --background / --sidebar-background navy) and
- * pulls real data from the app where available, falling back to the
- * design copy when no data exists yet (e.g. for first-time users).
+ * (Variant C from the Claude Design handoff bundle). Recreates the
+ * visual fidelity using Tailwind + the existing design tokens
+ * (--primary cyan, --accent magenta, --card / --background /
+ * --sidebar-background navy) and pulls real data from the app where
+ * available, falling back to the design copy when no data exists yet
+ * (e.g. for first-time users).
  *
  * Layout, top to bottom:
  *   1. Greeting strip   — "Mission Brief · {weekday}", "Good {part}, {name}"
@@ -20,33 +18,25 @@
  *   3. PulseStatRow     — 4 micro-stats (streak, XP, debates, certs)
  *   4. Glass card grid  — Textbook constellation, Featured trio,
  *                          Professor Paradox mini, Debate rail
- *   5. Mission Control divider
- *   6. ResumeHero       — full editorial Resume Reading card (A's hero)
- *   7. ChapterTrack     — 12-segment bar + next-4-chapters detail (A)
- *   8. FeaturedStories  — wider editorial story cards (A)
- *   9. ActivityFeed     — recent activity rail (A)
+ *
+ * Earlier iterations also rendered an "Editorial Deck" below the main
+ * grid (ResumeHero + ChapterTrack + FeaturedStoriesEditorial +
+ * ActivityFeed borrowed from Variant A "Commander's Bridge"). That
+ * section was removed on 2026-04-18 per user request; the Mission
+ * Control hero already carries the resume-reading thread in its inset
+ * panel, so the duplicate block added noise.
  */
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
   Award,
-  Bell,
   Bookmark,
   BookMarked,
-  BookOpen,
-  ChevronRight,
-  Clock,
-  Compass,
   Flame,
-  FlaskConical,
-  GraduationCap,
-  List,
-  MessageCircle,
-  Presentation,
   Scale,
-  Send,
   Sparkles,
   Zap,
 } from 'lucide-react';
@@ -163,37 +153,6 @@ const FALLBACK_FEATURED = [
     cover: chapterCover(11),
     tag: 'Popular',
     href: '/stories',
-  },
-];
-
-const RECENT_ACTIVITY = [
-  {
-    icon: Scale,
-    title: 'Uploaded minds deserve bodily autonomy',
-    meta: 'Debate Arena · 24 min ago',
-    accent: true,
-    href: '/debate-arena',
-  },
-  {
-    icon: FlaskConical,
-    title: 'Your scenario: Generation Ship Mutiny',
-    meta: 'Scenario Analyzer · 2h ago',
-    accent: false,
-    href: '/scenario-analyzer',
-  },
-  {
-    icon: Bookmark,
-    title: 'Bookmarked: "On the Right to Forget"',
-    meta: 'Community Blog · yesterday',
-    accent: false,
-    href: '/community-blog',
-  },
-  {
-    icon: Presentation,
-    title: 'Workshop reply from Prof. Lin',
-    meta: 'Workshops · yesterday',
-    accent: true,
-    href: '/workshops',
   },
 ];
 
@@ -403,48 +362,6 @@ export function Dashboard(): JSX.Element {
           </GlassCard>
         </div>
       </div>
-
-      {/* Editorial Deck divider */}
-      <MissionControlDivider label="Editorial Deck · Pick up where you left off" />
-
-      {/* Resume Reading hero (Variant A) */}
-      <div className="mt-7">
-        <ResumeHero resume={resumePayload} />
-      </div>
-
-      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div className="flex flex-col gap-7">
-          <div>
-            <SectionHead
-              title="Textbook"
-              eyebrow="Your Study Arc"
-              actionLabel="All 12 chapters"
-              actionHref="/textbook"
-            />
-            <ChapterTrack progress={progress} reading={reading} doneCount={doneCount} />
-          </div>
-          <div>
-            <SectionHead
-              title="Featured Stories"
-              eyebrow="Curated for You"
-              actionLabel="Browse library"
-              actionHref="/stories"
-            />
-            <FeaturedStoriesEditorial stories={featuredPayload} />
-          </div>
-        </div>
-        <div className="flex flex-col gap-7">
-          <div>
-            <SectionHead
-              title="Recent Activity"
-              eyebrow="Your Signal"
-              actionLabel="View all"
-              actionHref="/notifications"
-            />
-            <ActivityFeed items={RECENT_ACTIVITY} />
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -452,6 +369,17 @@ export function Dashboard(): JSX.Element {
 /* ──────────────────────────────────────────────────────────────────
    CinematicHero  (Variant C centerpiece)
    ────────────────────────────────────────────────────────────────── */
+
+interface ResumePayload {
+  chapter: number;
+  totalChapters: number;
+  title: string;
+  subtitle: string;
+  percent: number;
+  minutesLeft: number;
+  cover: string;
+  href: string;
+}
 
 interface CinematicHeroProps {
   dilemma: {
@@ -478,12 +406,18 @@ function CinematicHero({ dilemma, resume }: CinematicHeroProps): JSX.Element {
         borderColor: 'hsl(var(--border) / 0.5)',
       }}
     >
-      {/* Background image */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      {/* Background image. Next.js <Image fill unoptimized> mirrors
+          the pattern used by textbook-hero — SVGs from /public render
+          reliably and Next's asset pipeline handles cache-busting on
+          redeploy, which plain <img> was missing. */}
+      <Image
         src={dilemma.cover}
         alt=""
-        className="absolute inset-0 h-full w-full object-cover"
+        fill
+        priority
+        sizes="(max-width: 1024px) 100vw, 1400px"
+        unoptimized
+        className="object-cover"
         style={{ opacity: 0.75, filter: 'saturate(1.2) contrast(1.05)' }}
       />
       {/* Protection gradient */}
@@ -910,17 +844,23 @@ function StoriesTrio({ stories }: { stories: StoryPayload[] }): JSX.Element {
         <Link
           key={s.id}
           href={s.href}
-          className="relative aspect-[3/4] overflow-hidden rounded-lg border transition-transform hover:-translate-y-0.5"
+          className="group relative block aspect-[3/4] overflow-hidden rounded-lg border transition-transform hover:-translate-y-0.5"
           style={{
-            background: '#0a0a2e',
+            // Gradient fallback so the card looks intentional even if
+            // the cover fails to load. The protection gradient overlay
+            // below sits on top of this.
+            background:
+              'linear-gradient(135deg, #1a1050 0%, #0a0a2e 60%, #180040 100%)',
             borderColor: 'hsl(var(--border) / 0.5)',
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={s.cover}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover"
+            fill
+            sizes="(max-width: 768px) 33vw, 180px"
+            unoptimized
+            className="object-cover transition-opacity group-hover:opacity-95"
           />
           <div
             className="absolute inset-0"
@@ -979,409 +919,6 @@ function DebateRail({ items }: { items: DebateItem[] }): JSX.Element {
           <span className="text-[11px] text-muted-foreground">{d.n}</span>
         </Link>
       ))}
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────
-   MissionControlDivider
-   ────────────────────────────────────────────────────────────────── */
-
-function MissionControlDivider({ label }: { label: string }): JSX.Element {
-  return (
-    <div className="mb-2 mt-12 flex items-center gap-3.5">
-      <span
-        className="h-px w-11"
-        style={{
-          background:
-            'linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.6) 100%)',
-        }}
-      />
-      <span className="whitespace-nowrap font-mono text-[10.5px] font-bold uppercase tracking-[0.22em] text-primary">
-        {label}
-      </span>
-      <span
-        className="h-px flex-1"
-        style={{
-          background:
-            'linear-gradient(90deg, hsl(var(--primary) / 0.6) 0%, hsl(var(--border) / 0.4) 40%, transparent 100%)',
-        }}
-      />
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────
-   ResumeHero  (Variant A — full editorial)
-   ────────────────────────────────────────────────────────────────── */
-
-interface ResumePayload {
-  chapter: number;
-  totalChapters: number;
-  title: string;
-  subtitle: string;
-  percent: number;
-  minutesLeft: number;
-  cover: string;
-  href: string;
-}
-
-function ResumeHero({ resume }: { resume: ResumePayload }): JSX.Element {
-  return (
-    <div
-      className="grid overflow-hidden rounded-2xl border lg:grid-cols-[1.3fr_1fr]"
-      style={{
-        borderColor: 'hsl(var(--primary) / 0.25)',
-        background:
-          'linear-gradient(135deg, hsl(var(--card) / 0.8) 0%, hsl(var(--sidebar-background) / 0.8) 100%)',
-        boxShadow:
-          '0 30px 80px rgba(0,0,0,0.35), 0 0 0 1px hsl(var(--primary) / 0.05)',
-      }}
-    >
-      <div className="flex flex-col gap-4 p-9 md:p-10">
-        <div className="inline-flex w-fit items-center gap-2 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-primary"
-          style={{ background: 'hsl(var(--primary) / 0.15)' }}
-        >
-          <BookMarked className="h-2.5 w-2.5" />
-          Resume Reading
-        </div>
-        <div>
-          <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {resume.subtitle}
-          </div>
-          <h2
-            className="m-0 font-headline font-bold text-foreground"
-            style={{
-              fontSize: 38,
-              lineHeight: 1.1,
-              letterSpacing: '-0.02em',
-            }}
-          >
-            {resume.title}
-          </h2>
-        </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5" /> {resume.minutesLeft} min left
-          </span>
-          <span>·</span>
-          <span>{resume.percent}% complete</span>
-        </div>
-
-        <div
-          className="mt-2 h-1.5 overflow-hidden rounded-full"
-          style={{ background: 'hsl(var(--sidebar-background))' }}
-        >
-          <div
-            className="h-full"
-            style={{
-              width: `${resume.percent}%`,
-              background:
-                'linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)',
-              boxShadow: '0 0 12px rgba(125,249,255,.5)',
-            }}
-          />
-        </div>
-
-        <div className="mt-2 flex flex-wrap gap-3">
-          <Link
-            href={resume.href}
-            className="inline-flex h-[46px] items-center gap-2.5 rounded-md px-5 text-[13.5px] font-bold text-primary-foreground"
-            style={{
-              background: 'hsl(var(--primary))',
-              boxShadow: '0 0 22px rgba(125,249,255,.35)',
-            }}
-          >
-            Continue Reading
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-          <Link
-            href="/textbook"
-            className="inline-flex h-[46px] items-center gap-2 rounded-md border px-4 text-[13.5px] font-medium text-foreground"
-            style={{ borderColor: 'hsl(var(--border))' }}
-          >
-            <List className="h-3.5 w-3.5" />
-            Table of Contents
-          </Link>
-        </div>
-      </div>
-
-      <div className="relative min-h-[220px]" style={{ background: '#0a0a2e' }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={resume.cover}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-90"
-        />
-        <div
-          className="absolute inset-0 hidden lg:block"
-          style={{
-            background:
-              'linear-gradient(90deg, hsl(var(--card)) 0%, transparent 35%, transparent 100%)',
-          }}
-        />
-        <div
-          className="absolute right-5 top-5 rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-primary backdrop-blur"
-          style={{
-            background: 'rgba(10,10,46,0.7)',
-            borderColor: 'hsl(var(--primary) / 0.3)',
-          }}
-        >
-          Ch. {resume.chapter} / {resume.totalChapters}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────
-   SectionHead
-   ────────────────────────────────────────────────────────────────── */
-
-interface SectionHeadProps {
-  title: string;
-  eyebrow?: string;
-  actionLabel?: string;
-  actionHref?: string;
-}
-
-function SectionHead({ title, eyebrow, actionLabel, actionHref }: SectionHeadProps): JSX.Element {
-  return (
-    <div className="mb-3.5 flex items-end justify-between">
-      <div className="flex items-center gap-3">
-        <span
-          className="inline-block rounded-full"
-          style={{
-            width: 3,
-            height: 26,
-            background: 'hsl(var(--primary))',
-            boxShadow: '0 0 10px rgba(125,249,255,.5)',
-          }}
-        />
-        <div>
-          {eyebrow && (
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              {eyebrow}
-            </div>
-          )}
-          <h2 className="m-0 font-headline text-xl font-bold tracking-tight">{title}</h2>
-        </div>
-      </div>
-      {actionLabel && actionHref && (
-        <Link
-          href={actionHref}
-          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-accent"
-        >
-          {actionLabel} <ArrowRight className="h-3 w-3" />
-        </Link>
-      )}
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────
-   ChapterTrack  (Variant A — 12-segment + next-4 cards)
-   ────────────────────────────────────────────────────────────────── */
-
-interface ChapterTrackProps {
-  progress: ChapterProgressEntry[];
-  reading: ChapterProgressEntry;
-  doneCount: number;
-}
-
-function ChapterTrack({ progress, reading, doneCount }: ChapterTrackProps): JSX.Element {
-  const readingIdx = progress.findIndex((p) => p.n === reading.n);
-  const upcoming = progress.slice(Math.max(0, readingIdx), readingIdx + 4);
-
-  return (
-    <div
-      className="rounded-2xl border p-5 md:p-6"
-      style={{
-        borderColor: 'hsl(var(--border) / 0.6)',
-        background: 'hsl(var(--card) / 0.3)',
-      }}
-    >
-      <div className="mb-1 flex items-baseline justify-between">
-        <div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Textbook Progress
-          </div>
-          <div className="mt-0.5 text-lg font-bold">
-            Chapter {reading.n} of {progress.length}
-          </div>
-        </div>
-        <div className="text-xs text-muted-foreground">
-          {doneCount} earned · {progress.length - doneCount} ahead
-        </div>
-      </div>
-      <div className="mb-4 mt-4 grid grid-cols-12 gap-1">
-        {progress.map((c) => {
-          const isDone = c.state === 'done';
-          const isReading = c.state === 'reading';
-          return (
-            <div
-              key={c.n}
-              title={`Ch. ${c.n}: ${c.title}`}
-              className="h-2 rounded-sm"
-              style={{
-                background: isDone
-                  ? 'hsl(var(--primary))'
-                  : isReading
-                    ? 'hsl(var(--accent))'
-                    : 'hsl(var(--sidebar-background))',
-                boxShadow: isReading
-                  ? '0 0 10px hsl(var(--accent))'
-                  : isDone
-                    ? '0 0 6px hsl(var(--primary) / 0.5)'
-                    : 'none',
-              }}
-            />
-          );
-        })}
-      </div>
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-        {upcoming.map((c) => (
-          <Link
-            key={c.n}
-            href={`/textbook/chapters/${c.slug}`}
-            className="rounded-lg border p-3 transition-colors hover:border-primary/40"
-            style={{
-              borderColor: 'hsl(var(--border) / 0.5)',
-              background:
-                c.state === 'reading' ? 'hsl(var(--accent) / 0.08)' : 'transparent',
-            }}
-          >
-            <div className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-              Ch. {String(c.n).padStart(2, '0')}
-            </div>
-            <div className="mt-1 text-[13px] font-semibold leading-tight">{c.title}</div>
-            <div
-              className="mt-1.5 text-[10.5px] font-semibold uppercase tracking-[0.1em]"
-              style={{
-                color:
-                  c.state === 'reading'
-                    ? 'hsl(var(--accent))'
-                    : c.state === 'locked'
-                      ? 'hsl(var(--muted-foreground))'
-                      : 'hsl(var(--primary))',
-              }}
-            >
-              {c.state === 'reading'
-                ? 'Reading'
-                : c.state === 'locked'
-                  ? 'Up next'
-                  : 'Complete'}
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────
-   FeaturedStoriesEditorial  (Variant A — wider story cards)
-   ────────────────────────────────────────────────────────────────── */
-
-function FeaturedStoriesEditorial({ stories }: { stories: StoryPayload[] }): JSX.Element {
-  return (
-    <div className="grid grid-cols-1 gap-3.5 md:grid-cols-3">
-      {stories.map((s) => (
-        <Link
-          key={s.id}
-          href={s.href}
-          className="overflow-hidden rounded-xl border transition-transform hover:-translate-y-0.5"
-          style={{
-            borderColor: 'hsl(var(--border) / 0.6)',
-            background: 'hsl(var(--card) / 0.35)',
-          }}
-        >
-          <div className="relative h-[120px]" style={{ background: '#0a0a2e' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={s.cover}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'linear-gradient(180deg, transparent 40%, hsl(var(--card)) 100%)',
-              }}
-            />
-            <span
-              className="absolute left-2.5 top-2.5 rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.15em]"
-              style={{
-                background: 'hsl(var(--primary) / 0.2)',
-                color: 'hsl(var(--primary))',
-              }}
-            >
-              {s.tag}
-            </span>
-          </div>
-          <div className="px-3.5 pb-3.5 pt-3">
-            <div className="text-sm font-semibold leading-tight">{s.title}</div>
-            <div className="mt-1 text-[11px] text-muted-foreground">
-              {s.author} · {s.meta}
-            </div>
-          </div>
-        </Link>
-      ))}
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────
-   ActivityFeed
-   ────────────────────────────────────────────────────────────────── */
-
-interface ActivityItem {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  meta: string;
-  accent: boolean;
-  href: string;
-}
-
-function ActivityFeed({ items }: { items: ActivityItem[] }): JSX.Element {
-  return (
-    <div
-      className="rounded-2xl border p-2"
-      style={{
-        borderColor: 'hsl(var(--border) / 0.6)',
-        background: 'hsl(var(--card) / 0.3)',
-      }}
-    >
-      {items.map((a, i) => {
-        const ItemIcon = a.icon;
-        return (
-          <Link
-            key={i}
-            href={a.href}
-            className="flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-primary/5"
-          >
-            <div
-              className="grid h-7 w-7 flex-shrink-0 place-items-center rounded-lg"
-              style={{
-                background: a.accent
-                  ? 'hsl(var(--accent) / 0.15)'
-                  : 'hsl(var(--primary) / 0.12)',
-                color: a.accent ? 'hsl(var(--accent))' : 'hsl(var(--primary))',
-              }}
-            >
-              <ItemIcon className="h-3.5 w-3.5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-[13.5px] font-medium leading-tight">{a.title}</div>
-              <div className="mt-1 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-                {a.meta}
-              </div>
-            </div>
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-          </Link>
-        );
-      })}
     </div>
   );
 }
