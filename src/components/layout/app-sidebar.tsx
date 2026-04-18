@@ -52,7 +52,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useAdmin } from '@/hooks/use-admin';
 
 const mainNavItems = [
-  { href: '/', label: 'Home', icon: Home },
+  { href: '/dashboard', label: 'Home', icon: Home },
   { href: '/stories', label: 'Stories', icon: BookOpen },
   { href: '/analyzer', label: 'Scenario Analyzer', icon: FlaskConical },
   { href: '/glossary', label: 'Ethical Glossary', icon: BookText },
@@ -106,7 +106,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r">
       <SidebarHeader className="p-4">
-        <Link href="/" className="flex items-center gap-2 font-semibold text-lg text-primary">
+        <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-lg text-primary">
           <Orbit className="h-7 w-7" />
           {state === 'expanded' && <span>Sci-Fi Ethics</span>}
         </Link>
@@ -120,8 +120,8 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   asChild
                   isActive={
-                    item.href === '/'
-                      ? pathname === '/'
+                    item.href === '/dashboard'
+                      ? pathname === '/dashboard'
                       : pathname === item.href ||
                         (item.href !== '/stories' && pathname.startsWith(item.href))
                   }

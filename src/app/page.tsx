@@ -5,10 +5,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ArrowRight, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { DilemmaOfTheDay } from '@/components/home/dilemma-of-the-day';
+import { SignedInRedirect } from '@/components/home/signed-in-redirect';
 
 export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen relative overflow-hidden text-foreground">
+      {/* Auth-aware bounce: signed-in visitors land on /dashboard
+          instead of the marketing splash. Renders nothing visually. */}
+      <SignedInRedirect to="/dashboard" />
       {/* Hero Background */}
       <div className="absolute inset-0 z-0">
         <Image
