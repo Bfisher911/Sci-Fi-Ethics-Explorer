@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   createUserWithEmailAndPassword,
@@ -29,26 +29,66 @@ interface AuthPageFormProps {
   mode: 'login' | 'signup';
 }
 
+/**
+ * An optional CTA rendered inside the error alert. Used to nudge the
+ * user toward the recovery action that matches their failure mode
+ * (e.g. "Log in instead" when a signup hits an already-registered
+ * email, or "Reset your password" when a login fails on credentials).
+ */
+type ErrorAction =
+  | { kind: 'link'; label: string; href: string }
+  | { kind: 'reset-password'; label: string };
+
 export function AuthPageForm({ mode }: AuthPageFormProps) {
   const [name, setName] = useState(''); // For display name
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState(''); // Only for signup
   const [error, setError] = useState<string | null>(null);
+  const [errorTitle, setErrorTitle] = useState<string>('Error');
+  const [errorAction, setErrorAction] = useState<ErrorAction | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
+
+  // Prefill the email field when arriving from a contextual CTA, e.g.
+  // signup → "Go to log in" passes ?email=... so the user doesn't have
+  // to type it twice.
+  useEffect(() => {
+    const prefill = searchParams?.get('email');
+    if (prefill && !email) setEmail(prefill);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  /**
+   * Centralized error setter so every auth failure path renders the
+   * same friendlier alert UI (title + description + optional CTA)
+   * instead of a raw Firebase string.
+   */
+  function showError(err: any) {
+    const desc = describeAuthError(err);
+    setErrorTitle(desc.title);
+    setError(desc.description);
+    setErrorAction(desc.action ?? null);
+    toast({ title: desc.title, description: desc.description, variant: 'destructive' });
+  }
+
+  function clearError() {
+    setError(null);
+    setErrorTitle('Error');
+    setErrorAction(null);
+  }
 
   const handleSignUp = async (e: FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      toast({ title: "Sign Up Error", description: "Passwords do not match.", variant: "destructive" });
+      showError({ code: 'auth/passwords-do-not-match' });
       return;
     }
     setIsLoading(true);
-    setError(null);
+    clearError();
     setMessage(null);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -62,12 +102,11 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
         console.warn("Client-side profile creation attempt failed (Cloud Function is backup):", profileResult.error);
         // Don't show error to user for this client-side attempt as CF will handle it
       }
-      
+
       toast({ title: "Account Created", description: "Welcome to Sci-Fi Ethics Explorer!" });
       router.push('/stories'); // Or redirect to profile or a welcome page
     } catch (err: any) {
-      setError(err.message);
-      toast({ title: "Sign Up Error", description: err.message, variant: "destructive" });
+      showError(err);
     } finally {
       setIsLoading(false);
     }
@@ -76,36 +115,33 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
+    clearError();
     setMessage(null);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ title: "Login Successful", description: "Welcome back!" });
       router.push('/stories'); // Or previous page
     } catch (err: any) {
-      setError(err.message);
-      toast({ title: "Login Error", description: err.message, variant: "destructive" });
+      showError(err);
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   const handlePasswordReset = async () => {
     if (!email) {
-      setError("Please enter your email address to reset password.");
-      toast({ title: "Password Reset Error", description: "Please enter your email address.", variant: "destructive" });
+      showError({ code: 'auth/missing-email-for-reset' });
       return;
     }
     setIsLoading(true);
-    setError(null);
+    clearError();
     setMessage(null);
     try {
       await sendPasswordResetEmail(auth, email);
-      setMessage("Password reset email sent. Check your inbox.");
+      setMessage(`Password reset email sent to ${email}. Check your inbox (and spam folder).`);
       toast({ title: "Password Reset", description: "Email sent. Check your inbox." });
     } catch (err: any) {
-      setError(err.message);
-      toast({ title: "Password Reset Error", description: err.message, variant: "destructive" });
+      showError(err);
     } finally {
       setIsLoading(false);
     }
@@ -127,26 +163,10 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
         router.push('/stories');
       } catch (err: any) {
         console.error('Google redirect sign-in error:', err);
-        // Surface the underlying Firebase error to the UI so the user
-        // sees the real cause (e.g. unauthorized-domain) instead of a
-        // silent failure after the redirect roundtrip.
-        const code = err?.code ?? '';
-        const host =
-          typeof window !== 'undefined'
-            ? window.location.host
-            : '(this domain)';
-        const description =
-          code === 'auth/unauthorized-domain'
-            ? `Firebase rejected this domain. Add "${host}" to Firebase Console → Authentication → Settings → Authorized domains, then retry.`
-            : code === 'auth/operation-not-allowed'
-              ? 'Google sign-in is disabled on this Firebase project. Enable it under Authentication → Sign-in method → Google.'
-              : err?.message || 'Google sign-in failed.';
-        setError(description);
-        toast({
-          title: 'Google Sign-In Error',
-          description,
-          variant: 'destructive',
-        });
+        // Route through the centralized describeAuthError so the user
+        // gets the same friendly title/description/CTA treatment as the
+        // popup path.
+        showError(err);
       }
     })();
     return () => { cancelled = true; };
@@ -157,12 +177,93 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
    * for the end user. The defaults Firebase ships with (e.g. "Firebase:
    * Error (auth/unauthorized-domain)") tell admins what's wrong but
    * leave end users staring at a stack-trace string.
+   *
+   * When the failure has an obvious recovery path (already-registered
+   * email → log in instead, wrong password → reset password), include
+   * an `action` so the alert can render a contextual CTA.
    */
-  function describeAuthError(err: any): { title: string; description: string } {
+  function describeAuthError(err: any): {
+    title: string;
+    description: string;
+    action?: ErrorAction;
+  } {
     const code: string = err?.code ?? '';
     const host =
       typeof window !== 'undefined' ? window.location.host : '(this domain)';
     switch (code) {
+      // ── Email / password sign-up & sign-in failures ───────────────
+      case 'auth/email-already-in-use':
+        return {
+          title: 'That email is already registered',
+          description:
+            `An account for ${email || 'that address'} already exists. ` +
+            'Log in instead — once you sign in, any seat that was assigned to this email ' +
+            'will be linked to your profile automatically.',
+          action: {
+            kind: 'link',
+            label: 'Go to log in',
+            href: `/login?email=${encodeURIComponent(email)}`,
+          },
+        };
+      case 'auth/invalid-email':
+        return {
+          title: 'That email address looks invalid',
+          description: 'Check for typos and try again.',
+        };
+      case 'auth/weak-password':
+        return {
+          title: 'Password is too weak',
+          description:
+            'Firebase requires at least 6 characters. Pick a longer password and try again.',
+        };
+      case 'auth/passwords-do-not-match':
+        return {
+          title: 'Passwords don\u2019t match',
+          description:
+            'The password and confirmation fields are different. Re-enter both to make sure they match.',
+        };
+      case 'auth/missing-email-for-reset':
+        return {
+          title: 'Enter your email first',
+          description:
+            'Type the email address you signed up with into the Email field, then click "Forgot Password?" again.',
+        };
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':
+      case 'auth/invalid-login-credentials':
+        return {
+          title: 'Incorrect email or password',
+          description:
+            'Double-check the email and password you entered. If you originally signed up with Google, use "Continue with Google" instead.',
+          action: { kind: 'reset-password', label: 'Reset your password' },
+        };
+      case 'auth/user-not-found':
+        return {
+          title: 'No account for that email',
+          description:
+            `We couldn\u2019t find an account for ${email || 'that address'}. ` +
+            'Sign up to create one, or use "Continue with Google" if you used Google to sign in originally.',
+          action: {
+            kind: 'link',
+            label: 'Create an account',
+            href: `/signup?email=${encodeURIComponent(email)}`,
+          },
+        };
+      case 'auth/too-many-requests':
+        return {
+          title: 'Too many failed attempts',
+          description:
+            'Firebase has temporarily blocked sign-ins from this device after repeated failures. ' +
+            'Reset your password or wait a few minutes before trying again.',
+          action: { kind: 'reset-password', label: 'Reset your password' },
+        };
+      case 'auth/user-disabled':
+        return {
+          title: 'Account disabled',
+          description:
+            'This account has been disabled by an administrator. Contact support if you think this is a mistake.',
+        };
+      // ── Google / provider configuration failures ──────────────────
       case 'auth/unauthorized-domain':
         return {
           title: 'Domain not authorized for Google sign-in',
@@ -177,6 +278,18 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
           description:
             'The Google provider is disabled on this Firebase project. ' +
             'Open Firebase Console → Authentication → Sign-in method → Google and enable it, then try again.',
+        };
+      case 'auth/account-exists-with-different-credential':
+        return {
+          title: 'That email is registered with a different sign-in method',
+          description:
+            'This email was originally registered with email/password (or another provider). ' +
+            'Sign in using the original method, then link Google from your profile if you want both.',
+          action: {
+            kind: 'link',
+            label: 'Go to log in',
+            href: `/login?email=${encodeURIComponent(email)}`,
+          },
         };
       case 'auth/configuration-not-found':
         return {
@@ -211,10 +324,10 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
         };
       default:
         return {
-          title: 'Google Sign-In Error',
+          title: 'Sign-in error',
           description:
             (code ? `[${code}] ` : '') +
-            (err?.message || 'Google sign-in failed.'),
+            (err?.message || 'Sign-in failed. Please try again.'),
         };
     }
   }
@@ -288,22 +401,10 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
           return;
         } catch (redirectErr: any) {
           console.error('[GoogleSignIn] redirect failed:', redirectErr);
-          const desc = describeAuthError(redirectErr);
-          setError(desc.description);
-          toast({
-            title: desc.title,
-            description: desc.description,
-            variant: 'destructive',
-          });
+          showError(redirectErr);
         }
       } else {
-        const desc = describeAuthError(err);
-        setError(desc.description);
-        toast({
-          title: desc.title,
-          description: desc.description,
-          variant: 'destructive',
-        });
+        showError(err);
       }
     } finally {
       setIsLoading(false);
@@ -382,8 +483,28 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
         {error && (
           <Alert variant="destructive" className="mt-4">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
+            <AlertTitle>{errorTitle}</AlertTitle>
+            <AlertDescription>
+              <p>{error}</p>
+              {errorAction?.kind === 'link' && (
+                <Link
+                  href={errorAction.href}
+                  className="mt-2 inline-block font-semibold underline underline-offset-4"
+                >
+                  {errorAction.label} &rarr;
+                </Link>
+              )}
+              {errorAction?.kind === 'reset-password' && (
+                <button
+                  type="button"
+                  onClick={handlePasswordReset}
+                  disabled={isLoading}
+                  className="mt-2 inline-block font-semibold underline underline-offset-4 disabled:opacity-50"
+                >
+                  {errorAction.label} &rarr;
+                </button>
+              )}
+            </AlertDescription>
           </Alert>
         )}
         {message && (
