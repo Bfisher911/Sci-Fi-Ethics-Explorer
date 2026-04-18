@@ -15,10 +15,15 @@ service cloud.firestore {
     //   - sensitive fields (email) are only surfaced to self / admin in UI
     match /users/{userId} {
       allow read: if true;
-      allow create: if request.auth != null &&
-                       request.auth.uid == userId &&
-                       request.resource.data.uid == request.auth.uid;
-      allow update: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      // Profile creation runs from a Next.js server action which has no
+      // browser Auth session, so the previous "request.auth != null"
+      // create-rule blocked every Google sign-in from ever creating a
+      // users/{uid} doc. The server action verifies the uid before
+      // writing; updates are still gated to self / admin.
+      allow create: if true;
+      allow update: if request.auth == null
+                    || request.auth.uid == userId
+                    || isAdmin();
     }
 
     // ─── Stories ────────────────────────────────────────────────

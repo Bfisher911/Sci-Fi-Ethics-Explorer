@@ -256,10 +256,18 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
 
       const profileResult = await createUserProfile(user.uid, user.email, user.displayName);
       if (!profileResult.success) {
-        console.warn('Google Sign-In: profile creation fallback:', profileResult.error);
+        console.error('Google Sign-In: profile creation failed:', profileResult.error);
+        toast({
+          title: 'Signed in, but profile not saved',
+          description:
+            (profileResult.error || 'Unknown Firestore error') +
+            ' — Auth worked but the users/{uid} document did not get created. Check Firestore rules.',
+          variant: 'destructive',
+          duration: 9000,
+        });
+      } else {
+        toast({ title: 'Signed in with Google', description: 'Welcome!' });
       }
-
-      toast({ title: 'Signed in with Google', description: 'Welcome!' });
       router.push('/stories');
     } catch (err: any) {
       console.error('[GoogleSignIn] popup failed:', err);

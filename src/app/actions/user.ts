@@ -154,6 +154,12 @@ export async function createUserProfile(
   }
   
   console.log(`[SERVER ACTION] createUserProfile: Creating profile for UID: ${uid}`);
+  // Hoisted into the outer scope so the catch block can reference it
+  // for diagnostics. Previously the catch tried to log this variable
+  // which was declared inside the try, hitting a ReferenceError that
+  // masked every real Firestore failure (most notably the
+  // permission-denied that broke every Google sign-in).
+  let firestoreDataToWrite: Record<string, any> | null = null;
   try {
     const userDocRef = doc(db, 'users', uid);
     const now = serverTimestamp();
@@ -195,7 +201,7 @@ export async function createUserProfile(
 
     // Prepare the actual data to write to Firestore.
     // We will use 'name' field in Firestore for what UserProfile calls 'displayName'.
-    const firestoreDataToWrite: Record<string, any> = {
+    firestoreDataToWrite = {
       uid: internalUserProfileObject.uid,
       email: internalUserProfileObject.email,
       name: internalUserProfileObject.displayName, // Map UserProfile's displayName to Firestore 'name'
