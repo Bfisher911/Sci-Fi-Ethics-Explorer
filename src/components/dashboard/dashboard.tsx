@@ -27,7 +27,10 @@
  * panel, so the duplicate block added noise.
  */
 
-import Image from 'next/image';
+// Note: no `next/image` import. Cover artwork is rendered via CSS
+// `background-image` so a missing or slow-loading SVG never paints
+// the browser's broken-image icon — the layered gradient backdrop
+// stays visible underneath either way.
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -402,24 +405,20 @@ function CinematicHero({ dilemma, resume }: CinematicHeroProps): JSX.Element {
       className="relative overflow-hidden rounded-2xl border"
       style={{
         minHeight: 460,
-        background: '#060018',
+        // Layered backdrop: the cover SVG via CSS background-image
+        // (silently fails — never shows a broken-image icon) on top
+        // of a vivid cinematic gradient that's tinted toward the
+        // primary cyan / accent magenta. If the SVG renders the cover
+        // wins; if it doesn't, the gradient is the hero — either way
+        // the section looks intentional, never broken.
+        backgroundImage: `url("${dilemma.cover}"), radial-gradient(ellipse at 20% 30%, hsl(181 100% 35% / 0.5) 0%, transparent 50%), radial-gradient(ellipse at 80% 70%, hsl(300 100% 45% / 0.45) 0%, transparent 55%), linear-gradient(135deg, #1a1050 0%, #060018 60%, #2a0040 100%)`,
+        backgroundSize: 'cover, cover, cover, cover',
+        backgroundPosition: 'center, center, center, center',
+        backgroundRepeat: 'no-repeat',
+        backgroundColor: '#060018',
         borderColor: 'hsl(var(--border) / 0.5)',
       }}
     >
-      {/* Background image. Next.js <Image fill unoptimized> mirrors
-          the pattern used by textbook-hero — SVGs from /public render
-          reliably and Next's asset pipeline handles cache-busting on
-          redeploy, which plain <img> was missing. */}
-      <Image
-        src={dilemma.cover}
-        alt=""
-        fill
-        priority
-        sizes="(max-width: 1024px) 100vw, 1400px"
-        unoptimized
-        className="object-cover"
-        style={{ opacity: 0.75, filter: 'saturate(1.2) contrast(1.05)' }}
-      />
       {/* Protection gradient */}
       <div
         className="absolute inset-0"
@@ -837,47 +836,62 @@ interface StoryPayload {
   href: string;
 }
 
+/**
+ * Per-card gradient palette used when the cover SVG isn't available
+ * (or while it's loading, or if any future cover URL 404s). Indexed
+ * by card position so the trio always renders three distinct
+ * cinematic backdrops even with no images.
+ */
+const TRIO_FALLBACK_GRADIENTS = [
+  'linear-gradient(135deg, hsl(181 100% 35%) 0%, hsl(240 70% 18%) 60%, hsl(300 60% 25%) 100%)',
+  'linear-gradient(135deg, hsl(280 70% 35%) 0%, hsl(240 70% 18%) 60%, hsl(200 80% 28%) 100%)',
+  'linear-gradient(135deg, hsl(320 80% 35%) 0%, hsl(240 70% 18%) 60%, hsl(38 90% 35%) 100%)',
+];
+
 function StoriesTrio({ stories }: { stories: StoryPayload[] }): JSX.Element {
   return (
     <div className="grid grid-cols-3 gap-2.5">
-      {stories.map((s) => (
-        <Link
-          key={s.id}
-          href={s.href}
-          className="group relative block aspect-[3/4] overflow-hidden rounded-lg border transition-transform hover:-translate-y-0.5"
-          style={{
-            // Gradient fallback so the card looks intentional even if
-            // the cover fails to load. The protection gradient overlay
-            // below sits on top of this.
-            background:
-              'linear-gradient(135deg, #1a1050 0%, #0a0a2e 60%, #180040 100%)',
-            borderColor: 'hsl(var(--border) / 0.5)',
-          }}
-        >
-          <Image
-            src={s.cover}
-            alt=""
-            fill
-            sizes="(max-width: 768px) 33vw, 180px"
-            unoptimized
-            className="object-cover transition-opacity group-hover:opacity-95"
-          />
-          <div
-            className="absolute inset-0"
+      {stories.map((s, i) => {
+        // Cover via CSS background-image instead of an <img> / <Image>
+        // tag. CSS handles missing background images SILENTLY — no
+        // browser broken-image icon, ever. The gradient fallback sits
+        // underneath so the card looks intentional whether or not the
+        // SVG renders. Cover URL is wrapped in CSS.escape-like
+        // quoting; %22 = double-quote.
+        const coverUrl = s.cover ? `url("${s.cover}")` : null;
+        const layeredBg = coverUrl
+          ? `${coverUrl}, ${TRIO_FALLBACK_GRADIENTS[i % TRIO_FALLBACK_GRADIENTS.length]}`
+          : TRIO_FALLBACK_GRADIENTS[i % TRIO_FALLBACK_GRADIENTS.length];
+        return (
+          <Link
+            key={s.id}
+            href={s.href}
+            className="group relative block aspect-[3/4] overflow-hidden rounded-lg border transition-transform hover:-translate-y-0.5"
             style={{
-              background:
-                'linear-gradient(180deg, transparent 40%, rgba(10,6,30,0.95) 100%)',
+              backgroundImage: layeredBg,
+              backgroundSize: 'cover, cover',
+              backgroundPosition: 'center, center',
+              backgroundRepeat: 'no-repeat',
+              borderColor: 'hsl(var(--border) / 0.5)',
             }}
-          />
-          <div className="absolute inset-x-2.5 bottom-2.5">
-            <div className="mb-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-primary">
-              {s.tag}
+          >
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'linear-gradient(180deg, transparent 40%, rgba(10,6,30,0.95) 100%)',
+              }}
+            />
+            <div className="absolute inset-x-2.5 bottom-2.5">
+              <div className="mb-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-primary">
+                {s.tag}
+              </div>
+              <div className="text-[12px] font-bold leading-tight text-white">{s.title}</div>
+              <div className="mt-0.5 text-[10px] text-white/60">{s.meta}</div>
             </div>
-            <div className="text-[12px] font-bold leading-tight text-white">{s.title}</div>
-            <div className="mt-0.5 text-[10px] text-white/60">{s.meta}</div>
-          </div>
-        </Link>
-      ))}
+          </Link>
+        );
+      })}
     </div>
   );
 }
