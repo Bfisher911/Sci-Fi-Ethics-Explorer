@@ -38,20 +38,28 @@ import {
   Award,
   Bookmark,
   BookMarked,
-  Flame,
+  BookOpen,
+  Check,
+  GraduationCap,
+  Loader2,
+  Lock,
   Scale,
   Sparkles,
-  Zap,
+  Trophy,
 } from 'lucide-react';
 
 import { useAuth } from '@/hooks/use-auth';
 import { useSubscription } from '@/hooks/use-subscription';
+import { useToast } from '@/hooks/use-toast';
 import { getDilemmaOfTheDay, getStories } from '@/app/actions/stories';
 import { getTextbookProgress } from '@/app/actions/textbook';
 import { getUserBadges } from '@/app/actions/badges';
+import { getDebates } from '@/app/actions/debates';
+import { addBookmark } from '@/app/actions/bookmarks';
+import { getUserProfile } from '@/app/actions/user';
 import { chapters as ALL_CHAPTERS } from '@/data/textbook';
 import type { Chapter } from '@/types/textbook';
-import type { Story } from '@/types';
+import type { Debate, Story } from '@/types';
 
 /* ──────────────────────────────────────────────────────────────────
    Helpers
@@ -80,7 +88,6 @@ interface ChapterProgressEntry {
 }
 
 function buildChapterProgress(
-  chaptersRead: string[],
   chapterQuizzesPassed: string[],
   lastChapterRead: string | undefined,
 ): ChapterProgressEntry[] {
@@ -116,69 +123,46 @@ function pickReadingChapter(progress: ChapterProgressEntry[]): ChapterProgressEn
    Design tokens (inline so the file reads top to bottom)
    ────────────────────────────────────────────────────────────────── */
 
-const FALLBACK_DILEMMA = {
-  eyebrow: 'Dilemma of the Day',
-  title: 'The Ship of Theseus Protocol',
-  splitTitle: ['The Ship of Theseus', 'Protocol.'] as const,
-  description:
-    'A colony ship gradually replaces every crew member with digital uploads to survive a 400-year voyage. When the first body arrives, is it the same crew that left?',
-  genre: 'Hard Sci-Fi',
-  theme: 'Personal Identity',
-  author: 'Iris Vega-Okafor',
-  cover: chapterCover(2),
-  href: '/stories',
-};
+// No FALLBACK_DILEMMA. The hero only renders with a real Story
+// record behind it, so every link target is a specific story page.
+// When no stories exist yet we render a dedicated empty-state hero
+// instead of fake copy that points nowhere useful.
 
-const FALLBACK_FEATURED = [
-  {
-    id: 'fallback-1',
-    title: 'The Last Ansible',
-    author: 'K. Ogundimu',
-    meta: '18 min · Branching',
-    cover: chapterCover(4),
-    tag: 'Featured',
-    href: '/stories',
-  },
-  {
-    id: 'fallback-2',
-    title: 'Rain Over Cobalt Harbor',
-    author: 'J. Salas',
-    meta: '9 min · Linear',
-    cover: chapterCover(9),
-    tag: 'New',
-    href: '/stories',
-  },
-  {
-    id: 'fallback-3',
-    title: 'Inheritance, Revisited',
-    author: 'N. Park',
-    meta: '24 min · Branching',
-    cover: chapterCover(11),
-    tag: 'Popular',
-    href: '/stories',
-  },
-];
+/**
+ * Sort stories for the Featured trio:
+ *   1. Admin-pinned `featured === true` first (most recent of those)
+ *   2. Then most-recently-published
+ *   3. Then alphabetical (stable tiebreak)
+ * Never returns fake placeholders — callers handle the empty case
+ * with an explicit empty-state CTA.
+ */
+function pickFeaturedTrio(stories: Story[]): Story[] {
+  const timestamp = (s: Story): number => {
+    const v = s.publishedAt;
+    if (!v) return 0;
+    if (v instanceof Date) return v.getTime();
+    if (typeof (v as { toDate?: () => Date }).toDate === 'function') {
+      return (v as { toDate: () => Date }).toDate().getTime();
+    }
+    const parsed = new Date(v as string).getTime();
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+  return [...stories]
+    .sort((a, b) => {
+      const af = a.featured ? 1 : 0;
+      const bf = b.featured ? 1 : 0;
+      if (af !== bf) return bf - af;
+      const at = timestamp(a);
+      const bt = timestamp(b);
+      if (at !== bt) return bt - at;
+      return a.title.localeCompare(b.title);
+    })
+    .slice(0, 3);
+}
 
-const DEBATE_RAIL = [
-  {
-    pos: 'Uploaded minds deserve full citizenship',
-    side: 'FOR',
-    n: 48,
-    accent: false,
-  },
-  {
-    pos: 'Memory editing violates self-continuity',
-    side: 'AGAINST',
-    n: 31,
-    accent: true,
-  },
-  {
-    pos: 'AI should be granted conscientious refusal',
-    side: 'FOR',
-    n: 22,
-    accent: false,
-  },
-];
+// No hardcoded DEBATE_RAIL. The rail only renders real Debate
+// documents, each linking to its own /debate-arena/{id} page. Empty
+// state is handled explicitly with a "Start a debate" CTA.
 
 const COUNSELOR_PROMPT_DEFAULT =
   'Hey — you left off mid-thought in your last chapter. Want to unpack the dilemma, or try a new scenario?';
@@ -190,55 +174,82 @@ const COUNSELOR_PROMPT_DEFAULT =
 export function Dashboard(): JSX.Element {
   const { user } = useAuth();
   const { isSuperAdmin } = useSubscription();
+  const { toast } = useToast();
 
   const displayName = useMemo(() => {
     if (!user) return 'Explorer';
     const dn = user.displayName?.trim();
     if (dn) return dn.split(' ')[0];
-    return user.email?.split('@')[0] ?? 'Explorer';
+    const local = user.email?.split('@')[0];
+    if (!local) return 'Explorer';
+    // Truncate very long email locals so they don't break the h1.
+    return local.length > 16 ? local.slice(0, 16) + '…' : local;
   }, [user]);
 
   /* Real data ---------------------------------------------------- */
-  const [chaptersRead, setChaptersRead] = useState<string[]>([]);
   const [chapterQuizzesPassed, setChapterQuizzesPassed] = useState<string[]>([]);
   const [lastChapterRead, setLastChapterRead] = useState<string | undefined>();
+  const [finalExamPassed, setFinalExamPassed] = useState(false);
+  const [masterCertId, setMasterCertId] = useState<string | undefined>();
   const [badgeCount, setBadgeCount] = useState<number | null>(null);
+  const [storiesCompleted, setStoriesCompleted] = useState<number | null>(null);
   const [dilemma, setDilemma] = useState<Story | null>(null);
   const [featured, setFeatured] = useState<Story[] | null>(null);
+  const [openDebates, setOpenDebates] = useState<Debate[] | null>(null);
+  const [bookmarkSaved, setBookmarkSaved] = useState(false);
+  const [bookmarkSaving, setBookmarkSaving] = useState(false);
 
+  // Per-user data: textbook progress, badges, profile stats. Skipped
+  // when no user is signed in (the page will already have redirected
+  // to /login by then but we guard anyway).
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
     (async () => {
-      const [progRes, badgeRes] = await Promise.all([
+      const [progRes, badgeRes, profRes] = await Promise.all([
         getTextbookProgress(user.uid),
         getUserBadges(user.uid),
+        getUserProfile(user.uid),
       ]);
       if (cancelled) return;
       if (progRes.success) {
-        setChaptersRead(progRes.data.chaptersRead);
         setChapterQuizzesPassed(progRes.data.chapterQuizzesPassed);
         setLastChapterRead(progRes.data.lastChapterRead);
+        setFinalExamPassed(progRes.data.finalExamPassed);
+        setMasterCertId(progRes.data.masterCertificateId);
       }
       if (badgeRes.success) setBadgeCount(badgeRes.data.length);
+      if (profRes.success && profRes.data) {
+        setStoriesCompleted(profRes.data.storiesCompleted ?? 0);
+      } else {
+        setStoriesCompleted(0);
+      }
     })();
     return () => {
       cancelled = true;
     };
   }, [user]);
 
+  // Auth-agnostic data: dilemma of the day, featured stories,
+  // open debates. Used for hero, trio, and debate rail respectively.
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [dilRes, storyRes] = await Promise.all([
+      const [dilRes, storyRes, debateRes] = await Promise.all([
         getDilemmaOfTheDay(),
         getStories(),
+        getDebates(),
       ]);
       if (cancelled) return;
       if (dilRes.success && dilRes.data) setDilemma(dilRes.data);
-      if (storyRes.success && storyRes.data.length > 0) {
-        setFeatured(storyRes.data.slice(0, 3));
+      if (storyRes.success) {
+        // Always set — even to [] — so the UI can render the empty
+        // state instead of waiting for never-arriving data.
+        setFeatured(pickFeaturedTrio(storyRes.data));
+      } else {
+        setFeatured([]);
       }
+      if (debateRes.success) setOpenDebates(debateRes.data);
     })();
     return () => {
       cancelled = true;
@@ -246,8 +257,8 @@ export function Dashboard(): JSX.Element {
   }, []);
 
   const progress = useMemo(
-    () => buildChapterProgress(chaptersRead, chapterQuizzesPassed, lastChapterRead),
-    [chaptersRead, chapterQuizzesPassed, lastChapterRead],
+    () => buildChapterProgress(chapterQuizzesPassed, lastChapterRead),
+    [chapterQuizzesPassed, lastChapterRead],
   );
 
   const reading = useMemo(() => pickReadingChapter(progress), [progress]);
@@ -259,7 +270,7 @@ export function Dashboard(): JSX.Element {
   const doneCount = progress.filter((p) => p.state === 'done').length;
 
   // Resume reading payload
-  const resumePayload = {
+  const resumePayload: ResumePayload = {
     chapter: reading.n,
     totalChapters: ALL_CHAPTERS.length,
     title: reading.title,
@@ -270,39 +281,115 @@ export function Dashboard(): JSX.Element {
       doneCount === 0 && reading.n === 1
         ? 0
         : Math.round((doneCount / ALL_CHAPTERS.length) * 100),
-    minutesLeft: readingChapter?.estimatedReadingMinutes ?? 9,
-    cover: chapterCover(reading.n),
+    estimatedMinutes: readingChapter?.estimatedReadingMinutes ?? 9,
+    cover: readingChapter?.heroImage ?? chapterCover(reading.n),
     href: `/textbook/chapters/${reading.slug}`,
   };
 
-  // Dilemma — real data first, fall back to design copy
-  const dilemmaPayload = dilemma
-    ? {
-        eyebrow: 'Dilemma of the Day',
-        title: dilemma.title,
-        splitTitle: splitForGradient(dilemma.title),
-        description: dilemma.description,
-        genre: dilemma.genre,
-        theme: dilemma.theme,
-        author: dilemma.author,
-        cover: dilemma.imageUrl || chapterCover(2),
-        href: `/stories/${dilemma.id}`,
-      }
-    : FALLBACK_DILEMMA;
+  // Reset the "Saved" toggle whenever the hero story changes so a
+  // previous confirmation doesn't bleed onto an unrelated story.
+  useEffect(() => {
+    setBookmarkSaved(false);
+  }, [dilemma?.id, featured?.[0]?.id]);
 
-  // Featured stories — real if loaded, otherwise design defaults
-  const featuredPayload =
-    featured && featured.length > 0
-      ? featured.map((s, i) => ({
+  // Hero dilemma — always a REAL story. Priority order:
+  //   1. Server-picked Dilemma of the Day (rotates daily, specific id).
+  //   2. Fallback to the top of the featured trio — still a real
+  //      story with a real /stories/{id} link, just labelled "Latest
+  //      Story" instead of "Dilemma of the Day" so the eyebrow is
+  //      honest.
+  //   3. null — the hero renders its empty state (see CinematicHero).
+  const heroStory: Story | null =
+    dilemma ?? (featured && featured.length > 0 ? featured[0] : null);
+  const heroLabel = dilemma ? 'Dilemma of the Day' : 'Latest Story';
+  const dilemmaPayload = heroStory
+    ? {
+        id: heroStory.id,
+        eyebrow: heroLabel,
+        title: heroStory.title,
+        splitTitle: splitForGradient(heroStory.title),
+        description: heroStory.description,
+        genre: heroStory.genre,
+        theme: heroStory.theme,
+        author: heroStory.author,
+        cover: heroStory.imageUrl || chapterCover(2),
+        href: `/stories/${heroStory.id}`,
+      }
+    : null;
+
+  // Featured stories — real entries only. `null` means "still loading"
+  // (render a skeleton); `[]` means "loaded, nothing to show" (render
+  // an empty-state CTA). We NEVER substitute fake placeholder entries
+  // that link nowhere.
+  const featuredPayload: StoryPayload[] | null =
+    featured === null
+      ? null
+      : featured.map((s, i) => ({
           id: s.id,
           title: s.title,
           author: s.author || 'Anonymous',
           meta: `${s.estimatedReadingTime || '—'} · ${s.isInteractive ? 'Branching' : 'Linear'}`,
           cover: s.imageUrl || chapterCover((i % 12) + 1),
-          tag: i === 0 ? 'Featured' : i === 1 ? 'New' : 'Popular',
+          tag: s.featured ? 'Featured' : i === 0 ? 'Latest' : i === 1 ? 'New' : 'Popular',
           href: `/stories/${s.id}`,
-        }))
-      : FALLBACK_FEATURED;
+        }));
+
+  // Debate rail — top 3 currently-open debates, each linked to its
+  // own /debate-arena/{id} page. `null` means loading, `[]` means
+  // "no debates yet" — never fake placeholders.
+  const debatePayload: DebateItem[] | null =
+    openDebates === null
+      ? null
+      : openDebates.slice(0, 3).map((d, i) => ({
+          pos: d.title,
+          side: d.status === 'voting' ? 'VOTING' : 'OPEN',
+          n: d.participantCount ?? 0,
+          accent: i % 2 === 1,
+          href: `/debate-arena/${d.id}`,
+        }));
+
+  const debateCardTitle =
+    openDebates && openDebates.length > 0
+      ? `${openDebates.length === 1 ? 'One thread' : `${openDebates.length} threads`} need you`
+      : 'Debate Arena';
+
+  // Bookmark the current hero story (Dilemma of the Day or the
+  // latest-story fallback — whichever CinematicHero is rendering).
+  // No-op when there's no real story behind the hero or the user
+  // is signed out.
+  async function handleBookmarkDilemma() {
+    if (!user || !dilemmaPayload || bookmarkSaving) return;
+    setBookmarkSaving(true);
+    try {
+      const result = await addBookmark({
+        userId: user.uid,
+        itemId: dilemmaPayload.id,
+        itemType: 'story',
+        title: dilemmaPayload.title,
+      });
+      if (result.success) {
+        setBookmarkSaved(true);
+        toast({
+          title: 'Saved to bookmarks',
+          description: `"${dilemmaPayload.title}" is in your bookmarks.`,
+        });
+      } else {
+        toast({
+          title: 'Could not save',
+          description: result.error,
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      toast({
+        title: 'Could not save',
+        description: err instanceof Error ? err.message : String(err),
+        variant: 'destructive',
+      });
+    } finally {
+      setBookmarkSaving(false);
+    }
+  }
 
   return (
     <div className="mx-auto w-full max-w-[1400px] px-6 py-6 md:px-8 md:py-8 lg:px-10">
@@ -330,15 +417,36 @@ export function Dashboard(): JSX.Element {
       </div>
 
       {/* Cinematic Hero */}
-      <CinematicHero dilemma={dilemmaPayload} resume={resumePayload} />
+      <CinematicHero
+        dilemma={dilemmaPayload}
+        resume={resumePayload}
+        onSave={handleBookmarkDilemma}
+        savedState={
+          bookmarkSaving ? 'saving' : bookmarkSaved ? 'saved' : 'idle'
+        }
+        canSave={!!user && !!dilemmaPayload}
+      />
 
       {/* Stat row */}
       <div className="mt-5">
         <PulseStatRow
-          streak={Math.max(1, doneCount)}
-          xp={2840 + doneCount * 240}
-          debatesActive={3}
-          certs={badgeCount ?? doneCount}
+          chaptersDone={doneCount}
+          totalChapters={ALL_CHAPTERS.length}
+          storiesCompleted={storiesCompleted ?? 0}
+          debatesActive={openDebates?.length ?? 0}
+          certs={badgeCount ?? 0}
+        />
+      </div>
+
+      {/* Master-certificate progress */}
+      <div className="mt-5">
+        <MasterCertificateProgress
+          chaptersPassed={doneCount}
+          totalChapters={ALL_CHAPTERS.length}
+          finalExamPassed={finalExamPassed}
+          hasMasterCert={!!masterCertId}
+          nextChapterSlug={reading.slug}
+          nextChapterNumber={reading.n}
         />
       </div>
 
@@ -358,10 +466,10 @@ export function Dashboard(): JSX.Element {
         </div>
         <div className="flex flex-col gap-5">
           <GlassCard eyebrow="Companion" title="Professor Paradox">
-            <CounselorMini />
+            <CounselorMini chapterTitle={readingChapter?.title} />
           </GlassCard>
-          <GlassCard accent eyebrow="Debate Arena" title="Three threads need you">
-            <DebateRail items={DEBATE_RAIL} />
+          <GlassCard accent eyebrow="Debate Arena" title={debateCardTitle}>
+            <DebateRail items={debatePayload} />
           </GlassCard>
         </div>
       </div>
@@ -379,27 +487,89 @@ interface ResumePayload {
   title: string;
   subtitle: string;
   percent: number;
-  minutesLeft: number;
+  /** Estimated reading time of the chapter (whole-chapter, including the
+   *  short story). The earlier `minutesLeft` label was misleading because
+   *  we don't track scroll-position remaining; this is the chapter's
+   *  total estimate. */
+  estimatedMinutes: number;
+  cover: string;
+  href: string;
+}
+
+interface DilemmaPayload {
+  id: string;
+  eyebrow: string;
+  title: string;
+  splitTitle: readonly [string, string];
+  description: string;
+  genre?: string;
+  theme?: string;
+  author?: string;
   cover: string;
   href: string;
 }
 
 interface CinematicHeroProps {
-  dilemma: {
-    eyebrow: string;
-    title: string;
-    splitTitle: readonly [string, string];
-    description: string;
-    genre?: string;
-    theme?: string;
-    author?: string;
-    cover: string;
-    href: string;
-  };
+  /** `null` means no real story to render — the hero shows its
+   *  explicit empty state rather than fake copy with dead links. */
+  dilemma: DilemmaPayload | null;
   resume: ResumePayload;
+  onSave: () => void | Promise<void>;
+  savedState: 'idle' | 'saving' | 'saved';
+  /** Whether the bookmark CTA can act — false when the user is
+   *  signed out. Renders a disabled button with a tooltip hint. */
+  canSave: boolean;
 }
 
-function CinematicHero({ dilemma, resume }: CinematicHeroProps): JSX.Element {
+function CinematicHero({
+  dilemma,
+  resume,
+  onSave,
+  savedState,
+  canSave,
+}: CinematicHeroProps): JSX.Element {
+  // No real story to headline the hero — render an explicit empty
+  // state with actionable CTAs (submit / browse) instead of fake
+  // copy linking to the generic index.
+  if (!dilemma) {
+    return (
+      <div
+        className="relative overflow-hidden rounded-2xl border p-8 md:p-10"
+        style={{
+          minHeight: 320,
+          backgroundImage:
+            'radial-gradient(ellipse at 20% 30%, hsl(181 100% 35% / 0.3) 0%, transparent 50%), radial-gradient(ellipse at 80% 70%, hsl(300 100% 45% / 0.25) 0%, transparent 55%), linear-gradient(135deg, #1a1050 0%, #060018 60%, #2a0040 100%)',
+          borderColor: 'hsl(var(--border) / 0.5)',
+        }}
+      >
+        <div className="flex flex-col gap-3">
+          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+            No dilemma staged
+          </div>
+          <h1 className="m-0 max-w-xl font-headline text-3xl font-bold leading-tight text-white md:text-4xl">
+            The library is waiting for its first story.
+          </h1>
+          <p className="max-w-xl text-sm text-white/80">
+            Submit a dilemma of your own, or pick up where you left off in the textbook.
+          </p>
+          <div className="mt-2 flex flex-wrap gap-3">
+            <Link
+              href="/submit-dilemma"
+              className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-4 text-[12px] font-bold uppercase tracking-[0.14em] text-primary-foreground"
+            >
+              Submit a Dilemma <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+            <Link
+              href={resume.href}
+              className="inline-flex h-11 items-center gap-2 rounded-md border border-white/30 bg-white/5 px-4 text-[12px] font-semibold uppercase tracking-[0.14em] text-white"
+            >
+              Continue Chapter {resume.chapter}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div
       className="relative overflow-hidden rounded-2xl border"
@@ -476,18 +646,22 @@ function CinematicHero({ dilemma, resume }: CinematicHeroProps): JSX.Element {
             }}
           >
             {dilemma.splitTitle[0]}
-            <br />
-            <span
-              style={{
-                background:
-                  'linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              {dilemma.splitTitle[1]}
-            </span>
+            {dilemma.splitTitle[1] && (
+              <>
+                <br />
+                <span
+                  style={{
+                    background:
+                      'linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
+                  {dilemma.splitTitle[1]}
+                </span>
+              </>
+            )}
           </h1>
           <p
             className="m-0 max-w-xl text-base text-white/85"
@@ -540,16 +714,39 @@ function CinematicHero({ dilemma, resume }: CinematicHeroProps): JSX.Element {
             </Link>
             <button
               type="button"
-              className="inline-flex h-[52px] items-center justify-center border px-5 text-[13px] font-semibold uppercase tracking-[0.14em] text-white backdrop-blur"
+              onClick={() => {
+                if (!canSave) return;
+                void onSave();
+              }}
+              disabled={!canSave || savedState !== 'idle'}
+              title={
+                canSave
+                  ? 'Save this dilemma to your bookmarks'
+                  : 'Sign in to bookmark dilemmas'
+              }
+              className="inline-flex h-[52px] items-center justify-center border px-5 text-[13px] font-semibold uppercase tracking-[0.14em] text-white backdrop-blur transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
               style={{
                 background: 'rgba(255,255,255,0.06)',
                 borderColor: 'rgba(255,255,255,0.3)',
                 transform: 'skewX(-10deg)',
               }}
             >
-              <span className="inline-flex items-center gap-2.5" style={{ transform: 'skewX(10deg)' }}>
-                <Bookmark className="h-3.5 w-3.5" />
-                Save
+              <span
+                className="inline-flex items-center gap-2.5"
+                style={{ transform: 'skewX(10deg)' }}
+              >
+                {savedState === 'saving' ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : savedState === 'saved' ? (
+                  <Check className="h-3.5 w-3.5" />
+                ) : (
+                  <Bookmark className="h-3.5 w-3.5" />
+                )}
+                {savedState === 'saving'
+                  ? 'Saving'
+                  : savedState === 'saved'
+                    ? 'Saved'
+                    : 'Save'}
               </span>
             </button>
           </div>
@@ -568,10 +765,10 @@ function CinematicHero({ dilemma, resume }: CinematicHeroProps): JSX.Element {
             Resume Where You Left Off
           </div>
           <div>
-            <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-white/60">
+            <div className="mb-1 line-clamp-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-white/60">
               {resume.subtitle}
             </div>
-            <div className="text-[17px] font-bold leading-tight text-white">
+            <div className="line-clamp-2 text-[17px] font-bold leading-tight text-white">
               {resume.title}
             </div>
           </div>
@@ -588,7 +785,7 @@ function CinematicHero({ dilemma, resume }: CinematicHeroProps): JSX.Element {
           </div>
           <div className="flex items-center justify-between text-[11px] text-white/60">
             <span>
-              {resume.percent}% · {resume.minutesLeft} min left
+              {resume.percent}% complete · ≈ {resume.estimatedMinutes} min read
             </span>
             <Link
               href={resume.href}
@@ -624,34 +821,80 @@ function splitForGradient(title: string): readonly [string, string] {
    ────────────────────────────────────────────────────────────────── */
 
 interface PulseStatRowProps {
-  streak: number;
-  xp: number;
+  /** Number of textbook chapters with quiz passed. */
+  chaptersDone: number;
+  totalChapters: number;
+  /** Branching stories the user has completed (from userProfile). */
+  storiesCompleted: number;
+  /** Total open / voting debates platform-wide. */
   debatesActive: number;
+  /** Earned badges (per userBadges/{uid}). */
   certs: number;
 }
 
-function PulseStatRow({ streak, xp, debatesActive, certs }: PulseStatRowProps): JSX.Element {
+/**
+ * Honest stat row. Every value here comes from the user's actual
+ * progress (chapters earned, stories finished, certs) or platform
+ * state (open debates) — no placeholder XP / streak numbers. Each
+ * tile links to where you can see the underlying detail.
+ */
+function PulseStatRow({
+  chaptersDone,
+  totalChapters,
+  storiesCompleted,
+  debatesActive,
+  certs,
+}: PulseStatRowProps): JSX.Element {
   const stats = [
-    { Icon: Flame, label: 'Streak', value: `${streak} day${streak === 1 ? '' : 's'}`, accent: false },
-    { Icon: Zap, label: 'XP', value: xp.toLocaleString(), accent: false },
-    { Icon: Scale, label: 'Debates', value: `${debatesActive} active`, accent: true },
-    { Icon: Award, label: 'Certs', value: `${certs} earned`, accent: false },
+    {
+      Icon: BookOpen,
+      label: 'Chapters',
+      value: `${chaptersDone} / ${totalChapters}`,
+      accent: false,
+      href: '/textbook',
+    },
+    {
+      Icon: Sparkles,
+      label: 'Stories',
+      value: storiesCompleted === 1 ? '1 read' : `${storiesCompleted} read`,
+      accent: false,
+      href: '/stories',
+    },
+    {
+      Icon: Scale,
+      label: 'Debates',
+      value: debatesActive === 1 ? '1 open' : `${debatesActive} open`,
+      accent: true,
+      href: '/debate-arena',
+    },
+    {
+      Icon: Award,
+      label: 'Certs',
+      value: certs === 1 ? '1 earned' : `${certs} earned`,
+      accent: false,
+      href: '/certificates',
+    },
   ];
 
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
       {stats.map((s) => (
-        <div
+        <Link
           key={s.label}
-          className="flex items-center gap-2.5 rounded-xl border p-3 backdrop-blur"
+          href={s.href}
+          className="flex items-center gap-2.5 rounded-xl border p-3 backdrop-blur transition-colors hover:border-primary/40"
           style={{
-            borderColor: s.accent ? 'hsl(var(--accent) / 0.2)' : 'hsl(var(--primary) / 0.2)',
+            borderColor: s.accent
+              ? 'hsl(var(--accent) / 0.2)'
+              : 'hsl(var(--primary) / 0.2)',
             background: 'hsl(var(--card) / 0.25)',
           }}
         >
           <s.Icon
             className="h-4 w-4 shrink-0"
-            style={{ color: s.accent ? 'hsl(var(--accent))' : 'hsl(var(--primary))' }}
+            style={{
+              color: s.accent ? 'hsl(var(--accent))' : 'hsl(var(--primary))',
+            }}
           />
           <div className="min-w-0">
             <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -659,8 +902,273 @@ function PulseStatRow({ streak, xp, debatesActive, certs }: PulseStatRowProps): 
             </div>
             <div className="truncate text-[15px] font-bold">{s.value}</div>
           </div>
-        </div>
+        </Link>
       ))}
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   MasterCertificateProgress
+
+   Measures progress toward the "Master of Technology Ethics"
+   capstone credential. The credential is earned by passing each of
+   the 12 chapter quizzes (which unlocks the cumulative final exam)
+   and then passing the final exam. We model this as 13 discrete
+   milestones — 12 chapter quizzes + 1 final exam — so each step is
+   equally weighted on the bar. Every link target on this card
+   points at a specific page: the user's next chapter, the final
+   exam, or the certificates list.
+   ────────────────────────────────────────────────────────────────── */
+
+interface MasterCertificateProgressProps {
+  chaptersPassed: number;
+  totalChapters: number;
+  finalExamPassed: boolean;
+  hasMasterCert: boolean;
+  /** Slug of the chapter the user should open to make progress next. */
+  nextChapterSlug: string;
+  nextChapterNumber: number;
+}
+
+function MasterCertificateProgress({
+  chaptersPassed,
+  totalChapters,
+  finalExamPassed,
+  hasMasterCert,
+  nextChapterSlug,
+  nextChapterNumber,
+}: MasterCertificateProgressProps): JSX.Element {
+  const totalSteps = totalChapters + 1;
+  const stepsDone = chaptersPassed + (finalExamPassed ? 1 : 0);
+  const percent = Math.round((stepsDone / totalSteps) * 100);
+  const finalExamUnlocked = chaptersPassed >= totalChapters;
+  const chaptersRemaining = Math.max(0, totalChapters - chaptersPassed);
+
+  // Milestone 1: chapter quizzes (the aggregate "pass all 12" check)
+  // Milestone 2: final-exam unlock (auto — gated on milestone 1)
+  // Milestone 3: Master Certificate (gated on passing final exam)
+  const milestones: Array<{
+    label: string;
+    state: 'done' | 'current' | 'locked';
+    Icon: typeof BookOpen;
+  }> = [
+    {
+      label: `Chapter quizzes (${chaptersPassed}/${totalChapters})`,
+      state: finalExamUnlocked ? 'done' : 'current',
+      Icon: BookOpen,
+    },
+    {
+      label: 'Final exam unlocked',
+      state: finalExamUnlocked
+        ? finalExamPassed
+          ? 'done'
+          : 'current'
+        : 'locked',
+      Icon: finalExamUnlocked ? Trophy : Lock,
+    },
+    {
+      label: 'Master Certificate',
+      state: hasMasterCert ? 'done' : finalExamPassed ? 'current' : 'locked',
+      Icon: hasMasterCert ? Award : GraduationCap,
+    },
+  ];
+
+  // Pick the next action + its destination. Everything is a specific
+  // page tied to the user's real state.
+  let ctaLabel: string;
+  let ctaHref: string;
+  let CtaIcon: typeof ArrowRight = ArrowRight;
+  if (hasMasterCert) {
+    ctaLabel = 'View Master Certificate';
+    ctaHref = '/certificates';
+    CtaIcon = Award;
+  } else if (finalExamUnlocked) {
+    ctaLabel = 'Take the Final Exam';
+    ctaHref = '/textbook/final-exam';
+    CtaIcon = Trophy;
+  } else {
+    ctaLabel = `Continue Chapter ${nextChapterNumber}`;
+    ctaHref = `/textbook/chapters/${nextChapterSlug}`;
+  }
+
+  const headline = hasMasterCert
+    ? 'Master of Technology Ethics — earned.'
+    : finalExamPassed
+      ? 'Issuing your Master Certificate…'
+      : finalExamUnlocked
+        ? 'Final exam unlocked — one exam from the capstone.'
+        : chaptersRemaining === 1
+          ? 'One chapter quiz until the final exam unlocks.'
+          : `${chaptersRemaining} chapter quizzes until the final exam unlocks.`;
+
+  return (
+    <div
+      className="relative flex flex-col gap-4 overflow-hidden rounded-2xl border p-5 backdrop-blur md:p-6"
+      style={{
+        borderColor: hasMasterCert
+          ? 'hsl(var(--accent) / 0.45)'
+          : 'hsl(var(--primary) / 0.3)',
+        background: 'hsl(var(--card) / 0.35)',
+      }}
+    >
+      {/* Accent glow when complete */}
+      {hasMasterCert && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute"
+          style={{
+            top: -60,
+            right: -60,
+            width: 240,
+            height: 240,
+            background:
+              'radial-gradient(circle, hsl(var(--accent) / 0.35) 0%, transparent 70%)',
+          }}
+        />
+      )}
+
+      <div className="relative flex flex-wrap items-start justify-between gap-3">
+        <div className="flex-1 min-w-[240px]">
+          <div
+            className="mb-1.5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em]"
+            style={{
+              color: hasMasterCert
+                ? 'hsl(var(--accent))'
+                : 'hsl(var(--primary))',
+            }}
+          >
+            <GraduationCap className="h-3 w-3" />
+            Master of Technology Ethics
+          </div>
+          <h3 className="m-0 font-headline text-[17px] font-bold tracking-tight">
+            {headline}
+          </h3>
+        </div>
+        <Link
+          href={ctaHref}
+          className="inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-[12px] font-semibold transition-colors hover:border-primary"
+          style={{
+            borderColor: hasMasterCert
+              ? 'hsl(var(--accent) / 0.5)'
+              : 'hsl(var(--primary) / 0.45)',
+            background: hasMasterCert
+              ? 'hsl(var(--accent) / 0.12)'
+              : 'hsl(var(--primary) / 0.1)',
+            color: hasMasterCert
+              ? 'hsl(var(--accent))'
+              : 'hsl(var(--primary))',
+          }}
+        >
+          <CtaIcon className="h-3.5 w-3.5" />
+          {ctaLabel}
+        </Link>
+      </div>
+
+      {/* Segmented progress bar — 13 slots (12 chapter quizzes + 1
+          final exam). The final slot is visually separated with a
+          wider gap so the capstone milestone reads as distinct. */}
+      <div className="relative">
+        <div className="flex items-center gap-[3px]">
+          {Array.from({ length: totalChapters }, (_, i) => {
+            const done = i < chaptersPassed;
+            return (
+              <div
+                key={`ch-${i}`}
+                className="h-2 flex-1 rounded-full transition-colors"
+                style={{
+                  background: done
+                    ? 'linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)'
+                    : 'hsl(var(--sidebar-background) / 0.6)',
+                  boxShadow: done
+                    ? '0 0 8px hsl(var(--primary) / 0.5)'
+                    : 'none',
+                }}
+              />
+            );
+          })}
+          {/* Wider gap, then the final-exam / master-cert slot. */}
+          <div className="w-2" aria-hidden />
+          <div
+            className="h-2 flex-1 rounded-full transition-colors"
+            style={{
+              background: hasMasterCert
+                ? 'linear-gradient(90deg, hsl(var(--accent)) 0%, hsl(var(--primary)) 100%)'
+                : finalExamUnlocked
+                  ? 'hsl(var(--accent) / 0.25)'
+                  : 'hsl(var(--sidebar-background) / 0.6)',
+              boxShadow: hasMasterCert
+                ? '0 0 12px hsl(var(--accent) / 0.7)'
+                : finalExamUnlocked
+                  ? '0 0 6px hsl(var(--accent) / 0.4)'
+                  : 'none',
+              outline: finalExamUnlocked && !hasMasterCert
+                ? '1px dashed hsl(var(--accent) / 0.6)'
+                : 'none',
+              outlineOffset: 1,
+            }}
+            title="Final exam · Master Certificate"
+          />
+        </div>
+        <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
+          <span>
+            {stepsDone} / {totalSteps} milestones · {percent}%
+          </span>
+          <Link
+            href="/textbook"
+            className="font-semibold text-primary hover:text-accent"
+          >
+            Open textbook →
+          </Link>
+        </div>
+      </div>
+
+      {/* Milestone chips */}
+      <div className="relative grid grid-cols-1 gap-2 sm:grid-cols-3">
+        {milestones.map((m) => (
+          <div
+            key={m.label}
+            className="flex items-center gap-2 rounded-lg border p-2.5 text-[12px]"
+            style={{
+              borderColor:
+                m.state === 'done'
+                  ? 'hsl(var(--primary) / 0.4)'
+                  : m.state === 'current'
+                    ? 'hsl(var(--accent) / 0.4)'
+                    : 'hsl(var(--border) / 0.5)',
+              background:
+                m.state === 'done'
+                  ? 'hsl(var(--primary) / 0.08)'
+                  : m.state === 'current'
+                    ? 'hsl(var(--accent) / 0.08)'
+                    : 'hsl(var(--card) / 0.25)',
+              color:
+                m.state === 'locked'
+                  ? 'hsl(var(--muted-foreground))'
+                  : 'hsl(var(--foreground))',
+            }}
+          >
+            <m.Icon
+              className="h-3.5 w-3.5 shrink-0"
+              style={{
+                color:
+                  m.state === 'done'
+                    ? 'hsl(var(--primary))'
+                    : m.state === 'current'
+                      ? 'hsl(var(--accent))'
+                      : 'hsl(var(--muted-foreground))',
+              }}
+            />
+            <span className="truncate font-semibold">{m.label}</span>
+            {m.state === 'done' && (
+              <Check
+                className="ml-auto h-3.5 w-3.5 shrink-0"
+                style={{ color: 'hsl(var(--primary))' }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -783,7 +1291,18 @@ function ChapterConstellation({
    CounselorMini  (Professor Paradox)
    ────────────────────────────────────────────────────────────────── */
 
-function CounselorMini(): JSX.Element {
+function CounselorMini({
+  chapterTitle,
+}: {
+  chapterTitle?: string;
+}): JSX.Element {
+  // Personalize the opener with the actual chapter the user was last
+  // reading, when we know it. Falls back to the generic prompt for
+  // brand-new users who haven't opened a chapter yet.
+  const prompt = chapterTitle
+    ? `Hey — want to unpack "${chapterTitle}", or try a new scenario?`
+    : COUNSELOR_PROMPT_DEFAULT;
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2.5">
@@ -805,7 +1324,7 @@ function CounselorMini(): JSX.Element {
         </div>
       </div>
       <div className="text-[13.5px] leading-snug text-foreground/90">
-        {COUNSELOR_PROMPT_DEFAULT}
+        {prompt}
       </div>
       <Link
         href="/ai-counselor"
@@ -848,7 +1367,54 @@ const TRIO_FALLBACK_GRADIENTS = [
   'linear-gradient(135deg, hsl(320 80% 35%) 0%, hsl(240 70% 18%) 60%, hsl(38 90% 35%) 100%)',
 ];
 
-function StoriesTrio({ stories }: { stories: StoryPayload[] }): JSX.Element {
+function StoriesTrio({
+  stories,
+}: {
+  stories: StoryPayload[] | null;
+}): JSX.Element {
+  // Still loading — render three pulsing skeleton cards so the grid
+  // shape doesn't pop in once data arrives.
+  if (stories === null) {
+    return (
+      <div className="grid grid-cols-3 gap-2.5">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="aspect-[3/4] animate-pulse rounded-lg border"
+            style={{
+              borderColor: 'hsl(var(--border) / 0.5)',
+              background: TRIO_FALLBACK_GRADIENTS[i],
+              opacity: 0.4,
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
+  // Loaded but empty — encourage the user to contribute instead of
+  // padding the grid with fake entries.
+  if (stories.length === 0) {
+    return (
+      <div
+        className="flex flex-col items-start gap-2 rounded-lg border p-4"
+        style={{
+          borderColor: 'hsl(var(--border) / 0.5)',
+          background: 'hsl(var(--card) / 0.25)',
+        }}
+      >
+        <div className="text-[13px] font-semibold">No stories yet.</div>
+        <div className="text-[12px] text-muted-foreground">
+          Be the first to publish one — it takes about five minutes.
+        </div>
+        <Link
+          href="/create-story"
+          className="mt-1 inline-flex items-center gap-1 text-[12px] font-semibold text-primary hover:text-accent"
+        >
+          Submit a story <ArrowRight className="h-3 w-3" />
+        </Link>
+      </div>
+    );
+  }
   return (
     <div className="grid grid-cols-3 gap-2.5">
       {stories.map((s, i) => {
@@ -905,15 +1471,58 @@ interface DebateItem {
   side: string;
   n: number;
   accent: boolean;
+  href: string;
 }
 
-function DebateRail({ items }: { items: DebateItem[] }): JSX.Element {
+function DebateRail({
+  items,
+}: {
+  items: DebateItem[] | null;
+}): JSX.Element {
+  if (items === null) {
+    return (
+      <div className="flex flex-col gap-2.5">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="h-10 animate-pulse rounded-lg border"
+            style={{
+              borderColor: 'hsl(var(--border) / 0.5)',
+              background: 'hsl(var(--card) / 0.15)',
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
+  if (items.length === 0) {
+    return (
+      <div
+        className="flex flex-col items-start gap-2 rounded-lg border p-4"
+        style={{
+          borderColor: 'hsl(var(--border) / 0.5)',
+          background: 'hsl(var(--card) / 0.25)',
+        }}
+      >
+        <div className="text-[13px] font-semibold">No open debates.</div>
+        <div className="text-[12px] text-muted-foreground">
+          The arena is quiet — be the first to put a claim on the floor.
+        </div>
+        <Link
+          href="/debate-arena"
+          className="mt-1 inline-flex items-center gap-1 text-[12px] font-semibold text-accent hover:text-primary"
+        >
+          Start a debate <ArrowRight className="h-3 w-3" />
+        </Link>
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-2.5">
       {items.map((d, i) => (
         <Link
           key={i}
-          href="/debate-arena"
+          href={d.href}
           className="flex items-center gap-2.5 rounded-lg border p-2.5 transition-colors hover:border-primary/40"
           style={{
             borderColor: 'hsl(var(--border) / 0.5)',
@@ -929,7 +1538,9 @@ function DebateRail({ items }: { items: DebateItem[] }): JSX.Element {
           >
             {d.side}
           </span>
-          <span className="flex-1 text-[12.5px] font-medium leading-tight">{d.pos}</span>
+          <span className="flex-1 line-clamp-2 text-[12.5px] font-medium leading-tight">
+            {d.pos}
+          </span>
           <span className="text-[11px] text-muted-foreground">{d.n}</span>
         </Link>
       ))}
