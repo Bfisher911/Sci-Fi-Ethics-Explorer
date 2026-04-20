@@ -129,12 +129,12 @@ function pickReadingChapter(progress: ChapterProgressEntry[]): ChapterProgressEn
 // instead of fake copy that points nowhere useful.
 
 /**
- * Sort stories for the Featured trio:
- *   1. Admin-pinned `featured === true` first (most recent of those)
- *   2. Then most-recently-published
- *   3. Then alphabetical (stable tiebreak)
- * Never returns fake placeholders — callers handle the empty case
- * with an explicit empty-state CTA.
+ * Pick the three most-recently-posted stories for the "Curated
+ * tonight" trio. Ordered strictly by `publishedAt` descending
+ * (alphabetical tiebreak for rare same-timestamp collisions).
+ * Admin-pinned `featured` stories get no special treatment —
+ * freshness is the only axis. Never returns fake placeholders;
+ * callers handle the empty case with an explicit empty-state CTA.
  */
 function pickFeaturedTrio(stories: Story[]): Story[] {
   const timestamp = (s: Story): number => {
@@ -149,9 +149,6 @@ function pickFeaturedTrio(stories: Story[]): Story[] {
   };
   return [...stories]
     .sort((a, b) => {
-      const af = a.featured ? 1 : 0;
-      const bf = b.featured ? 1 : 0;
-      if (af !== bf) return bf - af;
       const at = timestamp(a);
       const bt = timestamp(b);
       if (at !== bt) return bt - at;
@@ -330,7 +327,11 @@ export function Dashboard(): JSX.Element {
           author: s.author || 'Anonymous',
           meta: `${s.estimatedReadingTime || '—'} · ${s.isInteractive ? 'Branching' : 'Linear'}`,
           cover: s.imageUrl || chapterCover((i % 12) + 1),
-          tag: s.featured ? 'Featured' : i === 0 ? 'Latest' : i === 1 ? 'New' : 'Popular',
+          // Slot labels track position in the recency ordering: slot
+          // 0 is the newest posted story, slot 2 is the oldest of the
+          // three. Keeps each card visually distinct without fibbing
+          // about "popularity" we don't actually measure.
+          tag: i === 0 ? 'Latest' : i === 1 ? 'Recent' : 'Earlier',
           href: `/stories/${s.id}`,
         }));
 
@@ -460,7 +461,7 @@ export function Dashboard(): JSX.Element {
               readingNumber={reading.n}
             />
           </GlassCard>
-          <GlassCard eyebrow="Featured Stories" title="Curated tonight">
+          <GlassCard eyebrow="Featured Stories" title="Just published">
             <StoriesTrio stories={featuredPayload} />
           </GlassCard>
         </div>
