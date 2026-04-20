@@ -162,7 +162,7 @@ function pickFeaturedTrio(stories: Story[]): Story[] {
 // state is handled explicitly with a "Start a debate" CTA.
 
 const COUNSELOR_PROMPT_DEFAULT =
-  'Hey — you left off mid-thought in your last chapter. Want to unpack the dilemma, or try a new scenario?';
+  'You left off mid-chapter last time. Want to pick up where you were, or try a fresh scenario?';
 
 /* ──────────────────────────────────────────────────────────────────
    Top-level Dashboard
@@ -548,7 +548,7 @@ function CinematicHero({
             No dilemma staged
           </div>
           <h1 className="m-0 max-w-xl font-headline text-3xl font-bold leading-tight text-white md:text-4xl">
-            The library is waiting for its first story.
+            Nothing in the library yet.
           </h1>
           <p className="max-w-xl text-sm text-white/80">
             Submit a dilemma of your own, or pick up where you left off in the textbook.
@@ -994,11 +994,11 @@ function MasterCertificateProgress({
   }
 
   const headline = hasMasterCert
-    ? 'Master of Technology Ethics — earned.'
+    ? 'Master of Technology Ethics earned.'
     : finalExamPassed
       ? 'Issuing your Master Certificate…'
       : finalExamUnlocked
-        ? 'Final exam unlocked — one exam from the capstone.'
+        ? 'Final exam unlocked. One exam from the capstone.'
         : chaptersRemaining === 1
           ? 'One chapter quiz until the final exam unlocks.'
           : `${chaptersRemaining} chapter quizzes until the final exam unlocks.`;
@@ -1301,7 +1301,7 @@ function CounselorMini({
   // reading, when we know it. Falls back to the generic prompt for
   // brand-new users who haven't opened a chapter yet.
   const prompt = chapterTitle
-    ? `Hey — want to unpack "${chapterTitle}", or try a new scenario?`
+    ? `Want to pick "${chapterTitle}" apart, or try a fresh scenario?`
     : COUNSELOR_PROMPT_DEFAULT;
 
   return (
@@ -1405,7 +1405,7 @@ function StoriesTrio({
       >
         <div className="text-[13px] font-semibold">No stories yet.</div>
         <div className="text-[12px] text-muted-foreground">
-          Be the first to publish one — it takes about five minutes.
+          Publishing one takes about five minutes.
         </div>
         <Link
           href="/create-story"
@@ -1507,7 +1507,7 @@ function DebateRail({
       >
         <div className="text-[13px] font-semibold">No open debates.</div>
         <div className="text-[12px] text-muted-foreground">
-          The arena is quiet — be the first to put a claim on the floor.
+          Nobody is arguing right now. Stake a position and see who shows up.
         </div>
         <Link
           href="/debate-arena"

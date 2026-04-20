@@ -28,61 +28,63 @@ export default function AboutPage() {
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-primary font-headline">About Sci-Fi Ethics Explorer</h1>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
-            Delving into the moral fabric of imagined futures to better understand our present and shape a more ethical tomorrow.
+            A teaching site for the ethics of technology, read through the science fiction that has been rehearsing these problems since Frankenstein.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-3xl font-semibold mb-6 text-accent font-headline">Our Mission <Target className="inline ml-2 h-7 w-7"/></h2>
+            <h2 className="text-3xl font-semibold mb-6 text-accent font-headline">What it is <Target className="inline ml-2 h-7 w-7"/></h2>
             <p className="text-lg text-foreground/90 mb-4 leading-relaxed">
-              Sci-Fi Ethics Explorer is an educational platform dedicated to fostering critical thinking about the ethical implications of science and technology. Through engaging narratives, interactive scenarios, and AI-powered analysis, we aim to:
+              The premise is simple: science fiction has been stress-testing the ethics of technology for two centuries. Reading it carefully is one of the better ways to learn how to think about the technology you actually use.
+            </p>
+            <p className="text-lg text-foreground/90 mb-4 leading-relaxed">
+              The site has three working parts:
             </p>
             <ul className="list-disc list-inside space-y-2 text-lg text-foreground/90 mb-6 pl-4">
-              <li>Make complex ethical concepts accessible and engaging.</li>
-              <li>Encourage exploration of diverse philosophical perspectives.</li>
-              <li>Stimulate thoughtful discussion about future technologies and their societal impact.</li>
-              <li>Provide tools for analyzing and navigating moral dilemmas.</li>
+              <li>A twelve-chapter textbook on the ethics of technology, grounded in fiction from Shelley to Le Guin to Gibson.</li>
+              <li>A library of branching dilemmas where your choices change the ending.</li>
+              <li>A debate arena and a set of analysis tools, including an AI counselor trained on the textbook material.</li>
             </ul>
             <p className="text-lg text-foreground/90 leading-relaxed">
-              We believe that by grappling with the challenges of fictional futures, we can develop the wisdom and foresight needed for our own rapidly evolving world.
+              The point is not to tell you what to think. It is to give you enough practice with the arguments that you know what you think, and why.
             </p>
           </div>
           <div className="grid grid-cols-1 gap-6">
             <Card className="bg-card/70 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-xl text-primary flex items-center"><BookOpen className="mr-2"/>Interactive Learning</CardTitle>
+                <CardTitle className="text-xl text-primary flex items-center"><BookOpen className="mr-2"/>Stories</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>Engage with stories where your choices matter, and see their ethical outcomes unfold.</p>
+                <p>Branching dilemmas where the choices are yours and the consequences play out. Short fiction companions to every textbook chapter.</p>
               </CardContent>
             </Card>
             <Card className="bg-card/70 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-xl text-primary flex items-center"><Zap className="mr-2"/>AI-Powered Insights</CardTitle>
+                <CardTitle className="text-xl text-primary flex items-center"><Zap className="mr-2"/>Analysis tools</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>Utilize AI tools to analyze scenarios, understand ethical frameworks, and chat with a virtual counselor.</p>
+                <p>An AI counselor for talking through an argument, a framework explorer that maps your answers onto ethical traditions, and perspective comparisons that surface the ones you missed.</p>
               </CardContent>
             </Card>
             <Card className="bg-card/70 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-xl text-primary flex items-center"><Users className="mr-2"/>Community Driven</CardTitle>
+                <CardTitle className="text-xl text-primary flex items-center"><Users className="mr-2"/>Community</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>Submit your own dilemmas, participate in discussions, and learn from a community of explorers.</p>
+                <p>Submit your own dilemmas. Argue open positions in the debate arena. Other readers are working through the same questions, and their answers are part of the material.</p>
               </CardContent>
             </Card>
           </div>
         </div>
-        
+
         <div className="text-center mt-20">
-            <h2 className="text-3xl font-semibold mb-6 text-accent font-headline">Join the Exploration</h2>
+            <h2 className="text-3xl font-semibold mb-6 text-accent font-headline">Who it is for</h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Whether you're a student, educator, sci-fi enthusiast, or simply curious about the future, there's a place for you here.
+                Built for classrooms, but not limited to them. Undergrads, curious readers, anyone trying to think more clearly about the technology they use every day.
             </p>
             <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                <Link href="/stories">Begin Your Journey</Link>
+                <Link href="/stories">Read a dilemma</Link>
             </Button>
         </div>
 

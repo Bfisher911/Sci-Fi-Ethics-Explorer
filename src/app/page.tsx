@@ -47,7 +47,7 @@ export default function HomePage() {
             The Future is <span className="text-primary italic">Questionable.</span>
           </h2>
           <p className="text-xl md:text-2xl text-slate-300 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Navigate the moral maze of tomorrow. Analyze advanced ethical dilemmas, challenge your perspectives, and define the soul of humanity.
+            A serious look at the ethics of technology, read through the science fiction that has been rehearsing these problems since Frankenstein.
           </p>
           <div className="flex flex-wrap justify-center gap-6 mb-24">
             <Button size="xl" asChild className="px-10 h-16 text-lg bg-primary hover:bg-primary/90 rounded-none transform skew-x-[-12deg]">
@@ -70,9 +70,9 @@ export default function HomePage() {
         <section className="mt-40 w-full max-w-6xl">
           <div className="grid md:grid-cols-3 gap-10">
             {[
-              { title: "Future-Proof Thinking", text: "Prepare for the ethical challenges of tomorrow by engaging with them today." },
-              { title: "Expand Perspective", text: "Consider diverse viewpoints and complex moral landscapes in captivating narratives." },
-              { title: "Join calculations", text: "Engage with a community passionate about the intersection of technology and ethics." }
+              { title: "Read", text: "Twelve chapters on the ethics of technology, grounded in fiction from Shelley to Le Guin to Gibson." },
+              { title: "Decide", text: "Branching dilemmas where you cannot dodge the choice. Every path has consequences the story holds you to." },
+              { title: "Argue", text: "Debate open positions with other readers. See how your ethical instincts map onto real frameworks." }
             ].map((item, i) => (
               <div key={i} className="group relative p-8 bg-slate-900/40 backdrop-blur-xl border border-white/5 hover:border-primary/50 transition-all duration-500 rounded-2xl text-left overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity">
