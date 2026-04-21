@@ -306,6 +306,18 @@ export interface CurriculumProgress {
 
 // ─── Certificates ───────────────────────────────────────────────────
 
+/**
+ * Two tiers of credential:
+ *   - 'official'  — issued by a super-admin-owned learning path. These
+ *                   are platform-endorsed and visually present as such.
+ *   - 'community' — issued by any other member's path. Same completion
+ *                   mechanics, but visually distinct and labelled as a
+ *                   peer-issued Community Certificate.
+ * Tier is decided server-side from the curriculum creator's email
+ * against SUPER_ADMIN_EMAILS; the client cannot spoof it.
+ */
+export type CertificateTier = 'official' | 'community';
+
 export interface Certificate {
   id: string;
   userId: string;
@@ -314,6 +326,13 @@ export interface Certificate {
   curriculumTitle: string;
   /** Short hash for verification. */
   verificationHash: string;
+  /** Official (platform-endorsed) vs community (peer-issued). Missing
+   *  values are grandfathered to 'official' for textbook/master paths
+   *  and 'community' otherwise — see src/lib/certificate-tier.ts. */
+  tier?: CertificateTier;
+  /** Display name of the curriculum creator, for audit/trust display on
+   *  the certificate itself. Absent on legacy records. */
+  issuerName?: string;
   issuedAt: Date | any;
   revokedAt?: Date | any;
   revokedBy?: string;
@@ -677,6 +696,10 @@ export interface CurriculumCertificateConfig {
   title?: string;
   /** Shown as the curriculum title on the issued certificate. */
   description?: string;
+  /** Author's declared tier. The server will OVERRIDE this to 'community'
+   *  if the creator is not on SUPER_ADMIN_EMAILS. Only included on the
+   *  type so the UI can preview what will be issued. */
+  tier?: CertificateTier;
 }
 
 export interface CurriculumPath {

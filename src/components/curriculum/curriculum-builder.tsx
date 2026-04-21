@@ -43,6 +43,7 @@ import {
 import { validateCurriculum } from '@/lib/curriculum-validation';
 import { checkArtifactExists, type ArtifactType } from '@/app/actions/artifacts';
 import { useAuth } from '@/hooks/use-auth';
+import { useSubscription } from '@/hooks/use-subscription';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import type { CurriculumModule, CurriculumItem, CurriculumPath } from '@/types';
@@ -152,6 +153,7 @@ function itemTypeIcon(type: CurriculumItemType, className = 'h-4 w-4') {
 
 export function CurriculumBuilder({ curriculum, onSaved }: CurriculumBuilderProps) {
   const { user } = useAuth();
+  const { isSuperAdmin } = useSubscription();
   const router = useRouter();
   const { toast } = useToast();
   const isEditing = Boolean(curriculum?.id);
@@ -536,7 +538,18 @@ export function CurriculumBuilder({ curriculum, onSaved }: CurriculumBuilderProp
               </div>
             </div>
 
-            <div className="space-y-3 p-3 rounded-md border border-primary/30 bg-primary/5">
+            {/* Certificate configuration. The tier is decided server-side
+                from the author's super-admin status; this UI only tells
+                the author which tier their curriculum will issue and why.
+                Super-admins get the official-styled card; everyone else
+                gets the community-styled card with an explicit note. */}
+            <div
+              className={`space-y-3 p-3 rounded-md border ${
+                isSuperAdmin
+                  ? 'border-primary/30 bg-primary/5'
+                  : 'border-accent/40 bg-accent/5'
+              }`}
+            >
               <div className="flex items-start gap-3">
                 <Switch
                   id="cert-enabled"
@@ -544,8 +557,17 @@ export function CurriculumBuilder({ curriculum, onSaved }: CurriculumBuilderProp
                   onCheckedChange={setCertificateEnabled}
                 />
                 <div className="flex-1">
-                  <Label htmlFor="cert-enabled" className="cursor-pointer flex items-center gap-2">
-                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-primary">
+                  <Label
+                    htmlFor="cert-enabled"
+                    className="cursor-pointer flex items-center gap-2"
+                  >
+                    <span
+                      className={`inline-flex h-5 w-5 items-center justify-center rounded-full ${
+                        isSuperAdmin
+                          ? 'bg-primary/20 text-primary'
+                          : 'bg-accent/20 text-accent'
+                      }`}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
@@ -555,11 +577,14 @@ export function CurriculumBuilder({ curriculum, onSaved }: CurriculumBuilderProp
                         <path d="M12 2l2.39 4.84 5.34.78-3.87 3.77.91 5.32L12 14.77l-4.77 2.51.91-5.32L4.27 8.62l5.34-.78L12 2z" />
                       </svg>
                     </span>
-                    Awards a Certificate on Completion
+                    {isSuperAdmin
+                      ? 'Awards an Official Certificate on completion'
+                      : 'Awards a Community Certificate on completion'}
                   </Label>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    When on, learners who finish every required item earn a shareable
-                    certificate with the title and description below.
+                    {isSuperAdmin
+                      ? 'When on, learners who finish every required item earn a shareable official certificate — platform-endorsed, visually distinct, and verifiable via hash.'
+                      : 'When on, learners who finish every required item earn a shareable Community Certificate. Community certs use a visually distinct peer-issued design and are clearly labelled as not platform-endorsed. Only the site administrator can issue official certificates.'}
                   </p>
                 </div>
               </div>

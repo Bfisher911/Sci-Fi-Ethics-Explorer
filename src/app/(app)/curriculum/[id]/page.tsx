@@ -267,6 +267,7 @@ export default function CurriculumDetailPage() {
           userName,
           curriculumId: id,
           curriculumTitle: certTitle,
+          creatorId: curriculum.creatorId,
         });
         if (certRes.success) {
           setIssuedCert(certRes.data);

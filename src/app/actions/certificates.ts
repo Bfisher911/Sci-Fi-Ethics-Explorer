@@ -6,15 +6,20 @@ import {
   collection, doc, getDoc, getDocs, addDoc, updateDoc,
   query, where, orderBy, serverTimestamp,
 } from 'firebase/firestore';
-import type { Certificate } from '@/types';
+import type { Certificate, CertificateTier } from '@/types';
 import { timestampToDate } from '@/lib/firebase/firestore-helpers';
 import { requireAdmin } from '@/lib/admin';
+import { resolveCertificateTier } from '@/lib/certificate-tier';
 
 type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
 
 function fromDoc(id: string, data: Record<string, any>): Certificate {
+  const tier =
+    data.tier === 'official' || data.tier === 'community'
+      ? (data.tier as CertificateTier)
+      : undefined;
   return {
     id,
     userId: data.userId,
@@ -22,6 +27,8 @@ function fromDoc(id: string, data: Record<string, any>): Certificate {
     curriculumId: data.curriculumId,
     curriculumTitle: data.curriculumTitle || '',
     verificationHash: data.verificationHash || '',
+    tier,
+    issuerName: data.issuerName || undefined,
     issuedAt: timestampToDate(data.issuedAt) ?? new Date(),
     revokedAt: timestampToDate(data.revokedAt),
     revokedBy: data.revokedBy,
@@ -41,6 +48,11 @@ export async function issueCertificate(input: {
   userName: string;
   curriculumId: string;
   curriculumTitle: string;
+  /** Creator of the curriculum (when known). The server resolves their
+   *  email via the users collection and decides tier server-side so the
+   *  client cannot claim official status. Textbook/master paths omit
+   *  this — the curriculumId prefix identifies them as official. */
+  creatorId?: string | null;
 }): Promise<ActionResult<Certificate>> {
   try {
     // Avoid duplicates
@@ -55,6 +67,35 @@ export async function issueCertificate(input: {
       return { success: true, data: fromDoc(d.id, d.data()) };
     }
 
+    // Resolve the creator's email + display name server-side. This is
+    // the one and only input that decides official vs community; we
+    // refuse to trust a client-supplied tier.
+    let creatorEmail: string | null = null;
+    let issuerName: string | null = null;
+    if (input.creatorId) {
+      try {
+        const creatorSnap = await getDoc(doc(db, 'users', input.creatorId));
+        if (creatorSnap.exists()) {
+          const cd = creatorSnap.data();
+          creatorEmail = (cd?.email as string) || null;
+          issuerName =
+            (cd?.displayName as string) ||
+            [cd?.firstName, cd?.lastName].filter(Boolean).join(' ') ||
+            null;
+        }
+      } catch (lookupErr) {
+        // Missing profile doc should fail closed (community), not crash.
+        console.warn(
+          '[certificates] creator lookup failed, defaulting to community tier:',
+          lookupErr
+        );
+      }
+    }
+
+    const tier = resolveCertificateTier({
+      curriculumId: input.curriculumId,
+      creatorEmail,
+    });
     const verificationHash = makeHash();
     const ref = await addDoc(collection(db, 'certificates'), {
       userId: input.userId,
@@ -62,6 +103,8 @@ export async function issueCertificate(input: {
       curriculumId: input.curriculumId,
       curriculumTitle: input.curriculumTitle,
       verificationHash,
+      tier,
+      issuerName,
       issuedAt: serverTimestamp(),
     });
 
