@@ -736,4 +736,238 @@ In the context of science-fiction ethics — where the question of how to live w
     famousWorks: ['Cosmopolitanism: Ethics in a World of Strangers', 'The Ethics of Identity', 'In My Father\'s House', 'The Honor Code'],
     imageHint: 'contemporary ghanaian-british philosopher',
   },
+  {
+    id: 'dewey',
+    imageUrl: '/images/philosophers/dewey.svg',
+    name: 'John Dewey',
+    era: '1859-1952',
+    bio: `John Dewey was the central American philosopher of the twentieth century\'s first half, the one thinker in the pragmatist tradition whose work ranges with equal seriousness across epistemology, ethics, political theory, education, aesthetics, and what would now be called social technology. Born in Burlington, Vermont, to a grocer\'s family, educated at Johns Hopkins in the first American graduate program in philosophy, and shaped by Hegel, William James, and Charles Sanders Peirce, he spent a long career arguing that inquiry is not a private cognitive event but a social practice by which communities learn to deal with genuinely difficult situations. The most distinctive feature of his thought is the insistence that knowledge and action are continuous — that knowing and doing are two phases of the same process — and that any ethics which treats them as separable has already mistaken what ethics is.
+
+His technology ethics emerge from that commitment. Dewey never wrote a treatise called "The Ethics of Technology," but the books that most directly bear on it — The Public and Its Problems, Democracy and Education, Liberalism and Social Action — all treat the specific tools by which a society organizes its inquiry as moral and political artifacts. A school is a technology. A newspaper is a technology. A voting system is a technology. The moral question in each case is what capacities the tool cultivates in the people operating it, and whether those capacities are the ones a democracy requires. The Public and Its Problems, in particular, argued that modern communications and industrial technologies had created a world in which the publics that were affected by decisions could no longer identify themselves, and that a democracy whose publics cannot form is a democracy only in name.
+
+Dewey\'s deepest influence has been on education, because schools were the point where he thought the moral question was most tractable. His Laboratory School at the University of Chicago, founded in 1896, was an operational argument that learning is a social activity organized around genuine problems rather than a private transfer of information, and that a democracy that does not cultivate the capacities of inquiry in its children will not sustain itself when those children become citizens. The argument cut against both traditional didactic schooling and the narrower "child-centered" progressivism that sometimes claimed him, and the continuing work to implement Dewey\'s vision in American public education has been a running argument about what the society actually wants of itself.
+
+For the contemporary technology-ethics reader, Dewey supplies what other ethical traditions often lack: a way of treating the social mechanisms by which a community decides what to do about a new tool as themselves part of the ethical object. A Kantian or utilitarian analysis can evaluate a specific technology policy; a Deweyan analysis asks what inquiry capacities the policy process itself requires and cultivates. In a moment when the question of how democracies absorb algorithmic, informational, and biotechnological change is unresolved, Dewey\'s insistence that the practice of inquiry is itself a moral infrastructure has become, again, one of the most useful frames available.`,
+    keyIdeas: [
+      'Inquiry as social practice',
+      'Knowledge and action as continuous',
+      'Democracy as a way of life, not only a form of government',
+      'Education as cultivation of inquiry capacities',
+      'Technology as social infrastructure with moral weight',
+    ],
+    relatedFrameworks: ['pragmatist-ethics', 'social-contract-theory', 'virtue-ethics', 'discourse-ethics'],
+    famousWorks: ['Democracy and Education', 'The Public and Its Problems', 'Experience and Nature', 'Art as Experience', 'Liberalism and Social Action'],
+    imageHint: 'american pragmatist philosopher',
+  },
+  {
+    id: 'williams',
+    imageUrl: '/images/philosophers/williams.svg',
+    name: 'Bernard Williams',
+    era: '1929-2003',
+    bio: `Bernard Arthur Owen Williams was a British philosopher trained at Oxford, a professor successively at Bedford College, Cambridge, Berkeley, and Oxford again, and, by the judgment of colleagues across many disagreements, one of the most incisive moral philosophers of the second half of the twentieth century. What he was best at was refusing the shapes that moral philosophy was handed down to him. He read Kant and utilitarianism and the analytic tradition with care and found, in each, assumptions about the moral life that, when examined, looked less like neutral frames than like specific pictures of what a person is — pictures that could not carry the weight the theories placed on them.
+
+His most durable contribution is the critique of impartialism developed in essays like "A Critique of Utilitarianism" (1973) and "Persons, Character, and Morality" (1976). The picture of moral agency inherited from Kant and from the utilitarians imagines the agent as a detached rational chooser who weighs all persons\' interests equally. Williams\'s argument was that such an agent would not be a person at all — that the particular ground projects, loves, commitments, and identifications that make an individual\'s life distinctively theirs cannot be abstracted from without destroying the agent whose agency the theory is trying to evaluate. To demand of a person that they be equally available to all claims from all parties is to demand that they have no integrity at the cost of having any interior at all.
+
+The associated concepts — agent-regret, moral luck, integrity, thick and thin ethical concepts, internal and external reasons — all press in the same direction. Ethics, on Williams\'s account, cannot be reduced to a decision procedure, because the person who would be in a position to apply the procedure would have had to have been shaped by particular commitments that the procedure does not recognize as morally fundamental. His Ethics and the Limits of Philosophy (1985) argued that the ancient Greek question "how should one live?" is more fruitful than the modern question "what am I morally required to do?" precisely because it admits the full range of what matters in a human life rather than pre-filtering to what a universal theory can handle.
+
+For technology ethics, Williams supplies the most rigorous available critique of the assumption that moral questions about technology can be resolved by application of a principle. When a utilitarian cost-benefit analysis produces a verdict that conflicts with a person\'s sense of what they can live with having done, Williams insists that the sense is data rather than noise. When a Kantian universalization test produces an answer that could only be reached by a person stripped of the commitments that constitute them, the test is suspect. His work underpins a generation of moral philosophers who treat lived moral experience as genuine evidence, and for anyone trying to think clearly about what we owe in the face of algorithmic decision-making, automation of moral labor, or the reorganization of everyday agency, the resistance he developed to theory-driven flattening is essential equipment.`,
+    keyIdeas: [
+      'Integrity and the critique of impartialism',
+      'Agent-regret',
+      'Moral luck',
+      'Internal and external reasons',
+      'Thick and thin ethical concepts',
+      '"How should one live?" as the prior question',
+    ],
+    relatedFrameworks: ['virtue-ethics', 'existentialist-ethics', 'ethics-of-care'],
+    famousWorks: ['Ethics and the Limits of Philosophy', '"A Critique of Utilitarianism"', 'Moral Luck', 'Shame and Necessity', 'Truth and Truthfulness'],
+    imageHint: 'twentieth century british philosopher',
+  },
+  {
+    id: 'anscombe',
+    imageUrl: '/images/philosophers/anscombe.svg',
+    name: 'Elizabeth Anscombe',
+    era: '1919-2001',
+    bio: `Gertrude Elizabeth Margaret Anscombe — always published as G. E. M. Anscombe — was a British philosopher, literary executor and translator of Wittgenstein, Catholic convert and devout Thomist, and the author of a 1958 essay called "Modern Moral Philosophy" that changed the direction of ethics in the English-speaking world. Born in Ireland to an English family, educated at St. Hugh\'s College, Oxford, married to fellow philosopher Peter Geach, mother of seven children, and Professor of Philosophy at Cambridge from 1970, she is one of the few thinkers whose work reshaped both philosophical theology and secular analytic ethics without compromise to either.
+
+Her career divides roughly into three massive projects. First was the Wittgenstein archive: Anscombe learned German in order to translate him, edited his posthumous Philosophical Investigations (1953), and remained one of the half-dozen people alive who could say with authority what Wittgenstein had meant. Second was philosophy of action: her Intention (1957) is now considered the foundational work of the subfield, and its concept of "practical reasoning" — the inferences by which an agent moves from an end to a means — remains standard equipment in any analysis of what a person is doing when they act. Third was moral philosophy, and this is where her public reputation is largest.
+
+"Modern Moral Philosophy" argued that the vocabulary of obligation, duty, and moral law had become incoherent once the theological framework that originally gave those terms their weight was dropped, and that contemporary ethics should either retrieve that framework or abandon the vocabulary and return to Aristotle\'s language of virtue, flourishing, and character. The essay was intended as a provocation and landed as one. It helped launch the virtue-ethics revival now associated with Philippa Foot, Alasdair MacIntyre, Rosalind Hursthouse, and many others, and it forced secular moral philosophers to engage with a question they had largely ignored: whether the concepts they were using could survive the foundations they had abandoned.
+
+Anscombe\'s applied ethics were as sharp as her meta-ethics. She publicly opposed Oxford granting an honorary degree to Harry Truman in 1956, on the grounds that ordering the atomic bombings of Hiroshima and Nagasaki was mass murder and that the university should not honor mass murderers; she lost the vote but published the argument in one of the clearest short works on the ethics of deliberate attacks on civilians ever written. Her Contraception and Chastity (1972) and her writings on the doctrine of double effect continue to be central reference points in Catholic bioethics and, beyond the tradition, in any serious discussion of how to think about actions whose foreseen consequences differ from their intended ones. For technology ethics, her insistence that we cannot evaluate actions without understanding what the agent intended — and her sharp distinction between consequences we bring about and consequences we permit — remains one of the strongest tools available against the flattening of moral analysis into outcome-only accounting.`,
+    keyIdeas: [
+      'Practical reasoning and philosophy of action',
+      'The virtue-ethics revival',
+      'Doctrine of double effect',
+      'Intention as morally constitutive',
+      'Critique of modern moral vocabulary without theological foundations',
+    ],
+    relatedFrameworks: ['virtue-ethics', 'natural-law', 'divine-command', 'deontology'],
+    famousWorks: ['Intention', '"Modern Moral Philosophy"', '"Mr. Truman\'s Degree"', 'Contraception and Chastity', 'Three Philosophers (with Geach)'],
+    imageHint: 'twentieth century british analytic philosopher',
+  },
+  {
+    id: 'weil',
+    imageUrl: '/images/philosophers/weil.svg',
+    name: 'Simone Weil',
+    era: '1909-1943',
+    bio: `Simone Weil was a French philosopher, political activist, factory worker by choice, and one of the most singular mystical thinkers of the twentieth century. Born into a secular Jewish bourgeois family in Paris, educated at the École Normale Supérieure one year behind Simone de Beauvoir, a schoolteacher of philosophy by profession, she spent her brief adult life moving restlessly between academic philosophy, labor organizing, factory labor, combat service in the Spanish Civil War, Catholic mysticism, and the Free French resistance in London, where she died at thirty-four from a combination of tuberculosis and a self-imposed refusal to eat more than rationed Nazi-occupied French civilians were receiving.
+
+Her philosophy resists systematic summary because she resisted systems. The major works — Gravity and Grace, The Need for Roots, Oppression and Liberty, her Notebooks — are compiled from aphorisms, essays, and letters, and her arguments proceed by illumination rather than by sustained demonstration. But a set of consistent concerns runs through all of them. Attention, for Weil, is the faculty at the center of moral and intellectual life — the capacity to suspend one\'s own projects and desires long enough to take in what is actually there. Most moral failure, in her account, is failure of attention rather than failure of will. Affliction, a concept she distinguished sharply from ordinary suffering, names the condition of being so damaged by circumstance that one can no longer cry out for help; the moral demand is on the observer who must recognize the afflicted person even when the afflicted person has lost the capacity to be visible.
+
+Her technology ethics come largely through her writings on labor and oppression. The factory work she did at Renault in the mid-1930s — deliberately taking a year off from teaching to work on an assembly line — produced a body of analysis that treats industrial production not as a generic economic phenomenon but as a specific set of technologies that deform the workers operating them. Her argument, in Oppression and Liberty and in the factory journal published as La Condition Ouvrière, is that the organization of work around continuous repetitive operations — the Taylorist and Fordist technology of the early twentieth century — destroyed the capacities for attention and thought on which a dignified human life depended. The Need for Roots, written for the Free French government in 1943, extended the argument to the cultural and political technologies that had allowed the collapse of the Third Republic and called for a reconstruction that would begin from the concrete needs of embodied human beings rather than from ideological abstractions.
+
+Weil is a minority voice in every tradition she touched and a major figure in none of them, but her work has had a steady underground influence on philosophers, activists, and writers who find the dominant traditions — liberal, Marxist, analytic — insufficient to the moral weight of their subjects. For contemporary technology ethics, she is indispensable for the argument that the daily organization of work under any given technology — what the device asks of its operator\'s attention, body, and time — is itself a moral fact, and that no assessment of a technology is honest that does not include it.`,
+    keyIdeas: [
+      'Attention as moral and intellectual practice',
+      'Affliction as distinct from suffering',
+      'Labor and the deformation of the worker',
+      'Rooted needs as political foundation',
+      'Mysticism as ethical stance',
+    ],
+    relatedFrameworks: ['ethics-of-care', 'virtue-ethics', 'existentialist-ethics', 'natural-law'],
+    famousWorks: ['Gravity and Grace', 'The Need for Roots', 'Oppression and Liberty', 'Waiting for God', 'La Condition Ouvrière'],
+    imageHint: 'twentieth century french philosopher activist',
+  },
+  {
+    id: 'heidegger',
+    imageUrl: '/images/philosophers/heidegger.svg',
+    name: 'Martin Heidegger',
+    era: '1889-1976',
+    bio: `Martin Heidegger was a German philosopher whose Being and Time (1927) is the single most influential work of continental philosophy in the twentieth century, and whose 1953 lecture "The Question Concerning Technology" remains the most cited short text in philosophy of technology. He is also one of the most difficult figures in the canon to evaluate, because he joined the Nazi Party in 1933, served as rector of the University of Freiburg for eleven months under the regime, and never fully recanted the political judgment that led him there. Any honest engagement with his work has to hold those facts alongside the philosophical achievements, which have shaped fields from phenomenology to hermeneutics to environmental ethics.
+
+Being and Time restated the basic philosophical question — what does it mean to be? — in a way that broke with the Platonic and scholastic tradition of treating being as a property objects possess. Heidegger argued that the being whose existence is the starting point of philosophy is Dasein, the kind of being we ourselves are, and that Dasein is characterized by being-in-the-world, thrownness into situations, care, finitude, and the possibility of authentic or inauthentic response to death. The book\'s influence radiated outward: Sartre\'s existentialism, Gadamer\'s hermeneutics, Derrida\'s deconstruction, Arendt\'s political philosophy, and much of twentieth-century theology all work inside or against the frame Being and Time established.
+
+His philosophy of technology, developed in a series of postwar essays and lectures, makes a distinctive argument. Technology, for Heidegger, is not primarily a collection of tools or a method for solving problems. It is a way in which reality discloses itself to human beings. Premodern technologies — a craftsman\'s workshop, a windmill — allowed the material they worked with to emerge in its own character. Modern technology, by contrast, reveals everything as "standing-reserve" (Bestand), resources arranged for extraction and manipulation. A river is no longer a river; it is potential hydroelectric power. A forest is no longer a forest; it is board-feet of timber. A human worker is no longer a worker; he is a unit of labor. The danger Heidegger identified is not the specific effects of any particular technology but the ontological reorganization, the way the modern technological frame (Gestell) makes it increasingly difficult to encounter anything — including other people, including ourselves — as anything other than material for manipulation.
+
+His solutions were more gestural than his diagnosis. He looked to poetry, to the pre-Socratics, to a kind of contemplative attention he called "releasement" (Gelassenheit), and to the hope that "only a god can save us" (in his phrase from a late Spiegel interview). Many readers find the solutions unsatisfying. The diagnosis, however, has been enormously productive. Environmentalists, critics of Silicon Valley\'s extraction economy, phenomenologists of digital life, and a generation of writers thinking about AI as metaphysical rather than merely technological have all found in Heidegger\'s account of Gestell a vocabulary that handles what consequentialist and deontological frameworks struggle with: the question of what a technology does to our capacity to see, before it does anything else.`,
+    keyIdeas: [
+      'Dasein and being-in-the-world',
+      'Technology as mode of disclosure',
+      'Standing-reserve (Bestand)',
+      'The Gestell (enframing)',
+      'Releasement (Gelassenheit)',
+      'Authenticity and being-toward-death',
+    ],
+    relatedFrameworks: ['existentialist-ethics', 'environmental-ethics', 'virtue-ethics'],
+    famousWorks: ['Being and Time', '"The Question Concerning Technology"', 'What Is Called Thinking?', 'Discourse on Thinking', 'Poetry, Language, Thought'],
+    imageHint: 'twentieth century german philosopher',
+  },
+  {
+    id: 'habermas',
+    imageUrl: '/images/philosophers/habermas.svg',
+    name: 'Jürgen Habermas',
+    era: '1929-',
+    bio: `Jürgen Habermas has been, for more than sixty years, the central philosopher of the second-generation Frankfurt School and the most sustained theorist of communicative rationality in the Western tradition. Born in Düsseldorf at the start of the Nazi era, marked lifelong by the recognition that his early formation had been conducted inside a totalitarian project, he studied under Theodor Adorno and Max Horkheimer, taught for decades at Frankfurt and Heidelberg, and in a career that spans from The Structural Transformation of the Public Sphere (1962) through Between Facts and Norms (1992) and into writings on the European Union and religion in public life, has built the most systematic case the analytic or continental tradition has produced for the proposition that the legitimacy of modern political institutions depends on the quality of the communication they enable.
+
+His central concept is communicative action: the kind of social interaction oriented toward reaching understanding among participants who treat one another as equals and who justify their claims with reasons that could in principle persuade any competent interlocutor. Strategic action, by contrast, treats the other as an object to be maneuvered; communicative action treats the other as a co-participant in a shared search for what is true and right. The difference is not merely stylistic. Whole social systems, for Habermas, are characterized by one or the other — capitalist markets and administrative states are strategic; democratic deliberation and ordinary conversation are communicative — and a society can be diagnosed by the balance between the two.
+
+The related concept of the public sphere has had almost as much influence. Structural Transformation, his habilitation thesis, traced the emergence of a bourgeois public sphere in eighteenth-century Europe — coffee houses, salons, journals — in which private persons debated matters of common concern on the basis of reasons rather than status, and argued that modern mass media and administrative rationalization had largely eroded the conditions under which such a sphere could function. His later work on discourse ethics — the claim that valid moral norms are those that could be agreed to by all affected under conditions of unconstrained rational discourse — is the most explicit version of the idea that legitimacy is a function of the quality of communication.
+
+For technology ethics, Habermas\'s most direct relevance is the argument that any technology that shapes the ambient conditions of public communication — broadcast media, social networks, algorithmic recommendation systems — is operating on the substrate that democratic legitimacy depends on. A tool that increases strategic manipulation at the expense of communicative action erodes the preconditions for the consent that legitimates modern states. Between Facts and Norms made the argument for the law-political system; Habermas\'s late interventions on the internet, on the European constitutional project, and on the place of religious voice in public reason continue to work the same ground. His influence is most visible today in debates about platform governance and epistemic democracy, where the question is not whether a given algorithm is effective but what it is doing to the communicative infrastructure of self-rule.`,
+    keyIdeas: [
+      'Communicative action vs. strategic action',
+      'The public sphere',
+      'Discourse ethics',
+      'Ideal speech situation',
+      'Legitimation through deliberation',
+    ],
+    relatedFrameworks: ['discourse-ethics', 'social-contract-theory', 'contractualism'],
+    famousWorks: ['The Structural Transformation of the Public Sphere', 'The Theory of Communicative Action', 'Between Facts and Norms', 'Moral Consciousness and Communicative Action', 'The Future of Human Nature'],
+    imageHint: 'contemporary german critical theorist',
+  },
+  {
+    id: 'foucault',
+    imageUrl: '/images/philosophers/foucault.svg',
+    name: 'Michel Foucault',
+    era: '1926-1984',
+    bio: `Paul-Michel Foucault was a French historian, philosopher, and political activist whose archival studies of psychiatric hospitals, prisons, clinics, sexuality, and the techniques of self-formation reshaped the humanities and social sciences on every continent. His intellectual trajectory moved restlessly across subjects — madness, the medical gaze, discipline, sexuality, governmentality — but a single project runs through the whole: the attempt to write the history of how human beings have been constituted as subjects by the institutions, vocabularies, and practices of their time, and to denaturalize the categories we have been taught to take as given.
+
+Discipline and Punish (1975) is the most immediately useful book for technology ethics. It traced the shift, in late-eighteenth and nineteenth-century Europe, from punishment as public spectacle to punishment as corrective surveillance, and argued that the modern prison was less an application of an older logic than the operational model for a new kind of power. Bentham\'s Panopticon — the prison designed so that inmates are always potentially observed from a central tower but can never verify whether they are being watched at any particular moment — became Foucault\'s central metaphor for a diffuse, decentralized, productive form of power that operates through constant asymmetric visibility rather than through periodic exemplary violence. The argument generalized: schools, factories, hospitals, barracks, and eventually every modern institution had absorbed the panoptic logic, and the subjects they produced — workers, patients, students, soldiers — had internalized the observation and policed themselves.
+
+The later volumes of The History of Sexuality reoriented the project in a surprising direction. The first volume (1976) argued against the common view that Victorian repression had muzzled sexuality; on the contrary, he argued, the nineteenth century had produced an explosion of discourse about sex precisely because it had built the institutions — medicine, psychiatry, pedagogy, confession — that made sexuality available as an object of knowledge and control. The later volumes (The Use of Pleasure and The Care of the Self, 1984) turned to ancient Greek and Roman ethics and asked what it would look like to treat the formation of the self as an art rather than as a disciplinary product. He died of AIDS-related illness in 1984 before completing the project, but the fragments that remain form the opening of a different kind of ethics.
+
+For technology ethics, Foucault\'s indispensable contribution is the recognition that surveillance is not a single technology; it is a mode of power whose specific technical instantiations — the inspection tower, the ledger, the medical record, now the data center — shape the subjects they observe. An ethics of AI, of platform moderation, of biometric identification, of predictive policing, that does not take seriously what the apparatus does to the observed and the observer before anyone deploys it, misses what is actually happening. Foucault\'s archival patience and his refusal to reduce power to prohibition have become standard equipment for anyone trying to think seriously about the politics of contemporary information technologies.`,
+    keyIdeas: [
+      'Disciplinary power and the Panopticon',
+      'Biopolitics',
+      'Governmentality',
+      'Power-knowledge',
+      'Care of the self',
+      'Genealogy as method',
+    ],
+    relatedFrameworks: ['existentialist-ethics', 'virtue-ethics', 'discourse-ethics'],
+    famousWorks: ['Discipline and Punish', 'The History of Sexuality (3 vols)', 'Madness and Civilization', 'The Order of Things', 'The Archaeology of Knowledge'],
+    imageHint: 'twentieth century french philosopher',
+  },
+  {
+    id: 'parfit',
+    imageUrl: '/images/philosophers/parfit.svg',
+    name: 'Derek Parfit',
+    era: '1942-2017',
+    bio: `Derek Parfit was a British philosopher of extraordinary focus — he was described by colleagues as the most monomaniacally serious philosopher of his generation, and he famously declined to attend committee meetings, faculty lunches, or social obligations that would have interrupted his thinking. An All Souls College fellow at Oxford from 1967 until his death, he published two books, Reasons and Persons (1984) and On What Matters (in two volumes in 2011, a third posthumously in 2017), and those two books reshaped personal identity theory, ethics, and population ethics more thoroughly than any other English-language philosophical work of the period.
+
+Reasons and Persons made the case, in part through the now-famous teletransporter and branch-line cases, that personal identity is not what matters in survival — that the relation that matters is psychological continuity and connectedness, and that identity itself is often indeterminate. The implications for ethics are substantial. If the person I will be in thirty years is not identical to me in any metaphysically deep sense, my prudential concern for that future person is not fundamentally different from my moral concern for a stranger, and a great deal of both ordinary self-interest and reductive egoism loses its grip. Parfit then turned to future generations and argued, in the book\'s final section, that small changes in policy — including the decision of which people will come to exist — make the identity of future individuals contingent on our present choices, and that standard person-affecting ethics, which ground obligations in effects on identified persons, cannot handle this. The "non-identity problem" he identified there remains one of the most-discussed puzzles in ethics.
+
+The "Repugnant Conclusion" — that on most plausible versions of utilitarianism, a population of a great many people each with lives barely worth living is better than a smaller population with genuinely flourishing lives — was one of the book\'s central challenges. Parfit spent the rest of his life working on whether the conclusion could be avoided without losing the impartiality that made utilitarianism worth taking seriously, and On What Matters is largely the record of that work. His "triple theory" — the argument that Kantian contractualism, rule consequentialism, and Scanlonian contractualism converge on the same core substance — was an attempt to show that the major Western moral traditions are not so many different ethics but overlapping articulations of a single moral truth we are gradually getting clearer about.
+
+For technology ethics, Parfit\'s most direct relevance is in longtermist ethics, population ethics, and the ethics of personal identity under conditions of digital substrate change. Questions about uploaded consciousness, about AI personhood, about our obligations to future generations of humans (or post-humans, or other sapient beings), all work ground that Parfit opened. Effective altruism and longtermism as movements have drawn heavily on him. Whether one accepts his conclusions or not, the problems he formulated now structure the field, and any serious engagement with our obligations to people who do not yet exist — or who may exist in radically different forms than we do — passes through his work.`,
+    keyIdeas: [
+      'Personal identity is not what matters',
+      'The non-identity problem',
+      'The Repugnant Conclusion',
+      'Longtermism and obligations to future persons',
+      'The triple theory of ethics',
+    ],
+    relatedFrameworks: ['utilitarianism', 'contractualism', 'deontology'],
+    famousWorks: ['Reasons and Persons', 'On What Matters (3 vols)', '"Personal Identity"', '"Equality or Priority?"'],
+    imageHint: 'twentieth century british analytic philosopher',
+  },
+  {
+    id: 'macintyre',
+    imageUrl: '/images/philosophers/macintyre.svg',
+    name: 'Alasdair MacIntyre',
+    era: '1929-',
+    bio: `Alasdair Chalmers MacIntyre is a Scottish-born American philosopher whose 1981 book After Virtue restated the question of modern moral philosophy more sharply than any single work of the late twentieth century. Trained at Queen Mary College, Manchester, and Oxford, he taught at Leeds, Essex, Oxford, Brandeis, Boston, Vanderbilt, Duke, Notre Dame, and Yale in a career marked by restless intellectual reorientation — he moved through Marxism, analytic philosophy, and eventually to a Thomist Aristotelianism that he developed and defended in five major books across three decades.
+
+After Virtue\'s opening argument is one of the most dramatic in recent philosophy. Imagine, he says, a world in which the natural sciences have been destroyed in a catastrophe, and survivors have preserved only fragments — loose pages from textbooks, names of instruments without the theories that made them meaningful, scraps of procedure divorced from the conceptual frameworks that gave them point. The survivors use the fragments to carry on something they call "science," but what they are doing cannot be understood by the standards of the original science. MacIntyre\'s claim is that this is the condition of modern moral discourse. We have inherited fragments — rights, utility, duty, virtue — from separate and partly incompatible traditions whose original metaphysical foundations we have largely abandoned, and the result is the interminable, sometimes bitter, and structurally irresolvable disagreements that characterize public ethical debate.
+
+His constructive response is to retrieve Aristotle\'s ethics as developed by Thomas Aquinas and to show that virtues are intelligible only within specific practices, traditions, and narrative lives. A practice, in MacIntyre\'s technical sense, is a coherent, complex form of socially established cooperative activity (chess, medicine, farming, philosophy) with internal goods that cannot be achieved without the disciplines the practice requires. Virtues are the qualities that enable us to pursue those internal goods. Traditions are the larger narrative structures in which practices are embedded, and a living tradition is one that carries on a sustained argument about what its goods are. The standard against which a life can be evaluated is not an abstract moral theory but the narrative unity of a life pursued within specific practices and traditions.
+
+His later work — Whose Justice? Which Rationality? (1988), Three Rival Versions of Moral Enquiry (1990), Dependent Rational Animals (1999) — extended and complicated the After Virtue argument. Dependent Rational Animals is particularly important for his mature position: it incorporated care for the disabled, infants, and the elderly as central rather than peripheral moral subjects, and argued that the picture of the moral agent as an autonomous adult that much of Western philosophy presupposes was always partial. For technology ethics, MacIntyre\'s gift is the insistence that no technology-evaluation framework is complete without attention to the practices and traditions that give the tool its point, and that modern ethical fragmentation — the fact that we cannot even agree on what counts as a good outcome — is itself a feature of the current situation rather than a temporary failure of argumentation.`,
+    keyIdeas: [
+      'The fragmented condition of modern moral discourse',
+      'Practices, virtues, and internal goods',
+      'Traditions as arguments extended through time',
+      'Narrative unity of a human life',
+      'Dependent rational animals',
+    ],
+    relatedFrameworks: ['virtue-ethics', 'natural-law', 'ethics-of-care'],
+    famousWorks: ['After Virtue', 'Whose Justice? Which Rationality?', 'Three Rival Versions of Moral Enquiry', 'Dependent Rational Animals', 'Ethics in the Conflicts of Modernity'],
+    imageHint: 'contemporary scottish-american philosopher',
+  },
+  {
+    id: 'dubois',
+    imageUrl: '/images/philosophers/dubois.svg',
+    name: 'W. E. B. Du Bois',
+    era: '1868-1963',
+    bio: `William Edward Burghardt Du Bois was an American sociologist, historian, civil rights organizer, novelist, and the first Black American to earn a doctorate from Harvard. His eighty-five-year career reshaped the social sciences in the United States, founded scholarly fields that did not previously exist, and produced — across dozens of books and hundreds of essays — the most influential body of work on race, modernity, and the politics of knowledge the twentieth century produced in the English language.
+
+The Souls of Black Folk (1903) introduced three concepts that have become foundational. The color line is the argument that the central problem of the twentieth century would be the organization of social, political, and economic life around racial difference, a prediction that the century confirmed in ways Du Bois himself did not live to see completed. Double consciousness names the specific cognitive and phenomenological condition of Black Americans — "this sense of always looking at one\'s self through the eyes of others, of measuring one\'s soul by the tape of a world that looks on in amused contempt and pity" — and has become a general analytical tool for any oppressed subject whose selfhood has had to be built inside a gaze it did not choose. The Veil, his metaphor for the racial barrier, captures the partial visibility that double consciousness produces and the way racial orders maintain themselves through what is and is not seen.
+
+The empirical work behind the concepts is equally important. The Philadelphia Negro (1899) was the first major urban sociological study in the United States and established Du Bois as the founder of American sociology in practice if not in institutional recognition. Black Reconstruction in America (1935) was the definitive revisionist history of the post–Civil War period and made the case — against a historiographical consensus that had dominated for decades — that Reconstruction was a largely successful interracial democratic experiment sabotaged by violence, fraud, and the withdrawal of federal support. His editorship of The Crisis magazine from 1910 to 1934, his founding role in the NAACP, and his organizational work in Pan-Africanist movements made him, simultaneously, one of the century\'s central public intellectuals and political organizers.
+
+For technology ethics, Du Bois is increasingly recognized as indispensable. The history of algorithmic systems, biometric identification, criminal-justice risk assessment, and educational sorting technologies in the United States is inseparable from the history of racial administration that Du Bois spent his life analyzing, and the concept of double consciousness has proven to be a precise tool for describing what happens to subjects classified by algorithmic systems that treat them as data for others\' purposes. The "algorithmic color line" is a Du Boisian concept before it is anyone else\'s. His late turn toward Pan-Africanism and, finally, toward Ghanaian citizenship and membership in the Communist Party, was a long-argued conclusion that the structures he had spent his life analyzing would not be reformed by persuasion alone — a judgment whose bitterness should not be allowed to obscure the sustained intellectual project that produced it.`,
+    keyIdeas: [
+      'The color line',
+      'Double consciousness',
+      'The Veil',
+      'Race as social and political construction',
+      'The talented tenth (and his later revisions of it)',
+      'Pan-Africanism',
+    ],
+    relatedFrameworks: ['social-contract-theory', 'ethics-of-care', 'ubuntu-ethics', 'cosmopolitanism'],
+    famousWorks: ['The Souls of Black Folk', 'Black Reconstruction in America', 'The Philadelphia Negro', 'Dusk of Dawn', 'Darkwater'],
+    imageHint: 'american sociologist early twentieth century',
+  },
 ];

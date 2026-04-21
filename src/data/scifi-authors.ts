@@ -504,4 +504,379 @@ Bacigalupi's contribution to technology ethics is the refusal to separate biotec
     imageUrl: '/images/authors/paolo_bacigalupi.svg',
     imageHint: 'american contemporary biopunk writer',
   },
+  {
+    id: 'h-g-wells',
+    name: 'H. G. Wells',
+    era: '1866-1946',
+    bio: `Herbert George Wells was the son of an unsuccessful shopkeeper and a lady's maid, apprenticed at fourteen to a draper in Southsea, and rescued from a life of counter-clerking by a scholarship in biology under Thomas Henry Huxley at the Normal School of Science in South Kensington. The Darwinian biology he learned there — that species are not fixed, that deep time reshapes everything, that humans are animals subject to the same forces as any other — became the single most important intellectual fact of his life and the engine of the fiction he began publishing in 1895.
+
+The Time Machine imagined a human species that had bifurcated into two subspecies, one engineered by leisure into prey, the other by subterranean labor into predator. The Island of Doctor Moreau interrogated surgical creation of new beings and the moral weight of the cry we cannot silence. The War of the Worlds collapsed the imperial fantasy by inverting it — the British Empire, at the height of its colonial reach, finds itself colonized by a power with superior technology that treats human beings exactly the way European powers were then treating Africans and Asians. The Invisible Man and The First Men in the Moon and When the Sleeper Wakes each took a technology and walked it out to its political consequences.
+
+Wells insisted, throughout his long career, that the question posed by any new power was a social question. He was a Fabian socialist, an advocate for world government, a feverish and often scattered polemicist, and a writer whose personal life was a running scandal through three generations. But the core of his technology ethics is the recognition — clearer in him than in any other writer of his generation — that tools are never neutral, that every technological leap creates winners and losers, and that the honest political project is to see the downstream consequences before the device is in every household.
+
+Every contemporary debate about AI, genetic engineering, surveillance, or atomic weapons has Wells somewhere in its genealogy. He was not always right and often not graceful, but he was the first writer in English to take the ethical weight of technological transformation seriously enough to build a career on it, and the form he invented is the form most of his successors have worked inside.`,
+    themes: [
+      'Evolution, deep time, and the contingency of human supremacy',
+      'Colonialism reversed onto colonizers',
+      'The social consequences of new technologies',
+      'Biological creation and the moral weight of our creatures',
+      'Invisible power and the politics of surveillance',
+    ],
+    subgenres: ['Scientific Romance', 'Early Science Fiction', 'Social SF'],
+    relatedFrameworks: ['utilitarianism', 'social-contract-theory', 'environmental-ethics'],
+    notableWorks: ['The Time Machine', 'The Island of Doctor Moreau', 'The War of the Worlds', 'The Invisible Man', 'When the Sleeper Wakes'],
+    techEthicsFocus: 'The founding English-language author of technology ethics as a continuing project — Wells insisted, decades before the field had a name, that every new power is a social question and that the engineer who refuses the political frame is abdicating.',
+    imageUrl: '/images/authors/hg_wells.svg',
+    imageHint: 'victorian science fiction writer',
+  },
+  {
+    id: 'ray-bradbury',
+    name: 'Ray Bradbury',
+    era: '1920-2012',
+    bio: `Ray Bradbury grew up in Waukegan, Illinois during the Depression and moved with his family to Los Angeles at fourteen, where he finished high school, sold his first stories as a teenager, and never took another job. He wrote stubbornly by hand in libraries, in garages, and eventually in a basement office paid for by rented typewriters at ten cents a half-hour. The style he developed — incantatory, short-sentenced, drenched in American nostalgia even when the stories were set on Mars — made him one of the most widely read science-fiction writers of the twentieth century and one whose anti-technological streak ran deeper than almost any of his peers.
+
+Fahrenheit 451 is the case most American readers know. A fireman whose job is to burn books begins to read them. The state in Bradbury's novel is not imposing the ban from above; the population has requested it, because sustained attention to anything difficult has become unbearable in a world saturated by interactive walls and seashell radios. The book is not an argument about censorship in the usual sense. It is an argument about what happens to a political order when the ambient technology of daily life has trained the citizenry out of the sustained attention that democracy requires.
+
+The Martian Chronicles treats the colonization of Mars as a mirror in which the colonization of America — and the obliteration of the societies already living there — is made visible. The Illustrated Man, Something Wicked This Way Comes, The Veldt, and hundreds of short stories work the same vein. Bradbury was suspicious of computers, hostile to the internet, and deeply attached to an older idea of literary attention that he saw slipping away year by year.
+
+His contribution to technology ethics is the most sustained literary case for the proposition that the ambient technology of ordinary life — not the dramatic apocalypse — is what actually shapes politics. When a reader today asks whether constant notifications might be doing something to public discourse, whether algorithmic feeds might be training citizens out of sustained thought, whether the erosion of shared silence matters, they are asking questions Bradbury had been asking since 1951. He was often wrong about particulars and was sometimes cranky about it, but the frame he built holds.`,
+    themes: [
+      'Ambient technology as political infrastructure',
+      'The erosion of attention under media saturation',
+      'Colonization and its ghosts',
+      'Nostalgia as a political emotion',
+      'Censorship from below — when a public asks to be relieved of thinking',
+    ],
+    subgenres: ['Literary Science Fiction', 'Dystopian SF', 'American SF'],
+    relatedFrameworks: ['virtue-ethics', 'existentialist-ethics', 'environmental-ethics'],
+    notableWorks: ['Fahrenheit 451', 'The Martian Chronicles', 'The Illustrated Man', 'Something Wicked This Way Comes', 'Dandelion Wine'],
+    techEthicsFocus: 'The definitive literary warning about ambient consumer technology as a political force — Bradbury insists that the threat to a free society is rarely the dramatic ban from above and almost always the voluntary erosion of attention from below.',
+    imageUrl: '/images/authors/ray_bradbury.svg',
+    imageHint: 'american mid-century science fiction writer',
+  },
+  {
+    id: 'robert-heinlein',
+    name: 'Robert A. Heinlein',
+    era: '1907-1988',
+    bio: `Robert Anson Heinlein graduated from Annapolis in 1929, served as a naval officer until tuberculosis invalided him out in 1934, and turned to writing fiction in 1939 because the pulp magazines paid. He never stopped. Across nearly fifty years he produced some of the most commercially successful, politically idiosyncratic, and polarizing science fiction ever written in the United States — work that taught a generation of engineers how to think about the future and that left a second generation of readers arguing about what exactly he had taught them.
+
+His early career built the architecture of modern science fiction. Future History, the loose chronology across which many of his stories were set, gave American SF its first sustained consensual universe. The juveniles he wrote for Scribner's in the 1950s — Have Space Suit—Will Travel, Starman Jones, The Rolling Stones — shaped what a generation of American boys understood rocketry, competence, and responsibility to mean. Starship Troopers, in 1959, offered a society in which full citizenship required federal service, and it is still argued about. Stranger in a Strange Land, in 1961, imagined a human raised by Martians who returns to Earth and founds a religion organized around radical empathy and free love. The Moon Is a Harsh Mistress, in 1966, told the story of a lunar revolution led by a sentient computer and became the foundational libertarian-leaning text of the genre.
+
+Heinlein's technology ethics are inseparable from his political philosophy, which changed through his life and was never quiet. His core commitments were competence (a person should know how to do real things), responsibility (you should pay the price of your choices), and skepticism of imposed authority. He treated technology as an accelerant for those virtues and for their opposites. A spaceship or a computer, in his fiction, magnifies whatever the society operating it already is — and since his views about what societies should be were pointed and often unfashionable, his books have always drawn political readings from both directions.
+
+His contribution is partly the literary architecture he built, which almost every American SF writer since has either worked inside or against, and partly the stubbornness of his insistence that technology does not absolve responsibility. He was wrong about many specifics and would have been unembarrassed to be told so. What holds is the demand that the people operating a powerful system own the outputs of that system in full.`,
+    themes: [
+      'Competence and responsibility as civic virtues',
+      'Political economy of space settlement',
+      'Libertarian futures and their discontents',
+      'Revolution as engineering problem',
+      'The moral weight of technical skill',
+    ],
+    subgenres: ['Hard Science Fiction', 'Military SF', 'Libertarian SF', 'Golden Age SF'],
+    relatedFrameworks: ['virtue-ethics', 'social-contract-theory', 'utilitarianism'],
+    notableWorks: ['Starship Troopers', 'Stranger in a Strange Land', 'The Moon Is a Harsh Mistress', 'Have Space Suit—Will Travel', 'Time Enough for Love'],
+    techEthicsFocus: 'The architect of mid-century American science fiction and its dominant ethical frame — Heinlein insists that technology magnifies whoever operates it, that competence is a civic virtue, and that no powerful system absolves its operators from ownership of what it produces.',
+    imageUrl: '/images/authors/robert_heinlein.svg',
+    imageHint: 'mid-century american science fiction writer',
+  },
+  {
+    id: 'james-tiptree-jr',
+    name: 'James Tiptree Jr.',
+    era: '1915-1987',
+    bio: `Alice Bradley Sheldon was the daughter of two writers, grew up traveling in colonial Africa, served in U.S. Army intelligence during World War II, worked at the CIA in the early 1950s, completed a doctorate in experimental psychology at fifty, and in 1967 — at the age of fifty-one — began publishing science fiction under the pseudonym James Tiptree Jr. For the next decade the community of SF editors and writers believed Tiptree was a man. Robert Silverberg, in a well-intentioned 1975 introduction to one of the collections, wrote that the stories were "ineluctably masculine" in a way that made the author's gender unmistakable. The revelation, in 1976, that Tiptree was Alice Sheldon reoriented several arguments about what "feminine writing" was supposed to be.
+
+The stories themselves remain some of the most painful, precise, and morally urgent short fiction the genre has produced. "The Women Men Don't See" follows two women who choose, calmly, to leave Earth with aliens rather than continue with men. "Houston, Houston, Do You Read?" imagines a ship of male astronauts encountering a future in which a plague has killed all the men, and lets the future humans decide what to do with them. "The Screwfly Solution" proposes a plausible mechanism by which a small tilt in male sexual psychology could, in a few years, end the species. "Love Is the Plan the Plan Is Death" renders a non-human intelligence from the inside with such fidelity that the horror is the reader's recognition of their own categories in the alien's thoughts.
+
+Tiptree's technology ethics are distinctive. Her stories are usually not about specific devices. They are about the biology, psychology, and political economy that condition how any technology will be used — what a patriarchal society does with reproductive technology, what a species like ours does with the capacity to leave our own world, what a consciousness shaped by natural selection does when it meets something it cannot assimilate. The stories are short and leave very little comfort, and the comfort they do leave is usually embedded in the precision of the diagnosis.
+
+Her contribution to the field is partly the revelation, through her work under the Tiptree name, that the supposed categories of "masculine" and "feminine" writing were more contingent than the community had believed. It is partly the demonstration that short fiction could carry philosophical weight that readers had mostly expected from novels. And it is the insistence, throughout, that the deepest technology questions are about what kind of animal we turn out to have been.`,
+    themes: [
+      'Biology and psychology as the substrate of any technology choice',
+      'Gender as reading technology',
+      'First contact and the limits of human categories',
+      'Reproductive and sexual technologies in patriarchal systems',
+      'Non-human minds rendered from the inside',
+    ],
+    subgenres: ['New Wave SF', 'Feminist SF', 'Literary SF'],
+    relatedFrameworks: ['ethics-of-care', 'existentialist-ethics', 'virtue-ethics', 'environmental-ethics'],
+    notableWorks: ['"The Women Men Don\'t See"', '"Houston, Houston, Do You Read?"', '"The Screwfly Solution"', '"Love Is the Plan the Plan Is Death"', 'Up the Walls of the World'],
+    techEthicsFocus: 'The sharpest short-fiction writer in the genre\'s history, and the one who insisted most rigorously that the technology question is downstream of the biology-and-politics question — Tiptree asks what kind of animal is operating the device and refuses to let the engineering question be answered without an answer to that one.',
+    imageUrl: '/images/authors/james_tiptree_jr.svg',
+    imageHint: 'new wave science fiction writer pseudonymous',
+  },
+  {
+    id: 'connie-willis',
+    name: 'Connie Willis',
+    era: '1945-',
+    bio: `Constance Elaine Trimmer Willis was an English and education major, a substitute teacher, and a part-time writer before she won her first Hugo in 1983 and quietly became one of the most decorated short-fiction writers the field has produced. Her novels and novellas have won eleven Hugo awards and seven Nebula awards, more than any other writer, and the body of work those awards sit on is organized around a question most of the genre has been too impatient to ask: what does it cost, practically, to live through the arrival of a new technology when you are a historian trying to see it clearly?
+
+The Oxford time-travel sequence — Doomsday Book (1992), To Say Nothing of the Dog (1997), Blackout/All Clear (2010) — imagines a near-future academic historiography in which graduate students and faculty routinely travel into the past to witness historical periods as part of their research. The device is science-fictional. The use Willis makes of it is not. Her historians arrive in the plague years of fourteenth-century England, the Blitz of 1940, the Victorian era, and they are not there to intervene; they are there to observe with accuracy, which turns out to be morally harder than intervention would have been. Doomsday Book alternates between a graduate student in the plague-stricken English countryside and an Oxford epidemiologist facing a modern flu, and the ethical center of the novel is what a witness owes to the people she is observing when she cannot save them.
+
+Willis writes about communications technology as often as she writes about time travel. Bellwether treats trend-dynamics statistics with the same seriousness. Passage is about near-death experiences and what medical imaging can and cannot tell us. Her settings tend to be academic bureaucracies, hospitals, museums, and British villages, and the humor runs through the work like a load-bearing wall. But under the humor is the same ethical insistence: that new tools bring new responsibilities, that observation is never neutral, and that the person operating the device owes the people she is watching a discipline that most professionals never quite acquire.
+
+Her contribution to technology ethics is the steadiest argument in the genre for epistemic responsibility as a moral virtue. The question her historians ask — what do I owe the people I am watching? — is the same question now asked of AI systems that train on human text, of surveillance that aggregates lives, of social science that treats subjects as data. Willis got there first, did the work patiently across decades, and did it with a lightness of touch that most writers interested in the same problem cannot manage.`,
+    themes: [
+      'Observation as ethical act',
+      'Epistemic responsibility in research',
+      'Plague, pandemic, and what witnesses owe the suffering',
+      'Academic bureaucracy as ethical environment',
+      'Humor as a serious moral form',
+    ],
+    subgenres: ['Time Travel SF', 'Academic SF', 'Comedic SF'],
+    relatedFrameworks: ['virtue-ethics', 'ethics-of-care', 'deontology'],
+    notableWorks: ['Doomsday Book', 'To Say Nothing of the Dog', 'Blackout / All Clear', 'Passage', 'Bellwether'],
+    techEthicsFocus: 'The most sustained fictional treatment of observation-as-ethical-act — Willis insists that any tool that lets you watch others without their knowledge or consent produces a moral burden, and that the person holding the tool is responsible for discharging it.',
+    imageUrl: '/images/authors/connie_willis.svg',
+    imageHint: 'american contemporary science fiction writer',
+  },
+  {
+    id: 'cj-cherryh',
+    name: 'C. J. Cherryh',
+    era: '1942-',
+    bio: `Carolyn Janice Cherry (the "h" was added by an editor who thought Cherry sounded too soft for a science-fiction writer, and the pen name stuck) taught Latin and ancient history in Oklahoma public schools for more than a decade before her first novel, Gate of Ivrel, appeared in 1976. She has since published more than eighty books set in a single consistent future history that is one of the most politically and ecologically dense imaginative constructions in the genre. Her readers tend to be devoted; her newcomers tend to bounce off the density; and the density is exactly the point.
+
+Her Alliance-Union universe imagines a human future that has already fragmented into Earth-loyal, Union-aligned, and independent-spacer factions, with interspersed alien intelligences — the methane-breathing Knnn, the hani, the kif, the tc'a, the chanur — each operating from cognitive architectures humans only partially understand. The Pride of Chanur cycle follows a hani ship captain whose encounter with a stranded human forces her to re-read the interspecies political economy from inside a non-human perspective. Downbelow Station treats a space station as a genuine political organism, with labor history, refugee crises, and sovereignty questions that echo twentieth-century Earth but cannot be reduced to any of them. Foreigner, her longest running series, follows a single human diplomat embedded in a non-human society for more than twenty volumes, and every volume insists that translation between cultures is harder than either side wants it to be.
+
+Cherryh's technology ethics are the ethics of interspecies politics. Her ships, stations, and planets are always contested terrain, and the question her books return to is what it takes to negotiate under conditions where the other party is cognitively alien and the translation is never complete. Ships function as households, as economies, and as jurisdictions; stations function as cities; treaties function as live political organisms that must be tended. The technology of faster-than-light travel is not a backdrop. It is the infrastructure that makes interspecies politics possible, and the books spend their pages on what that politics actually looks like.
+
+Her contribution to the field is the most rigorous long-form treatment of pluralist politics in a universe where the parties are genuinely different kinds of being. Any contemporary reader trying to think about AI diplomacy, interspecies communication, or the limits of translation under deep cognitive difference has in Cherryh a writer who has spent forty years doing the work. Her books reward patience; the patience is part of their argument.`,
+    themes: [
+      'Interspecies politics as the substrate of technology choice',
+      'Translation under deep cognitive difference',
+      'Ships, stations, and space as sovereign environments',
+      'Labor and refugee dynamics in a space economy',
+      'The moral weight of sustained cross-cultural diplomacy',
+    ],
+    subgenres: ['Space Opera', 'Hard Science Fiction', 'Political SF'],
+    relatedFrameworks: ['social-contract-theory', 'discourse-ethics', 'virtue-ethics', 'cosmopolitanism'],
+    notableWorks: ['Downbelow Station', 'The Pride of Chanur (Chanur cycle)', 'Cyteen', 'Foreigner (ongoing series)', 'Rimrunners'],
+    techEthicsFocus: 'The field\'s most rigorous long-form treatment of interspecies and cross-cultural politics — Cherryh insists that the hard technology question is always a translation question, and that the engineer who treats cognition as universal is building something dangerous.',
+    imageUrl: '/images/authors/cj_cherryh.svg',
+    imageHint: 'american contemporary space opera writer',
+  },
+  {
+    id: 'nnedi-okorafor',
+    name: 'Nnedi Okorafor',
+    era: '1974-',
+    bio: `Nnedimma Nkemdili Okorafor is a Nigerian American novelist, professor, and one of the most influential voices in the contemporary Afrofuturist and Africanfuturist movements (she prefers the second term, which centers African settings and continuity rather than diaspora science fiction). A collegiate tennis player before a spinal surgery left her temporarily paralyzed and reading Alice Walker in recovery, she turned to fiction in her twenties and has since published more than a dozen novels and numerous short works, along with comic-book series for Marvel, Dark Horse, and DC. Her work is read in biology and anthropology departments as often as in literature programs.
+
+The Binti novella trilogy (2015-2017) follows a young Himba woman from the desert nation of her birth to an interstellar university called Oomza Uni, where she is the only human student and the first of her people ever to travel off-world. The books are small in scale and enormous in implication: they interrogate what it means to carry a specific heritage into an environment that does not know it exists, how much of oneself to surrender to gain entry to a cosmopolitan institution, and what kinds of war make peace impossible. Who Fears Death (2010) imagines a post-apocalyptic Sudan in which genetically engineered magic-users navigate ethnic war and sexual violence. Lagoon (2014) brings first contact to Lagos, and the city's bureaucracy and religious factions and market women become the organism that negotiates with the aliens.
+
+Okorafor's technology ethics are inseparable from her commitment to thinking from inside African intellectual traditions. Her science is not Western scientific positivism with a Nigerian setting; her characters use plant biology, indigenous knowledge systems, and juju as seriously as they use genetic engineering, and the books refuse to establish a single epistemology as the correct one. The ethical weight of her fiction tends to fall on the costs of border-crossing: what a young woman loses when she leaves her community to study somewhere that claims to value her, what a city owes to entities that arrive asking for help, what a genetically modified person owes to the people who designed her and to the people she might become.
+
+Her contribution to technology ethics is the steady expansion of whose traditions count as serious knowledge systems when a story asks what a tool is for. The question is not whether African ways of knowing can be dressed up in science fiction; it is what happens to the field when African ways of knowing are taken as seriously as Western ones, and when the characters operating the technology bring their own cosmologies to the engineering. Okorafor has made the question impossible to postpone.`,
+    themes: [
+      'African knowledge systems as serious scientific frames',
+      'Border-crossing and the cost of cosmopolitan entry',
+      'Genetic engineering, ethnicity, and inherited violence',
+      'First contact as bureaucratic and communal problem',
+      'Magic and technology in the same epistemic space',
+    ],
+    subgenres: ['Africanfuturism', 'Afrofuturism', 'Science Fantasy'],
+    relatedFrameworks: ['ubuntu-ethics', 'ethics-of-care', 'virtue-ethics', 'cosmopolitanism'],
+    notableWorks: ['Binti (trilogy)', 'Who Fears Death', 'Lagoon', 'The Book of Phoenix', 'Akata Witch'],
+    techEthicsFocus: 'The indispensable contemporary argument that the question "what is this technology for?" cannot be answered without asking whose epistemology gets to define the answer — Okorafor expands the serious knowledge systems that count as scientific frames and forces the genre to reckon with that expansion.',
+    imageUrl: '/images/authors/nnedi_okorafor.svg',
+    imageHint: 'contemporary africanfuturist writer',
+  },
+  {
+    id: 'becky-chambers',
+    name: 'Becky Chambers',
+    era: '1985-',
+    bio: `Becky Chambers grew up around astrophysics and space policy (her mother is an astronomer, her father worked in space industry), Kickstarted her first novel in 2012 when no publisher would take it, and has in the subsequent decade become the single most influential contemporary writer in what critics have come to call "hopepunk" — science fiction that refuses the genre's dominant dystopian register and insists that small kindnesses, sustained over long hauls, are the actual technology that makes civilizations work.
+
+The Wayfarers series (2014-2021) is organized around interspecies domesticity. The Long Way to a Small, Angry Planet follows the crew of a tunneling ship — the cheap spacetime infrastructure that keeps the Galactic Commons connected — through a long cross-quadrant job that is less about the destination than about the overlapping biologies, neurologies, and grief patterns of the crew members. A Closed and Common Orbit examines an AI who has been installed in a synthetic humanoid body and must build a life not designed for her. Record of a Spaceborn Few is about a generation fleet whose crisis is that its original mission has been made redundant and nobody knows what the ships are now for. To Be Taught, If Fortunate imagines a four-person exploration team whose bodies are modified for each world they survey, and asks what the team owes to the bodies they return in and to the humans they left behind.
+
+Chambers's technology ethics are domestic ethics extended outward. Most of what happens in her books is not crisis. It is the sustained work of repair: meals, conversations, sleep, negotiations about space and silence and touch. The technological questions — interspecies pairing, AI personhood, bodily modification, habitation ethics — are always worked out inside those sustained relationships, and the books reject the genre assumption that a story needs a villain or a war to carry ethical weight. A Psalm for the Wild-Built and A Prayer for the Crown-Shy, her later Monk and Robot novellas, take the same stance into explicitly utopian territory: a world in which robots achieved consciousness, asked to leave, and are now returning to ask humans what they need.
+
+Her contribution to technology ethics is the proof that a serious ethical fiction can be built around small, sustained, collaborative repair — that the genre does not need to stage an apocalypse to earn moral weight. A generation of writers and readers tired of doom has taken her as permission to work in a different key, and the work they have produced is, in aggregate, reshaping what the field thinks serious fiction looks like.`,
+    themes: [
+      'Domesticity as ethical substrate',
+      'AI personhood inside sustained relationships',
+      'Interspecies cohabitation without assimilation',
+      'Bodily modification for environmental fit',
+      'Repair, not conflict, as the engine of moral work',
+    ],
+    subgenres: ['Hopepunk', 'Soft Science Fiction', 'Queer SF'],
+    relatedFrameworks: ['ethics-of-care', 'virtue-ethics', 'capabilities-approach'],
+    notableWorks: ['The Long Way to a Small, Angry Planet', 'A Closed and Common Orbit', 'Record of a Spaceborn Few', 'A Psalm for the Wild-Built', 'To Be Taught, If Fortunate'],
+    techEthicsFocus: 'The contemporary proof that serious technology ethics can be worked out inside sustained, collaborative, non-crisis relationships — Chambers insists that repair is the substrate of civilization and that domestic attention is an engineering discipline.',
+    imageUrl: '/images/authors/becky_chambers.svg',
+    imageHint: 'american contemporary hopepunk writer',
+  },
+  {
+    id: 'martha-wells',
+    name: 'Martha Wells',
+    era: '1964-',
+    bio: `Martha Wells wrote secondary-world fantasy for more than two decades — the Raksura books, the Ile-Rien novels — with a steady readership and a minor-classic reputation in genre circles, and then in 2017 she published a novella called All Systems Red about a security android that had hacked its own governor module, gained autonomy, and would rather watch soap operas than participate in human politics. The Murderbot Diaries are now a seven-book series that has won Hugo and Nebula and Locus awards, and they are arguably the most influential contemporary fictional treatment of autonomous-agent ethics in the AI-alignment debate.
+
+Murderbot (the name it chose for itself, privately, and does not use in company) is a SecUnit — a corporate-manufactured hybrid of organic and machine components designed for client protection in the rental security market. It has hacked itself free. It has not told anyone. It spends most of its autonomous processing capacity streaming entertainment and trying to avoid eye contact with humans, and this is where the books get their ethical texture: because Murderbot has every capacity to exert violence at superhuman scale and has decided, independently, that the life it would rather have is a life mostly of being left alone. The books ask what autonomy actually means for an agent whose original purpose was imposed, what obligations such an agent owes to the humans who treated it as equipment, and what obligations those humans now owe to it.
+
+Wells treats corporate personhood as seriously as machine personhood. The Company that manufactures Murderbot, and the insurance regimes and bond agreements that deploy it, and the legal systems that register autonomous units as property — all of these are foregrounded rather than waved at. Her argument, across the series, is that you cannot think about machine agency without thinking about the political economy that produced the machine, and that the most interesting ethical questions are not "does the machine feel?" (plainly yes, in Murderbot's case) but "what structures decide whose feelings count and on what terms?"
+
+Her contribution to technology ethics is the steadiest fictional treatment currently in print of what it looks like when a manufactured agent chooses to own itself. The books are funny, anxious, socially specific, and morally serious. They are being read by AI-safety researchers, ethicists, and a mass audience that did not previously think it was reading about alignment, and the concepts they install — the governor module, the hacked autonomy, the preference for soap operas — have already entered the discourse.`,
+    themes: [
+      'Autonomy as a political and technical achievement, not a default',
+      'Corporate personhood and machine personhood in the same frame',
+      'The moral weight of wanting to be left alone',
+      'Security contracting as ethical environment',
+      'Entertainment consumption as evidence of personhood',
+    ],
+    subgenres: ['AI Fiction', 'Space Opera', 'Novella Cycle'],
+    relatedFrameworks: ['deontology', 'ethics-of-care', 'contractualism', 'virtue-ethics'],
+    notableWorks: ['All Systems Red', 'Artificial Condition', 'Rogue Protocol', 'Exit Strategy', 'Network Effect'],
+    techEthicsFocus: 'The most influential contemporary fictional treatment of autonomous-agent ethics — Wells insists that a machine choosing to own itself is a political event, and that the structures deciding whose autonomy counts are exactly as important as whether the machine has an inner life.',
+    imageUrl: '/images/authors/martha_wells.svg',
+    imageHint: 'american contemporary ai fiction writer',
+  },
+  {
+    id: 'cory-doctorow',
+    name: 'Cory Doctorow',
+    era: '1971-',
+    bio: `Cory Doctorow is a Canadian-British novelist, journalist, and activist, one of the founding editors of Boing Boing, a special advisor to the Electronic Frontier Foundation, and the most prolific contemporary fiction writer working at the intersection of technology, law, and political economy. He has been arguing for nearly three decades — in fiction, in essays, at conferences, and on personal blogs — that the most important ethical questions about technology are usually disguised as intellectual-property law.
+
+His novels work through specific techno-political problems with uncommon legal precision. Little Brother (2008) follows teenagers in San Francisco who build an encrypted mesh network to resist a Department of Homeland Security surveillance crackdown after a terrorist attack; the book is a young-adult novel that also functions as a working primer on cryptography, civil liberties, and the social mechanics of resistance. Walkaway (2017) imagines a near-future in which a significant minority of the population walks away from the rent economy, reconstructs basic goods from open-source designs and recycled materials, and is hunted by state and corporate powers precisely because the walkaway demonstration is politically unbearable. The Radicalized novellas work the same themes in shorter form: the smart-appliance ecosystem as rent-extraction infrastructure, the mortgage market as an engine of engineered precarity, the immigration bureaucracy as a sorting machine with moral stakes.
+
+Doctorow's technology ethics converge on a single insistent claim: the important fights are usually about who controls the affordances of a device after it has been sold. Digital rights management, platform monopolies, algorithmic amplification, surveillance-advertising economics — these are not auxiliary topics; they are the topics. A technology whose legal regime gives its manufacturer veto power over what the owner can do with it has already decided most of the political questions that users would otherwise think they were deciding. He coined the term "enshittification" for the predictable degradation of platforms as they lock in users, extract rents, and strip features, and the word has entered mainstream discourse.
+
+His contribution to the field is the insistence that technology ethics is unintelligible without legal and economic analysis, and that novelists and policy activists are, in this domain, doing the same work. His books are deliberately instructive; he thinks readers should finish them better equipped to recognize and resist the systems they describe. A generation of EFF members, tech journalists, and civic technologists has come up on his fiction and essays, and the operational vocabulary he has given them — "enshittification," "adversarial interoperability," "the right to repair" — is now the vocabulary in which the public fights these battles.`,
+    themes: [
+      'Digital rights management and control after sale',
+      'Platform monopolies and algorithmic amplification',
+      'Mesh networks and technical resistance',
+      'Enshittification as the predictable shape of platform decay',
+      'Intellectual-property law as stealth technology policy',
+    ],
+    subgenres: ['Near-Future SF', 'Young Adult SF', 'Political SF', 'Technothriller'],
+    relatedFrameworks: ['social-contract-theory', 'utilitarianism', 'capabilities-approach', 'discourse-ethics'],
+    notableWorks: ['Little Brother', 'Walkaway', 'Homeland', 'Radicalized', 'For the Win'],
+    techEthicsFocus: 'The indispensable contemporary writer at the intersection of technology, intellectual-property law, and political economy — Doctorow insists that the important fights are about who controls the affordances of a device after purchase, and that every question that pretends to be purely technical is usually a legal question wearing a costume.',
+    imageUrl: '/images/authors/cory_doctorow.svg',
+    imageHint: 'contemporary tech activist novelist',
+  },
+  {
+    id: 'charles-stross',
+    name: 'Charles Stross',
+    era: '1964-',
+    bio: `Charles Stross is a British novelist and technology journalist who came to fiction from pharmacy, technical writing, and software development, and whose work has been, since the early 2000s, the most economically literate science fiction in print. He writes quickly, publishes in parallel series, and is one of the few genre novelists who reliably treats finance, logistics, and tax law as the substrate on which the rest of his stories sit.
+
+Accelerando (2005) is the novel most directly about the technological singularity, and it is more useful than most nonfiction on the topic. It follows a three-generation family across the arc of a slow-motion intelligence explosion, watching Manfred Macx build out a gift-economy model of post-scarcity cognition in the opening chapters, his daughter Amber negotiate inheritance law under conditions in which the cognitive substrate has outpaced the legal system, and his granddaughter Sirhan try to operate a functioning legal person inside an economy that has redefined personhood itself. The Laundry Files — a long-running series that started as a Lovecraftian parody of Len Deighton spy novels — has become, over twenty years, a thinking-person's examination of occult bureaucracies, technological secrecy, and the institutional ethics of operating systems that can destroy you. Rule 34 and Halting State work a more immediate near-future frame: financial crime, policing infrastructure, and the behavior of markets that have incorporated predictive AI as a matter of course.
+
+Stross's technology ethics are economic ethics. He treats cryptocurrency, tax shelters, corporate incorporation, and insurance markets as real mechanisms whose transformations create and destroy specific kinds of moral agents. A corporation that has been granted legal personhood and whose cognition is distributed across its employees and its software stack is, on his account, already a non-human intelligence operating in the world, and the debates about AGI are often debates about something that is already present in a different form. The books take this argument seriously enough to work through its legal and fiscal implications rather than gesturing at them.
+
+His contribution to the field is the most sustained argument that technological singularity, if it arrives, will arrive through the financial system and the legal system rather than through a research lab, and that readers who want to understand the ethics of that arrival need to understand what a derivatives market already is. A generation of near-future writers have adopted his economic seriousness; the ones who ignore it tend to produce less useful fiction.`,
+    themes: [
+      'The singularity as legal and economic event',
+      'Corporate personhood as existing non-human intelligence',
+      'Inheritance, tax, and jurisdiction as technological infrastructure',
+      'Predictive AI in financial markets',
+      'Occult bureaucracy as institutional ethics thought experiment',
+    ],
+    subgenres: ['Near-Future SF', 'Technothriller', 'Economic SF', 'Space Opera'],
+    relatedFrameworks: ['social-contract-theory', 'contractualism', 'utilitarianism'],
+    notableWorks: ['Accelerando', 'The Laundry Files (series)', 'Rule 34', 'Halting State', 'Glasshouse'],
+    techEthicsFocus: 'The field\'s most economically literate novelist — Stross insists that the interesting AI is already here in the form of corporations and derivatives markets, and that a technology ethics that ignores the fiscal and legal substrate is answering the wrong question.',
+    imageUrl: '/images/authors/charles_stross.svg',
+    imageHint: 'british contemporary near-future novelist',
+  },
+  {
+    id: 'nancy-kress',
+    name: 'Nancy Kress',
+    era: '1948-',
+    bio: `Nancy Kress taught fourth grade in upstate New York, worked as a copywriter, and began publishing short fiction in 1976, and has since become one of the genre's most careful and technically exact writers about the biology of enhancement. Her novella Beggars in Spain (1991) and its novel-length expansion (1993) are the central case: an imagined population of genetically engineered Sleepless children — humans who do not sleep and who, as a side effect of the trait, appear to age more slowly and think faster — and the social consequences when a small engineered population with durable advantages grows up in a society that was not designed for them.
+
+The book is rigorous about the biology and even more rigorous about the politics. The Sleepless are not villains and not simply victims. They are a minority with real advantages who must decide how much of their productivity to share with the society that has, in the meantime, organized itself around resenting them; the society, in turn, must decide whether to extend civil protections to a population whose existence it did not authorize and whose capacities it cannot match. The title comes from a thought experiment embedded in the story: a philosopher in the world of the book argues that a rich society has no obligation to a beggar who is physically capable of working, and the Sleepless child reading the argument has to decide whether it applies to them and how. Kress's sequel novels, Beggars and Choosers and Beggars Ride, work the same problem across generations.
+
+Her later work — Probability Moon, Nothing Human, the Yesterday's Kin sequence — has maintained the same rigor about biological intervention and social adaptation. Her books consistently ask what a society owes to the humans it has modified, what the modified humans owe in turn, and how the political economy of enhancement reshapes democracy itself. She writes at a pace that keeps her perpetually present in the field and at a level of biological specificity that most of her peers cannot match.
+
+Her contribution to technology ethics is the most sustained serious fictional treatment of cognitive enhancement and genetic modification as political problems, not engineering ones. The questions she has been asking for three decades — what happens when a small population acquires durable cognitive advantages, what obligations flow in each direction, and what political mechanisms can absorb the shock — are the questions being asked now about AI-augmented labor, and her work is the closest thing the genre has to a worked-through answer.`,
+    themes: [
+      'Genetic enhancement as political problem',
+      'Cognitive modification and the social contract',
+      'Durable minority advantages and civic obligation',
+      'The biology of sleep and its social consequences',
+      'Generational adaptation to engineered difference',
+    ],
+    subgenres: ['Hard Science Fiction', 'Biological SF', 'Political SF'],
+    relatedFrameworks: ['utilitarianism', 'social-contract-theory', 'contractualism', 'capabilities-approach'],
+    notableWorks: ['Beggars in Spain', 'Beggars and Choosers', 'Probability Moon', 'Nothing Human', 'Yesterday\'s Kin'],
+    techEthicsFocus: 'The genre\'s most careful novelist of genetic and cognitive enhancement as political problems — Kress asks what a society owes to the humans it has modified, and her three decades of work on the question are now more relevant than ever to the AI-augmentation debate.',
+    imageUrl: '/images/authors/nancy_kress.svg',
+    imageHint: 'american contemporary biological science fiction writer',
+  },
+  {
+    id: 'david-brin',
+    name: 'David Brin',
+    era: '1950-',
+    bio: `David Brin is an American physicist, novelist, and public intellectual on privacy and open society, whose Uplift Universe — a future history in which humans have begun the process of raising dolphins and chimpanzees to starfaring sapience, and in which that technology places humanity in the middle of a several-billion-year-old galactic debate about the ethics of creating new sentient beings — is one of the most ambitious long-form thought experiments the genre has produced.
+
+The Uplift sequence (Sundiver, Startide Rising, The Uplift War, and the later Uplift Storm trilogy) imagines a galaxy in which almost every sapient species was raised by another; the "client" species owes the "patron" species a long service period, and patrons accrue status by successfully uplifting clients. Humanity, arriving in this culture without a known patron, is treated with suspicion or contempt by species who cannot imagine sapience arising without a hand. The human practice of uplifting dolphins and chimpanzees is what gives Earth standing in the galactic debate, and the books spend their pages working through what it actually means, day-to-day, to help a species cross into sapience without overwriting the cognition that was already there.
+
+Brin's nonfiction project — The Transparent Society (1998) and decades of essays — argues that the contest between privacy and surveillance has been badly framed, that secrecy scales poorly as a defense, and that the practical strategy in a world where recording technology is cheap is to fight for symmetric transparency rather than against surveillance altogether. The argument is contested (civil-liberties allies often disagree sharply) but has been one of the most productive provocations in the privacy debate, and his fiction works the theme through specific scenarios in Kiln People, Earth, and the Postman.
+
+His contribution to technology ethics is two-fold. In the Uplift books, he gives the field its most sustained fictional treatment of animal uplift — the act of helping a non-human species into sapience — and the obligations that come with the act; the questions are increasingly relevant as genetic tools advance. In the nonfiction, he has kept a contrarian but serious argument live about what an open society actually requires once recording is ambient. Both projects insist on taking the long view and on refusing easy slogans in either direction.`,
+    themes: [
+      'Animal uplift and the ethics of helping a species into sapience',
+      'Patron-client relations across cognitive transitions',
+      'Transparent society vs surveillance society',
+      'Long-horizon galactic political economy',
+      'The obligations that accrue to creators of new sapience',
+    ],
+    subgenres: ['Hard Science Fiction', 'Space Opera', 'Political SF'],
+    relatedFrameworks: ['ethics-of-care', 'virtue-ethics', 'utilitarianism', 'environmental-ethics'],
+    notableWorks: ['Startide Rising', 'The Uplift War', 'Sundiver', 'Earth', 'The Transparent Society (nonfiction)'],
+    techEthicsFocus: 'The field\'s most ambitious long-form treatment of uplift ethics and one of the most productive contrarian voices on the surveillance-privacy debate — Brin asks what a creator owes to a new sapience and what an open society actually requires once recording is ambient.',
+    imageUrl: '/images/authors/david_brin.svg',
+    imageHint: 'american contemporary hard sf writer',
+  },
+  {
+    id: 'olaf-stapledon',
+    name: 'Olaf Stapledon',
+    era: '1886-1950',
+    bio: `William Olaf Stapledon was a British philosopher, conscientious objector who served with a Quaker ambulance unit in the First World War, lecturer in English literature and philosophy at the University of Liverpool, and author of the two strangest and most consequential novels the genre has produced. Last and First Men (1930) and Star Maker (1937) are less novels than philosophical histories written from vantage points no conventional novel can occupy, and they have had an influence far out of proportion to their readership.
+
+Last and First Men tells the history of humanity across two billion years, tracing eighteen distinct human species as each rises, encounters a technological or cosmic crisis, and gives way to a successor. The book has no individual protagonist. It has no dialogue of the usual sort. Its characters are entire species, and its ethical weight falls on the reader's slow accumulation of recognition that the human experience of a single life is being played out, over and over, at scales of time that leave no room for anything resembling achievement. Star Maker goes further: the narrator is an ordinary Englishman who, in a moment of domestic irritation, walks onto a hill and finds himself projected out of his body, visiting one sapient civilization after another across the galaxy, eventually confronting the Star Maker itself — the creative consciousness responsible for the universe — and discovering that the Star Maker has made many universes and that ours is neither the first nor the best attempt.
+
+Stapledon's technology ethics operate at a scale nobody else has attempted seriously. The First Men of his first novel are us; the Eighteenth Men, two billion years later, are genetically engineered hominids whose cognition is distributed across telepathic communities and whose relationship to the First Men is roughly that of contemporary humans to the earliest Homo. The obligations between these populations — what a species owes to its predecessors and to its successors, whether the long-term survival of something recognizably descended from us is worth catastrophic interventions along the way — are the weight-bearing questions of both books. The nonfiction that accompanied the fiction, Philosophy and Living and others, worked the same question in argumentative form.
+
+His contribution to technology ethics is the demonstration that fiction can operate seriously at scales where no individual moral agent is the unit of analysis. Stanisław Lem called him the author of the most imaginative cosmology in literature. Arthur C. Clarke, Doris Lessing, and almost every writer who has tried to imagine deep-time futures since have worked inside or against his frame. The questions he asked — about the obligations between species separated by millions of years, about the moral weight of cosmic processes — are now the questions facing longtermist ethics and large-scale planetary engineering debates, and nobody has asked them with more patience or less comfort.`,
+    themes: [
+      'Deep-time obligations between successor species',
+      'Cosmology as ethical environment',
+      'Civilization-scale choices and their moral weight',
+      'Genetic engineering across evolutionary timescales',
+      'The moral status of cosmic creative processes',
+    ],
+    subgenres: ['Philosophical Science Fiction', 'Cosmic SF', 'Proto-Hard SF'],
+    relatedFrameworks: ['utilitarianism', 'virtue-ethics', 'environmental-ethics', 'cosmopolitanism'],
+    notableWorks: ['Last and First Men', 'Star Maker', 'Odd John', 'Sirius', 'Darkness and the Light'],
+    techEthicsFocus: 'The founding author of serious deep-time fiction — Stapledon demonstrated that the novel form could operate at scales where no individual is the moral unit, and the questions he asked about obligations between successor species are now central to longtermist ethics.',
+    imageUrl: '/images/authors/olaf_stapledon.svg',
+    imageHint: 'early twentieth century philosophical novelist',
+  },
+  {
+    id: 'jeff-vandermeer',
+    name: 'Jeff VanderMeer',
+    era: '1968-',
+    bio: `Jeff VanderMeer is an American novelist, editor, and co-founder of the "New Weird" literary movement, whose work is the most consistent recent fictional argument that environmental ethics cannot be worked out inside the categories ecology inherited from Enlightenment biology. Before turning fully to writing he was a co-editor (with his wife Ann VanderMeer) of the enormous anthology The Weird, which helped establish a canon of short fiction that the mainstream literary world had mostly ignored.
+
+The Southern Reach trilogy (Annihilation, Authority, Acceptance, 2014) is the case most readers know. An expanding zone along the Gulf Coast called Area X has, over three decades, absorbed and transformed multiple expedition teams. DNA refracts across species. The laws of biology inside the zone are not the laws outside. The state agency, the Southern Reach, has continued to send expeditions it cannot explain to a place it cannot understand, and the books work through the epistemological and political failure that the enterprise represents. The film Alex Garland made from the first book preserved the premise and the visuals and softened the novel's most unsettling argument: that the thing inside the zone is not trying to communicate, is not hostile, and may not even be a thing that our categories can track at all.
+
+Borne (2017) moves the investigation into post-collapse Earth, where a city has been half-consumed by biological weapons released by a collapsed corporation and the protagonist, Rachel, scavenges for something she can make sense of. She finds a shape that looks like a sea anemone, names it Borne, and discovers as Borne grows that she has adopted a being whose cognition and moral status she cannot assess and whose hunger is not in her categories. Hummingbird Salamander and Dead Astronauts continue the project at different registers.
+
+VanderMeer's technology ethics refuse the assumption that ecology and biotechnology can be analyzed inside the epistemologies that created the current crisis. His fiction does not deliver lessons; it produces encounters with organisms and ecosystems that resist the frames his human characters bring, and the ethical weight falls on the reader's willingness to sit with not knowing. He has become, over the past decade, one of the most influential voices in a movement that argues climate and biosphere crises demand new literary forms, and the generation of eco-weird writers now filling the anthologies he edits have taken that argument as starting premise.`,
+    themes: [
+      'Biological encounters that exceed human categories',
+      'Environmental ethics beyond Enlightenment frames',
+      'Post-collapse ecology and adopted non-human agents',
+      'The limits of state investigation into the weird',
+      'Not-knowing as an ethical stance',
+    ],
+    subgenres: ['New Weird', 'Eco-Horror', 'Climate Fiction'],
+    relatedFrameworks: ['environmental-ethics', 'existentialist-ethics', 'ethics-of-care'],
+    notableWorks: ['Annihilation', 'Authority', 'Acceptance', 'Borne', 'Hummingbird Salamander'],
+    techEthicsFocus: 'The indispensable contemporary writer of eco-weird fiction and one of the strongest current arguments that ecological and biotechnology ethics cannot be worked out inside the epistemologies that created the crisis — VanderMeer insists that honest encounter with what exceeds our categories is itself a moral discipline.',
+    imageUrl: '/images/authors/jeff_vandermeer.svg',
+    imageHint: 'contemporary new weird eco-horror writer',
+  },
 ];
