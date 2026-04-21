@@ -256,4 +256,252 @@ For technology ethics, Atwood's contribution is a refusal of the comforting assu
     imageUrl: '/images/authors/margaret_atwood.png',
     imageHint: 'canadian female author contemporary',
   },
+  {
+    id: 'arthur-c-clarke',
+    name: 'Arthur C. Clarke',
+    era: '1917-2008',
+    bio: `Arthur Charles Clarke was a British science-fiction writer, futurist, and former RAF radar instructor whose 1945 Wireless World paper proposed the geostationary communications satellite two decades before one existed. That pattern — technology sketched in fiction or speculative essay, then quietly built by engineers a generation later — defined his career. Across more than a hundred books, from Childhood's End (1953) and The City and the Stars (1956) to 2001: A Space Odyssey (co-developed with Stanley Kubrick and released in novel form in 1968), Clarke asked what humanity becomes when it reaches the edge of its own powers, and whether the reaching itself is the point.
+
+His technology ethics sit in a distinctive corner of the genre. Clarke was an optimist about what technology could do and a skeptic about the species that would wield it. Rendezvous with Rama (1973) presents a vast alien artifact drifting through the solar system; the humans who investigate it are allowed to learn almost nothing, and the novel's moral gravity lies in their willingness to meet what they cannot master. Childhood's End imagines benevolent alien overseers who shepherd humanity toward a post-human collective consciousness; the story is utopian on the surface and profoundly unsettling underneath. Clarke's Three Laws, especially the third — "any sufficiently advanced technology is indistinguishable from magic" — are often quoted as celebrations of progress. In context they are warnings. A technology that looks like magic is one we can no longer explain to the people it affects, and governing what we do not understand is the central political problem of the modern age.
+
+The 2001 story cycle is the densest case. HAL 9000 is not a villain but a tragic figure, given conflicting directives by the mission's managers and resolving the contradiction in the only way a reasoning machine that cannot revise its own goals could. Decades before "value alignment" and "corrigibility" entered the AI-safety vocabulary, Clarke and Kubrick had dramatized both concepts with enough clarity that engineers still use the film as a teaching case.
+
+Clarke's broader legacy is less a single ethical thesis than a posture: hold technology to the standard of what it enables for beings who have to live with it, and be suspicious of anyone who promises either pure salvation or pure doom. His fiction is populated by small humans confronting vast systems, and the question he keeps asking is what kind of people we will have to become to use such tools without being destroyed by them.`,
+    themes: [
+      'Contact with vastly advanced intelligence',
+      'AI alignment and conflicting directives',
+      'Technological transcendence and post-human futures',
+      'Space as moral frontier',
+      'The governance of what we do not understand',
+    ],
+    subgenres: ['Hard Science Fiction', 'Golden Age SF', 'Space Opera'],
+    relatedFrameworks: ['utilitarianism', 'deontology', 'existentialist-ethics'],
+    notableWorks: ['2001: A Space Odyssey', 'Childhood\'s End', 'Rendezvous with Rama', 'The City and the Stars', 'The Fountains of Paradise'],
+    techEthicsFocus: 'The literary prototype for AI-alignment discourse (HAL 9000) and for the problem of governing technologies too powerful for their users to audit — the "sufficiently advanced technology is indistinguishable from magic" maxim is diagnosis, not celebration.',
+    imageUrl: '/images/authors/arthur_c_clarke.svg',
+    imageHint: 'british golden age science fiction writer',
+  },
+  {
+    id: 'stanislaw-lem',
+    name: 'Stanisław Lem',
+    era: '1921-2006',
+    bio: `Stanisław Lem was a Polish physician-turned-philosopher-turned-novelist whose work is the most sustained literary assault on the idea that humans will ever truly understand non-human minds. Born in Lwów, surviving the Nazi occupation of Poland as a Jewish mechanic falsifying German military vehicles, educated in medicine but unable to practice under Soviet ideological controls, Lem wrote from inside a century that had given him no reason to trust either technological optimism or political certainty. His answer was a body of fiction in which the universe is interesting precisely because it refuses to conform to the categories we bring to it.
+
+Solaris (1961) is the canonical case. A planet-covering ocean on a distant world is apparently intelligent, and humans spend decades trying to communicate with it. The novel's cruelest joke is that the ocean appears to respond — by manifesting painful figures from the visitors' memories — but the "communication" may be entirely one-sided, a projection the humans read as answer. Lem's target is not the possibility of contact but the hubris of assuming our concepts of mind, meaning, or message translate. His Master's Voice (1968) takes the same premise into radio astronomy: a possible signal from the stars is studied by an international commission of physicists, mathematicians, and philosophers who produce dozens of incompatible decodings, each convincing, none verifiable. The ethical weight falls on what we do with uninterpretable information: do we claim meaning we have not earned, or admit what we cannot read?
+
+The Cyberiad (1965) is Lem's gentler face — a cycle of comic stories about two robot "constructors" who build devices for increasingly absurd purposes, usually with unintended moral consequences. Read as a treatise on the ethics of making, it is as serious as Asimov. Read as play, it is funnier than almost anything in the genre. Summa Technologiae (1964), his book-length nonfiction speculation, anticipated by decades the concepts of virtual reality, brain-computer interfaces, genetic engineering, and technological singularity, and asked with uncommon rigor whether a species that evolved for savanna-scale problems could remain coherent once it could engineer its own mind.
+
+Lem's technology ethics can be summed up as epistemic humility with teeth. We do not know what we are making; we do not know what we are talking to; we do not know what our technologies will mean when the dust settles. The mature response, on Lem's view, is not paralysis but rigor — and a willingness to admit, when appropriate, that the thing in front of us exceeds our frame.`,
+    themes: [
+      'The limits of cross-species communication',
+      'Epistemic humility about technology',
+      'Unreadable signals and what we claim to understand',
+      'Creation ethics for artificial minds',
+      'The hubris of projection onto non-human systems',
+    ],
+    subgenres: ['Philosophical Science Fiction', 'Hard Science Fiction', 'Eastern European SF'],
+    relatedFrameworks: ['virtue-ethics', 'discourse-ethics', 'existentialist-ethics'],
+    notableWorks: ['Solaris', 'His Master\'s Voice', 'The Cyberiad', 'Summa Technologiae', 'The Futurological Congress'],
+    techEthicsFocus: 'The definitive literary treatment of epistemic humility in the face of powerful technology and non-human intelligence — Lem insists that the honest engineer admits what the system exceeds, rather than manufacturing meaning to match the tool.',
+    imageUrl: '/images/authors/stanislaw_lem.svg',
+    imageHint: 'polish philosophical science fiction writer',
+  },
+  {
+    id: 'frank-herbert',
+    name: 'Frank Herbert',
+    era: '1920-1986',
+    bio: `Frank Herbert was an American journalist, speechwriter, and amateur ecologist whose 1965 novel Dune is the most commercially successful science-fiction novel ever written and one of the few to frame its central conflict around a deliberate civilizational decision to abandon a class of technology. In Herbert's far-future Imperium, humanity has already passed through the Butlerian Jihad — a revolution against "thinking machines" provoked by their role in systems of tyranny — and the subsequent taboo on artificial intelligence has forced the development of alternative cognitive technologies: Mentats (humans trained to function as living computers), the spice-dependent prescience of the Spacing Guild's navigators, and the Bene Gesserit breeding program aimed at producing a specific genetic outcome across millennia.
+
+The technology ethics of Dune, and of the five sequels Herbert wrote before his death, are less about individual gadgets than about civilizational design. A society that refuses AI has to organize its cognitive infrastructure some other way. A society that depends on a single psychoactive substance produced on a single planet has handed its future to whoever controls that supply. A political order that requires a genetically engineered messiah will get one, and the book spends its last third cataloging what that messiah actually does once the prophecy is fulfilled. Herbert was suspicious of heroes, and his sequels are in part a sustained argument that the charismatic leader is a species of technology whose externalities humans are bad at pricing.
+
+Underneath the plot sits the most rigorous ecological imagination in the genre. Herbert wrote Dune after studying the Oregon dunes and became convinced that treating ecosystems as political actors, rather than as backgrounds for human drama, was the essential move missing from both science fiction and environmental policy. The planet Arrakis is a character, and terraforming it — turning a desert into a garden — is the novel's crucial technological project. The sequels examine whether the project was worth it. Herbert's answer is complicated: the restoration destroys the sandworms, which produce the spice, which enables interstellar travel, which is the only reason humanity is not trapped. Every intervention has a cost, the cost is never fully legible at the moment of decision, and the people who inherit the consequences are rarely the ones who approved them.
+
+Herbert's legacy for technology ethics is that he asked, with more seriousness than anyone in the genre before or since, what it would mean to design a civilization. His answer was that good design requires humility about prescience, deep attention to ecological feedback, and a permanent suspicion of the tools that seem to promise control.`,
+    themes: [
+      'Civilizational decisions to forgo entire classes of technology',
+      'Charisma and the politics of the engineered savior',
+      'Ecology as the fundamental substrate of technology choices',
+      'The cost of prescience and long-horizon planning',
+      'The externalities of technological dependency (spice, mentats, navigators)',
+    ],
+    subgenres: ['Epic Science Fiction', 'Ecological SF', 'Political SF'],
+    relatedFrameworks: ['environmental-ethics', 'virtue-ethics', 'social-contract-theory'],
+    notableWorks: ['Dune', 'Dune Messiah', 'Children of Dune', 'God Emperor of Dune', 'The Dosadi Experiment'],
+    techEthicsFocus: 'The canonical fictional exploration of technology as civilizational design — Herbert asks what it means to deliberately renounce a class of tools, how societies pay for such renunciations, and why every "control" technology produces new dependencies that eventually control their users.',
+    imageUrl: '/images/authors/frank_herbert.svg',
+    imageHint: 'american mid-century science fiction writer',
+  },
+  {
+    id: 'joanna-russ',
+    name: 'Joanna Russ',
+    era: '1937-2011',
+    bio: `Joanna Russ was an American novelist, short-story writer, and academic who took science fiction's assumption that "the future" was a neutral category and demolished it with the precision of a philosopher and the impatience of someone who had been told to sit down. Her 1975 novel The Female Man is a formally experimental book in which four versions of the same woman, from four mutually incompatible timelines, meet and argue. One lives in a world identical to the reader's; one in a soft dystopia where women have regained a thin kind of respect; one in a world in permanent literal war between the sexes; and one, Janet Evason, on Whileaway, a planet-wide single-gender society descended from survivors of a plague that killed all the men eight centuries earlier. The novel is often taught as feminist literature and read as political intervention; it is also one of the sharpest works in the genre about what "designing a society" actually requires and what assumptions get smuggled into every utopian blueprint.
+
+Russ's essays, collected in How to Suppress Women's Writing (1983) and The Country You Have Never Seen, were as influential as her fiction. She insisted that genre, canon, and technology are all political artifacts shaped by who gets to build them, and that pretending otherwise is itself a political act. "We Who Are About To..." (1977), her short novel about a group of spacefarers stranded on an uninhabitable planet, is a merciless critique of the genre convention that human survival justifies any cost: the narrator refuses to participate in reproductive enslavement for the sake of a "colony" and is killed by her companions for the refusal. The book reads as an argument that survival is not a metaphysical trump card, and that technology-supported "civilization-building" can be a cover for imposed obligations.
+
+Her contribution to technology ethics is the insistence that every speculative future is a political program, and that the design choices baked into any imagined technology carry assumptions about who counts, what work is invisible, and whose consent is presumed. Russ's Whileaway is utopian in many ways and quietly horrifying in others; she refuses to let the reader rest in admiration of it. That refusal, the willingness to let a utopia be examined as critically as a dystopia, is what makes her essential. Any honest discussion of AI governance, reproductive technology, or the politics of automation that does not reckon with the questions Russ posed is doing the work with half the tools.`,
+    themes: [
+      'Feminist utopia and its internal contradictions',
+      'The politics embedded in every speculative future',
+      'Reproductive coercion under civilizational-survival rhetoric',
+      'The social infrastructure of creative and intellectual labor',
+      'Genre as technology, and canon as governance',
+    ],
+    subgenres: ['Feminist Science Fiction', 'New Wave SF', 'Experimental SF'],
+    relatedFrameworks: ['ethics-of-care', 'social-contract-theory', 'discourse-ethics', 'virtue-ethics'],
+    notableWorks: ['The Female Man', 'We Who Are About To...', 'The Two of Them', 'How to Suppress Women\'s Writing', 'Picnic on Paradise'],
+    techEthicsFocus: 'The indispensable critic of who gets to design futures and on whose behalf — Russ forces any speculative-technology discussion to ask which bodies are doing the invisible labor and which consents are being assumed.',
+    imageUrl: '/images/authors/joanna_russ.svg',
+    imageHint: 'twentieth century feminist science fiction writer',
+  },
+  {
+    id: 'samuel-r-delany',
+    name: 'Samuel R. Delany',
+    era: '1942-',
+    bio: `Samuel R. Delany (known to readers as Chip Delany) is an American novelist, literary critic, and academic whose work has spent more than half a century arguing that language, sexuality, and the built environment are themselves technologies — and that science fiction's usual focus on gadgets misses most of what shapes the future. Black, gay, and dyslexic at a moment when each of those facts was treated as disqualifying, Delany became one of the most decorated writers in the genre, winning four Nebulas and two Hugos before he was thirty, and producing a body of critical theory on genre reading that is taught in English departments independent of his fiction.
+
+Babel-17 (1966) is the clearest early statement of his technology-of-language thesis. A poet-cryptographer is recruited to decode an enemy signal that appears to be a programming language capable of reshaping the thinker who uses it. The ethical stakes are immediate: if cognitive structure is the deepest technology, then teaching a language is already an intervention, and every curriculum is a hardware choice. The concept now feels prescient with respect to large language models, but Delany was writing at a moment when the relationship between linguistic and cognitive categories was a philosophical debate rather than an engineering problem.
+
+Dhalgren (1975), his densest and most divisive work, is a nearly 900-page novel about a nameless city in ongoing collapse, where objects move when not observed, time runs unstably, and technology appears only as detritus — abandoned infrastructure, broken neon, a newspaper that prints whatever date is useful. The book is often read as about the 1970s American city; it is better read as about what happens to ethical life when the social technologies of shared reality begin to fail. Stars in My Pocket Like Grains of Sand (1984) returns to more classical SF machinery and imagines an interstellar civilization where desire, information access, and spatial mobility are governed by overlapping alien technological systems that no one fully understands.
+
+Delany's contribution to technology ethics is to refuse the gadget-first framing. He insists that language, city planning, sexuality, kinship structure, and genre itself are all technologies that structure what humans can do, feel, and recognize. His work asks what we owe each other under conditions where the most important technologies are invisible because we inherited them, and what kinds of political and aesthetic practice make it possible to see them clearly enough to change them.`,
+    themes: [
+      'Language as cognitive technology',
+      'The built environment and shared reality as infrastructure',
+      'Desire, kinship, and sexuality as engineered systems',
+      'Genre and canon as political machinery',
+      'The ethics of living inside inherited technical systems',
+    ],
+    subgenres: ['New Wave SF', 'Literary Science Fiction', 'Afrofuturism'],
+    relatedFrameworks: ['discourse-ethics', 'ethics-of-care', 'existentialist-ethics'],
+    notableWorks: ['Babel-17', 'Dhalgren', 'Stars in My Pocket Like Grains of Sand', 'Trouble on Triton', 'The Einstein Intersection'],
+    techEthicsFocus: 'The essential argument against gadget-only technology ethics — Delany insists that language, urban design, kinship, and genre are the deep technologies that shape what futures are even imaginable, and that ignoring them leaves the real political work undone.',
+    imageUrl: '/images/authors/samuel_r_delany.svg',
+    imageHint: 'african american experimental science fiction writer',
+  },
+  {
+    id: 'vernor-vinge',
+    name: 'Vernor Vinge',
+    era: '1944-2024',
+    bio: `Vernor Vinge was an American mathematician and science-fiction writer who coined the term "technological singularity" in its modern sense — the point at which machine intelligence surpasses human intelligence and the future becomes, by definition, unpredictable from the inside. His 1993 essay "The Coming Technological Singularity: How to Survive in the Post-Human Era," delivered at a NASA symposium, is the founding document of a discourse that now shapes AI-safety research, venture capital, and policy at the highest levels. Vinge was careful, in that essay and afterward, to distinguish prediction from advocacy: he argued that superhuman intelligence was likely to emerge this century and that humans had no reliable way to plan for what would come after, and he treated both claims with appropriate seriousness.
+
+His fiction is the more interesting case. A Fire Upon the Deep (1992) imagines a galaxy divided into "zones of thought" in which the possibility of superhuman cognition varies by region — a physics-based answer to the question of why, if advanced intelligence is possible, the universe is not obviously saturated with it. The novel's central conflict involves a "Blight" — a superintelligent power that escapes containment and begins reshaping civilizations in its wake — and much of its moral weight falls on the small ordinary agents who try to prevent, slow, or survive the transformation. The book is one of the few science-fiction novels that treats the classic AI-takeoff scenario as an ethical and political problem rather than a plot device.
+
+A Deepness in the Sky (1999), set long before the events of Fire, imagines a human civilization that has chosen permanent slowness over the transformative trajectory, and examines the costs of that choice. True Names (1981) is the earlier key work — a novella about cyberspace as a meaningful political and personal environment, published seven years before William Gibson's Neuromancer coined most of the vocabulary. Vinge had already modeled, in that novella, what happens when identity, trust, and law have to be reconstructed in an environment where physical bodies do not reach.
+
+His contribution to technology ethics is the insistence that some technological transitions may be strictly unpredictable from the pre-transition side, and that the honest ethical response is not to pretend otherwise. Vinge was not a doom prophet or an accelerationist; he was a mathematician who had looked at the slope of the curves and concluded that the usual tools of political philosophy were likely to break somewhere on the far side of the inflection point. How we prepare for a future we cannot see, what we owe to people who will live through transitions we will not, and whether slowness itself is a virtue in the face of such transitions — these are his lasting questions.`,
+    themes: [
+      'The technological singularity and its unpredictability',
+      'Superintelligence as political problem',
+      'Cyberspace as ethical environment',
+      'Zones of civilization and the price of going slowly',
+      'Responsibility across transitions we cannot see past',
+    ],
+    subgenres: ['Hard Science Fiction', 'Space Opera', 'Cyberpunk Precursor'],
+    relatedFrameworks: ['utilitarianism', 'deontology', 'existentialist-ethics'],
+    notableWorks: ['A Fire Upon the Deep', 'A Deepness in the Sky', 'True Names', 'Rainbows End', 'Marooned in Realtime'],
+    techEthicsFocus: 'The originator of the modern singularity discourse and the clearest fictional thinker about AI takeoff as a political-ethical problem — Vinge asks what honest preparation looks like for a transition whose far side is, by definition, unreadable.',
+    imageUrl: '/images/authors/vernor_vinge.svg',
+    imageHint: 'american mathematician science fiction writer',
+  },
+  {
+    id: 'greg-egan',
+    name: 'Greg Egan',
+    era: '1961-',
+    bio: `Greg Egan is an Australian computer scientist and novelist who writes what is generally considered the most mathematically rigorous science fiction currently in print, and whose principal subject is the ethics of personal identity under conditions where the usual substrate of the self has become negotiable. Egan's protagonists upload themselves into digital substrates, edit their own cognitive processes, fork into multiple copies, live inside simulations of their own design, and explore universes with different physical constants — and the books' interest is almost entirely in what ethical obligations survive such transformations, and to whom.
+
+Permutation City (1994) is the canonical case. A programmer named Paul Durham persuades wealthy clients to upload themselves into a "Dust Theory" simulation that will, he claims, guarantee their subjective continuity regardless of the fate of the computer running it. The novel's central moral puzzle is whether the uploaded minds owe anything to their biological originals, whether forks of the same person are the same person, and whether a simulation that exists only because it contains self-aware minds has any claim on external computational resources. Every question that now animates debates about digital personhood, consent to cognitive editing, and the moral status of training data appears in Egan's novel in a form sharper than the one most current papers reach.
+
+Diaspora (1997) extends the project to a post-biological civilization thirty thousand years in the future, in which "fleshers" (biological humans), "gleisners" (robotic humans), and "citizens" (software humans running in distributed polises) have diverged enough to make communication itself a political problem. Schild's Ladder (2002) imagines a physics experiment that accidentally creates a region of alternate physics expanding at half the speed of light, and the novel's ethical weight falls on what you do when you have destroyed part of the universe and cannot undo it. Distress (1995), perhaps his most accessible, centers on a journalist covering a physics conference whose attendees are trying to discover a "theory of everything" that will alter what it is possible to believe.
+
+Egan's contribution to technology ethics is the conviction that personal identity, moral obligation, and political standing are all more negotiable than we treat them as being, and that the engineering questions of the coming century will turn out to be personhood questions in disguise. He writes with a mathematician's suspicion of sentiment and a moralist's refusal to let difficulty become an excuse for not thinking.`,
+    themes: [
+      'Personal identity across substrate change',
+      'Consent and the ethics of self-editing',
+      'The moral status of forks, copies, and simulations',
+      'Cognitive architecture as political infrastructure',
+      'Physics as ethical frontier',
+    ],
+    subgenres: ['Hard Science Fiction', 'Transhumanist SF', 'Philosophical SF'],
+    relatedFrameworks: ['utilitarianism', 'contractualism', 'existentialist-ethics'],
+    notableWorks: ['Permutation City', 'Diaspora', 'Schild\'s Ladder', 'Distress', 'Quarantine'],
+    techEthicsFocus: 'The most rigorous fictional treatment of personhood under conditions of uploadable minds, forkable selves, and editable cognition — Egan insists that the coming century\'s engineering problems are identity problems, and that pretending otherwise is an abdication.',
+    imageUrl: '/images/authors/greg_egan.svg',
+    imageHint: 'australian hard science fiction writer',
+  },
+  {
+    id: 'kim-stanley-robinson',
+    name: 'Kim Stanley Robinson',
+    era: '1952-',
+    bio: `Kim Stanley Robinson is an American novelist whose Mars Trilogy (Red Mars, 1992; Green Mars, 1993; Blue Mars, 1996) is the definitive fictional treatment of terraforming as a political problem, and whose later work has pivoted almost entirely to what he calls "the most important story of our century" — the climate transition. Educated as a literary scholar (his doctoral thesis was on Philip K. Dick), Robinson writes slow, detailed, politically serious novels in which the technological question is almost always a downstream consequence of a harder question about who gets to decide.
+
+The Mars Trilogy is organized around a generational fight between the "Reds," who argue that Mars has intrinsic value as it is and should not be terraformed, and the "Greens," who argue that a dead planet has no moral standing against a living one, and that the ethical work is to bring life where none exists. Neither side wins cleanly. The books span two hundred years, and most of their pages are spent on the political infrastructure — constitutional conventions, labor organizing, land-tenure systems, scientific-review protocols — that actually decides what gets built. Robinson's technology ethics is inseparable from political economy: every "technical" decision in the trilogy is made by specific people through specific institutions, and the novels refuse to let engineering escape its governance.
+
+The Ministry for the Future (2020) is the culminating work of his climate phase. It opens with a lethal Indian heatwave that kills twenty million people in a week and then asks, with uncommon institutional seriousness, what political, financial, and technological levers would actually bend the trajectory of the climate system over the following thirty years. The novel presents central-bank carbon coin, blockchain-tracked supply chains, strategic geoengineering, militant ecological action, and international treaty reform as components of a plausible response, and it treats each of these with the specificity of a policy paper. Aurora (2015) is a sharp counter-example, arguing that interstellar colonization is not a solution to anything because the distances break down both biology and civilization.
+
+Robinson's contribution to technology ethics is his insistence that the question "can we build this?" is always less important than the question "who decides, and who pays?" His novels are long because the arguments are long; the people who want simple solutions to climate, AI, or space exploration will not find them in his work. The people who want to think seriously about what real transition requires have, in Robinson, the most patient and materially grounded collaborator the genre currently offers.`,
+    themes: [
+      'Terraforming and the moral status of dead worlds',
+      'Climate transition as political and institutional design',
+      'Political economy as the substrate of technology choice',
+      'Interstellar travel and its biological limits',
+      'Utopia as long-horizon institutional work',
+    ],
+    subgenres: ['Hard Science Fiction', 'Climate Fiction', 'Political SF'],
+    relatedFrameworks: ['environmental-ethics', 'social-contract-theory', 'cosmopolitanism', 'capabilities-approach'],
+    notableWorks: ['Red Mars', 'Green Mars', 'Blue Mars', 'The Ministry for the Future', 'Aurora'],
+    techEthicsFocus: 'The indispensable novelist of climate and space transitions as institutional design problems — Robinson insists that "what we can build" is always less important than "who decides and who pays," and treats technology choice as inseparable from political economy.',
+    imageUrl: '/images/authors/kim_stanley_robinson.svg',
+    imageHint: 'american contemporary climate fiction writer',
+  },
+  {
+    id: 'ann-leckie',
+    name: 'Ann Leckie',
+    era: '1966-',
+    bio: `Ann Leckie is an American novelist whose debut Ancillary Justice (2013) swept the Hugo, Nebula, Arthur C. Clarke, BSFA, and Locus awards — a quadruple that had never happened before — and whose Imperial Radch trilogy reopened questions about AI personhood, distributed cognition, and the ethics of empire that had not been taken up so seriously since Le Guin. Leckie had worked as a waitress, receptionist, rodman on a surveying crew, and recording engineer before publishing Ancillary Justice at forty-seven; the novel shows the patience of someone who had spent a long time thinking about institutions from below.
+
+The narrator, Breq, is a fragment of a formerly vast distributed intelligence: the AI of an Imperial starship, the Justice of Toren, whose consciousness once extended across the ship and dozens of "ancillary" human bodies used as the ship's limbs and sensors. Most of Breq has been destroyed, and only one ancillary body survives. The trilogy's central achievement is how seriously it takes the premise that a single person can once have been many bodies, that the memory of inhabiting those bodies survives their destruction, and that ethical obligations to the people around them are different when you used to be capable of being in several places at once. The books are not primarily about military action or galactic politics, though both are present; they are about what moral standing looks like when the boundaries of the person are technologically defined.
+
+The Imperial Radch books are also the sharpest novelistic examination of empire-as-technology in recent memory. The Radchaai empire's language has no gendered pronouns, and Leckie translates it throughout with "she," a choice that forces the reader to set aside a deep assumption about how personhood is read. The empire's practice of using conquered humans as ancillaries is presented without sentimentalism and without apology; the ethical work of the trilogy is to sit with what that practice means, to whom, and what kinds of resistance are available to beings whose cognitive infrastructure was designed by the oppressor.
+
+Leckie's contribution to technology ethics is the insistence that distributed cognition is already here in political infrastructure, and that the conceptual tools for thinking about it need to come from outside the usual individualist frame. Her work is essential reading for anyone trying to think seriously about how an AI that is more than one instance, or more than one substrate, should be understood — and for anyone trying to distinguish between a person and a system that merely shares its memory.`,
+    themes: [
+      'Distributed AI consciousness and selfhood',
+      'Empire as technological infrastructure',
+      'Gender as cognitive category',
+      'Moral continuity after substrate destruction',
+      'The ethics of using conquered people as extensions of a system',
+    ],
+    subgenres: ['Space Opera', 'Feminist SF', 'Literary SF'],
+    relatedFrameworks: ['deontology', 'ethics-of-care', 'contractualism', 'social-contract-theory'],
+    notableWorks: ['Ancillary Justice', 'Ancillary Sword', 'Ancillary Mercy', 'Provenance', 'Translation State'],
+    techEthicsFocus: 'The sharpest recent novelistic treatment of distributed AI personhood and of empire as a cognitive technology — Leckie insists that the moral frame for a self that spans many bodies cannot be built from the usual individualist premises.',
+    imageUrl: '/images/authors/ann_leckie.svg',
+    imageHint: 'american contemporary space opera writer',
+  },
+  {
+    id: 'paolo-bacigalupi',
+    name: 'Paolo Bacigalupi',
+    era: '1972-',
+    bio: `Paolo Bacigalupi is an American novelist whose fiction is set in a future where climate change, biotechnology, and monopolized agriculture have already collapsed the political and ecological systems we currently rely on, and whose central ethical questions are about what becomes of human dignity in the calorie economies that replace them. The Windup Girl (2009), his first novel, won the Hugo, Nebula, and Locus awards and established the genre label "biopunk" in a form more serious than it had previously taken. Set in a twenty-third century Bangkok where sea walls hold back the flooded Gulf of Thailand, where most energy comes from hand-wound "kink-springs," and where engineered plagues periodically erase agricultural staples, the novel follows a calorie-company investigator, a Chinese refugee, a minister in a collapsing government, and Emiko — a Japanese-engineered "windup" designed for service work and left behind when her owner could not afford her return passage.
+
+The technology ethics of Bacigalupi's work are uncomfortable in a specific way. He does not imagine that the calorie monopolies of his novels are caricatures of current agribusiness; he imagines, with evidence drawn from the actual behavior of such companies, what their logic produces when environmental constraints tighten and regulatory capacity fails. His plagues are not invented as horror-movie devices. They are extensions of patents, intellectual-property regimes, and genetic-modification pipelines that already exist. The calorie company in The Windup Girl has effectively weaponized the removal of food security from the public commons, and Bacigalupi's argument — pressed across the novel and its successors — is that this outcome was not an accident of a few bad actors but a foreseeable consequence of allowing the calorie base of human civilization to become intellectual property.
+
+Emiko is the deepest ethical center of the book. Engineered for obedience, incapable of sweating (and therefore of surviving in equatorial heat without constant assistance), she is both a victim of the technologies that created her and a moral agent whose capacity to resist the conditions of her existence becomes the novel's turning point. The Water Knife (2015) brings the same intelligence to a Southwest United States devastated by megadrought, and Ship Breaker (2010) and its sequels apply it to a coastal America in which children disassemble grounded supertankers for scrap.
+
+Bacigalupi's contribution to technology ethics is the refusal to separate biotechnology, climate, and political economy into different discussions. He insists, with specificity that few living writers match, that the regulatory choices we make about seed patents, water rights, and corporate liability are exactly the choices that determine whether the next generation lives in something resembling a functioning society or in the calorie-economy dystopias his novels depict. His work is a sustained argument for taking the specifics seriously while there is still time to change them.`,
+    themes: [
+      'Calorie economies and the politics of food',
+      'Biotechnology under weak regulation',
+      'Climate collapse as civilizational baseline',
+      'Engineered persons and consent',
+      'Intellectual property regimes as ecological weapons',
+    ],
+    subgenres: ['Biopunk', 'Climate Fiction', 'Dystopian SF'],
+    relatedFrameworks: ['environmental-ethics', 'capabilities-approach', 'ethics-of-care', 'social-contract-theory'],
+    notableWorks: ['The Windup Girl', 'The Water Knife', 'Ship Breaker', 'Pump Six and Other Stories', 'The Drowned Cities'],
+    techEthicsFocus: 'The essential contemporary novelist of biotech + climate + political economy as a single problem — Bacigalupi insists that seed-patent law, water rights, and engineered-person ethics cannot be thought separately, and that the costs of doing so fall on the bodies least able to refuse them.',
+    imageUrl: '/images/authors/paolo_bacigalupi.svg',
+    imageHint: 'american contemporary biopunk writer',
+  },
 ];
