@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
@@ -13,11 +13,19 @@ import { QuizCta } from '@/components/quiz/quiz-cta';
 import { InfographicCta } from '@/components/infographic/infographic-cta';
 import { AdminActions } from '@/components/admin/admin-actions';
 import { adminDeleteArtifact } from '@/app/actions/admin';
+import { MediaCommunityDiscussion } from '@/components/forum/media-community-discussion';
 import type { SciFiMedia } from '@/types';
 
 export default function SciFiMediaDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const id = params.id as string;
+  /** Optional ?community=... hint — when set, the page shows the
+   *  discussion board scoped to that community. Without it, the
+   *  component still looks up whether this user is a member of any
+   *  community that has added this media and offers the board(s)
+   *  there too. */
+  const communityHint = searchParams?.get('community') || undefined;
   const [media, setMedia] = useState<SciFiMedia | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -81,6 +89,18 @@ export default function SciFiMediaDetailPage() {
           subjectType="scifi-media"
           subjectId={media.id}
           href={`/scifi-media/${media.id}/quiz`}
+        />
+      </div>
+
+      {/* Discussion board surface. Only renders when the viewer is
+          signed in AND this media has been added to at least one
+          community the viewer belongs to. Anchor for deep-links
+          from the Community Media list. */}
+      <div id="discussion" className="mt-8">
+        <MediaCommunityDiscussion
+          mediaId={media.id}
+          mediaTitle={media.title}
+          preferredCommunityId={communityHint}
         />
       </div>
     </div>

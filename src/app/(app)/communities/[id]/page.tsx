@@ -48,6 +48,8 @@ import { getCurricula } from '@/app/actions/curriculum';
 import { CommunityMembers } from '@/components/communities/community-members';
 import { CommunityInvites } from '@/components/communities/community-invites';
 import { ContributionsFeed } from '@/components/communities/contributions-feed';
+import { CommunityForum } from '@/components/forum/community-forum';
+import { CommunityMediaList } from '@/components/forum/community-media-list';
 import type { Community, CommunityMemberInfo, CurriculumPath } from '@/types';
 import Link from 'next/link';
 
@@ -58,7 +60,7 @@ export default function CommunityDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const { user } = useAuth();
-  const { isPaid } = useSubscription();
+  const { isPaid, isSuperAdmin } = useSubscription();
   const { toast } = useToast();
 
   const [community, setCommunity] = useState<Community | null>(null);
@@ -75,6 +77,28 @@ export default function CommunityDetailPage() {
 
   const isInstructor =
     !!user && !!community?.instructorIds?.includes(user.uid);
+  const isMember =
+    !!user && members.some((m) => m.uid === user.uid);
+  // The super-admin and any user with the communityManager flag get
+  // forum moderation powers in this community. The server enforces
+  // this independently; we mirror it here to show/hide controls.
+  const [viewerIsManager, setViewerIsManager] = useState(false);
+  useEffect(() => {
+    if (!user) {
+      setViewerIsManager(false);
+      return;
+    }
+    if (isSuperAdmin) {
+      setViewerIsManager(true);
+      return;
+    }
+    (async () => {
+      const { isCommunityManager } = await import(
+        '@/app/actions/community-manager'
+      );
+      setViewerIsManager(await isCommunityManager(user.uid));
+    })();
+  }, [user, isSuperAdmin]);
 
   const loadData = useCallback(async () => {
     const [communityResult, membersResult] = await Promise.all([
@@ -291,8 +315,10 @@ export default function CommunityDetailPage() {
       </h1>
 
       <Tabs defaultValue="contributions" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-4 md:grid-cols-8">
           <TabsTrigger value="contributions">Contributions</TabsTrigger>
+          <TabsTrigger value="forum">Forum</TabsTrigger>
+          <TabsTrigger value="media">Media</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>
           <TabsTrigger value="invites">Invites</TabsTrigger>
@@ -303,6 +329,25 @@ export default function CommunityDetailPage() {
         {/* Contributions Tab */}
         <TabsContent value="contributions">
           <ContributionsFeed communityId={community.id} />
+        </TabsContent>
+
+        {/* Forum Tab — per-community topic board. Manager-pinned topics
+            float to the top; any member can author a regular topic. */}
+        <TabsContent value="forum">
+          <CommunityForum
+            communityId={community.id}
+            viewerIsManager={viewerIsManager || isInstructor}
+            viewerIsMember={isMember || isInstructor}
+          />
+        </TabsContent>
+
+        {/* Media Tab — community reading/viewing list. Each added
+            item gets its own discussion board on its media page. */}
+        <TabsContent value="media">
+          <CommunityMediaList
+            communityId={community.id}
+            canCurate={viewerIsManager || isInstructor}
+          />
         </TabsContent>
 
         {/* Overview Tab */}

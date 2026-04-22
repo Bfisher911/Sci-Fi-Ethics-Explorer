@@ -985,6 +985,65 @@ export interface CommunityMemberInfo {
   joinedAt?: Date | any;
 }
 
+// ─── Community Forum ────────────────────────────────────────────────
+
+/**
+ * A topic (thread) inside a community's general-purpose forum.
+ *
+ * Authorship:
+ *  - Any member of the community may create a regular topic.
+ *  - Only a super-admin or a user with `UserProfile.communityManager`
+ *    true may create or mark a `pinned` topic. Pinned topics render
+ *    above the member-authored list in the forum view.
+ *
+ * Scope:
+ *  - The generic community forum lives under
+ *    `communities/{cid}/forumTopics/{tid}`.
+ *  - A per-media discussion board lives under
+ *    `communities/{cid}/mediaDiscussions/{mediaId}/threads/{tid}`
+ *    and reuses the ForumReply shape for posts.
+ */
+export interface ForumTopic {
+  id: string;
+  communityId: string;
+  /** When set, this topic is a discussion thread attached to a sci-fi
+   *  media artifact that the community has added. When absent, this
+   *  is a general community forum topic. */
+  mediaId?: string;
+  title: string;
+  /** The opening post. Markdown is allowed but not required. */
+  body: string;
+  authorId: string;
+  authorName: string;
+  authorAvatarUrl?: string;
+  /** True only when created by a community manager or super-admin.
+   *  Authority to set this is enforced server-side. */
+  pinned: boolean;
+  /** True when a community manager has locked further replies. */
+  locked: boolean;
+  replyCount: number;
+  /** Cached last-reply timestamp for sorting by activity. */
+  lastReplyAt?: Date | any;
+  createdAt: Date | any;
+  updatedAt?: Date | any;
+}
+
+export interface ForumReply {
+  id: string;
+  topicId: string;
+  communityId: string;
+  body: string;
+  authorId: string;
+  authorName: string;
+  authorAvatarUrl?: string;
+  createdAt: Date | any;
+  /** Soft-deleted replies keep the id but replace body with a
+   *  redaction notice. Populated when a manager removes a post. */
+  removedByManagerId?: string;
+  removedAt?: Date | any;
+  removalReason?: string;
+}
+
 // ─── Subscriptions & Billing ────────────────────────────────────────
 
 export type BillingPeriodId = 'monthly' | 'annual' | 'semester';
