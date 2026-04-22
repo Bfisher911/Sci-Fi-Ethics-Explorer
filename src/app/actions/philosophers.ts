@@ -9,10 +9,17 @@ type ActionResult<T = undefined> =
   | { success: true; data: T }
   | { success: false; error: string };
 
+const PLACEHOLDER_IMAGE_RE = /placehold|placeholder/i;
+
+function isRealImageUrl(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0 && !PLACEHOLDER_IMAGE_RE.test(value);
+}
+
 function philosopherFromDoc(
   id: string,
   data: Record<string, any>
 ): Philosopher {
+  const fallback = philosopherData.find((item) => item.id === id);
   return {
     id,
     name: data.name || '',
@@ -21,8 +28,8 @@ function philosopherFromDoc(
     keyIdeas: data.keyIdeas || [],
     relatedFrameworks: data.relatedFrameworks || [],
     famousWorks: data.famousWorks || [],
-    imageUrl: data.imageUrl,
-    imageHint: data.imageHint,
+    imageUrl: isRealImageUrl(data.imageUrl) ? data.imageUrl : fallback?.imageUrl,
+    imageHint: data.imageHint || fallback?.imageHint,
   };
 }
 

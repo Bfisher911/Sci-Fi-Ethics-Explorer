@@ -15,6 +15,7 @@ import * as https from 'https';
 import { philosopherData } from '../data/philosophers';
 import { ethicalTheories } from '../data/ethical-theories';
 import { mockStories } from '../data/stories';
+import { scifiMediaData } from '../data/scifi-media';
 
 const API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
 if (!API_KEY) {
@@ -30,7 +31,8 @@ const PUBLIC_DIR = path.join(__dirname, '..', '..', 'public', 'images');
 const PHIL_DIR = path.join(PUBLIC_DIR, 'philosophers');
 const THEORY_DIR = path.join(PUBLIC_DIR, 'theories');
 const STORY_DIR = path.join(PUBLIC_DIR, 'stories');
-for (const d of [PUBLIC_DIR, PHIL_DIR, THEORY_DIR, STORY_DIR]) {
+const MEDIA_DIR = path.join(PUBLIC_DIR, 'media');
+for (const d of [PUBLIC_DIR, PHIL_DIR, THEORY_DIR, STORY_DIR, MEDIA_DIR]) {
   if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
 }
 
@@ -70,6 +72,11 @@ function buildStoryPrompt(s: typeof mockStories[number]): string {
   return `Cinematic key art for a science-fiction short story titled "${s.title}". Genre: ${s.genre}. Theme: ${s.theme}. ${s.imageHint ? `Visual cue: ${s.imageHint}.` : ''} Style: dramatic, painterly, evocative, atmospheric. Deep contrast, rich color, hint of mystery. No text or logos. Wide cinematic composition (3:2 aspect ratio). Mood: ${s.description.slice(0, 140)}. Inspired by the cover art of Ted Chiang's collections and Denis Villeneuve films.`;
 }
 
+
+function buildMediaPrompt(m: typeof scifiMediaData[number]): string {
+  return `Cinematic conceptual art for the sci-fi ${m.category} "${m.title}". ${m.imageHint ? `Visual cue: ${m.imageHint}.` : ''} Style: highly detailed, evocative, matching the mood of the plot: ${m.plot.slice(0, 100)}. 16:9 aspect ratio. No text or logos.`;
+}
+
 // ─── Build the job queue ───────────────────────────────────────────
 
 const jobs: GenJob[] = [];
@@ -98,6 +105,16 @@ for (const s of mockStories) {
     label: `story: ${s.title}`,
     subdir: STORY_DIR,
     prompt: buildStoryPrompt(s),
+  });
+}
+
+
+for (const m of scifiMediaData) {
+  jobs.push({
+    id: m.id,
+    label: `media: ${m.title}`,
+    subdir: MEDIA_DIR,
+    prompt: buildMediaPrompt(m),
   });
 }
 
