@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +46,20 @@ export function MediaDetail({ media }: MediaDetailProps) {
     <div className="space-y-6">
       {/* Header */}
       <Card className="bg-card/80 backdrop-blur-sm overflow-hidden">
+        {media.imageUrl && (
+          <div className="relative w-full aspect-[16/9] max-h-[520px] overflow-hidden bg-muted">
+            <Image
+              src={media.imageUrl}
+              alt={`Artwork for ${media.title}`}
+              fill
+              priority
+              sizes="(max-width: 1200px) 100vw, 1200px"
+              className="object-cover"
+              data-ai-hint={media.imageHint || 'science fiction media artwork'}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-card/70 via-transparent to-transparent" />
+          </div>
+        )}
         <CardContent className="p-6 space-y-4">
           <div className="flex items-center gap-2 flex-wrap">
             <Icon className="h-5 w-5 text-primary" />

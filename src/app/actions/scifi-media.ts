@@ -9,7 +9,14 @@ type ActionResult<T = undefined> =
   | { success: true; data: T }
   | { success: false; error: string };
 
+const PLACEHOLDER_IMAGE_RE = /placehold|placeholder/i;
+
+function isRealImageUrl(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0 && !PLACEHOLDER_IMAGE_RE.test(value);
+}
+
 function mediaFromDoc(id: string, data: Record<string, any>): SciFiMedia {
+  const fallback = scifiMediaData.find((item) => item.id === id);
   return {
     id,
     title: data.title || '',
@@ -21,8 +28,8 @@ function mediaFromDoc(id: string, data: Record<string, any>): SciFiMedia {
     authorIds: data.authorIds || [],
     relatedFrameworks: data.relatedFrameworks || [],
     meta: data.meta,
-    imageUrl: data.imageUrl,
-    imageHint: data.imageHint,
+    imageUrl: isRealImageUrl(data.imageUrl) ? data.imageUrl : fallback?.imageUrl,
+    imageHint: data.imageHint || fallback?.imageHint,
   };
 }
 

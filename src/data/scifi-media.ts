@@ -13,6 +13,7 @@ export const scifiMediaData: SciFiMedia[] = [
     authorIds: ['philip-k-dick'],
     relatedFrameworks: ['deontology', 'ethics-of-care', 'existentialist-ethics'],
     meta: '117 min (Final Cut)',
+    imageUrl: '/images/media/blade-runner.png',
     imageHint: 'cyberpunk city rain neon',
   },
   {
@@ -25,6 +26,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['The Turing test and its inadequacy', 'Gender, power, and AI embodiment', 'Consent and confinement of created minds', 'Whether deception implies agency'],
     relatedFrameworks: ['deontology', 'existentialist-ethics', 'ethics-of-care'],
     meta: '108 min',
+    imageUrl: '/images/media/ex-machina.png',
     imageHint: 'futuristic android laboratory',
   },
   {
@@ -37,6 +39,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['AI alignment and conflicting directives', 'The tragedy of impossible instructions', 'Human evolution and technological transcendence', 'Tool use as the origin of ethics'],
     relatedFrameworks: ['deontology', 'utilitarianism', 'existentialist-ethics'],
     meta: '149 min',
+    imageUrl: '/images/media/2001-a-space-odyssey.png',
     imageHint: 'space station monolith stars',
   },
   {
@@ -49,6 +52,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['Simulated reality and the value of truth', 'Autonomy vs comfortable illusion', 'Systemic oppression and the ethics of awakening others', 'Free will inside deterministic systems'],
     relatedFrameworks: ['existentialist-ethics', 'social-contract-theory', 'deontology'],
     meta: '136 min',
+    imageUrl: '/images/media/the-matrix.png',
     imageHint: 'green code digital rain',
   },
   {
@@ -61,6 +65,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['Genetic discrimination and social stratification', 'Nature vs. nurture and the ethics of enhancement', 'Identity fraud as resistance to unjust systems', 'The moral weight of effort and aspiration'],
     relatedFrameworks: ['social-contract-theory', 'virtue-ethics', 'deontology'],
     meta: '106 min',
+    imageUrl: '/images/media/gattaca.png',
     imageHint: 'futuristic clean architecture dna',
   },
   {
@@ -74,6 +79,7 @@ export const scifiMediaData: SciFiMedia[] = [
     authorIds: ['ted-chiang'],
     relatedFrameworks: ['virtue-ethics', 'buddhist-ethics', 'existentialist-ethics'],
     meta: '116 min',
+    imageUrl: '/images/media/arrival-film.png',
     imageHint: 'alien spacecraft fog linguistics',
   },
   {
@@ -86,6 +92,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['Emotional bonds with AI', 'Asymmetric growth between human and machine', 'Loneliness, connection, and what counts as a relationship', 'The ethics of designing beings that outgrow their users'],
     relatedFrameworks: ['ethics-of-care', 'existentialist-ethics', 'virtue-ethics'],
     meta: '126 min',
+    imageUrl: '/images/media/her.png',
     imageHint: 'warm city sunset solitary figure',
   },
 
@@ -101,6 +108,7 @@ export const scifiMediaData: SciFiMedia[] = [
     authorIds: ['mary-shelley'],
     relatedFrameworks: ['deontology', 'virtue-ethics', 'ethics-of-care'],
     meta: 'Novel, ~280 pages',
+    imageUrl: '/images/media/frankenstein-book.png',
     imageHint: 'gothic laboratory lightning',
   },
   {
@@ -114,6 +122,7 @@ export const scifiMediaData: SciFiMedia[] = [
     authorIds: ['isaac-asimov'],
     relatedFrameworks: ['deontology', 'utilitarianism', 'natural-law'],
     meta: 'Collection, ~253 pages',
+    imageUrl: '/images/media/i-robot-book.png',
     imageHint: 'retro robot positronic brain',
   },
   {
@@ -127,6 +136,7 @@ export const scifiMediaData: SciFiMedia[] = [
     authorIds: ['philip-k-dick'],
     relatedFrameworks: ['ethics-of-care', 'existentialist-ethics', 'deontology'],
     meta: 'Novel, ~240 pages',
+    imageUrl: '/images/media/do-androids-dream.png',
     imageHint: 'android electric sheep dystopia',
   },
   {
@@ -140,6 +150,7 @@ export const scifiMediaData: SciFiMedia[] = [
     authorIds: ['ursula-le-guin'],
     relatedFrameworks: ['daoist-ethics', 'ubuntu-ethics', 'social-contract-theory'],
     meta: 'Novel, ~286 pages',
+    imageUrl: '/images/media/left-hand-of-darkness.png',
     imageHint: 'ice planet alien landscape',
   },
   {
@@ -153,6 +164,7 @@ export const scifiMediaData: SciFiMedia[] = [
     authorIds: ['octavia-butler'],
     relatedFrameworks: ['ethics-of-care', 'ubuntu-ethics', 'environmental-ethics'],
     meta: 'Novel, ~345 pages',
+    imageUrl: '/images/media/parable-of-the-sower.png',
     imageHint: 'post-apocalyptic road seeds growing',
   },
   {
@@ -166,6 +178,7 @@ export const scifiMediaData: SciFiMedia[] = [
     authorIds: ['william-gibson'],
     relatedFrameworks: ['social-contract-theory', 'existentialist-ethics', 'pragmatist-ethics'],
     meta: 'Novel, ~271 pages',
+    imageUrl: '/images/media/neuromancer-book.png',
     imageHint: 'neon cyberspace hacker terminal',
   },
   {
@@ -179,6 +192,7 @@ export const scifiMediaData: SciFiMedia[] = [
     authorIds: ['liu-cixin'],
     relatedFrameworks: ['utilitarianism', 'social-contract-theory', 'cosmopolitanism'],
     meta: 'Novel, ~400 pages (English translation by Ken Liu)',
+    imageUrl: '/images/media/three-body-problem-book.png',
     imageHint: 'three suns alien civilization',
   },
   {
@@ -192,6 +206,7 @@ export const scifiMediaData: SciFiMedia[] = [
     authorIds: ['ted-chiang'],
     relatedFrameworks: ['virtue-ethics', 'ethics-of-care', 'buddhist-ethics'],
     meta: 'Collection, ~352 pages',
+    imageUrl: '/images/media/exhalation-book.png',
     imageHint: 'mechanical lungs clockwork',
   },
   {
@@ -205,6 +220,7 @@ export const scifiMediaData: SciFiMedia[] = [
     authorIds: ['margaret-atwood'],
     relatedFrameworks: ['deontology', 'ethics-of-care', 'discourse-ethics'],
     meta: 'Novel, ~311 pages',
+    imageUrl: '/images/media/handmaids-tale-book.png',
     imageHint: 'dystopian red cloak woman',
   },
 
@@ -219,6 +235,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['Social media, reputation, and human worth', 'Digital afterlife and consent', 'Surveillance as entertainment', 'The gap between technological capability and moral readiness'],
     relatedFrameworks: ['utilitarianism', 'deontology', 'social-contract-theory'],
     meta: 'Anthology series, 6 seasons',
+    imageUrl: '/images/media/black-mirror.png',
     imageHint: 'dark screen reflection technology',
   },
   {
@@ -231,6 +248,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['Consciousness and the moral status of artificial beings', 'The ethics of designed suffering and memory erasure', 'Free will in deterministic systems', 'Exploitation disguised as entertainment'],
     relatedFrameworks: ['deontology', 'existentialist-ethics', 'virtue-ethics'],
     meta: '4 seasons, HBO',
+    imageUrl: '/images/media/westworld.png',
     imageHint: 'android western park maze',
   },
   {
@@ -243,6 +261,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['Resource scarcity and distributive justice', 'Colonialism and labor exploitation in space', 'Weapons of mass destruction and preemptive ethics', 'Political realism vs moral idealism'],
     relatedFrameworks: ['social-contract-theory', 'utilitarianism', 'environmental-ethics'],
     meta: '6 seasons, Syfy/Amazon',
+    imageUrl: '/images/media/the-expanse.png',
     imageHint: 'space station asteroid belt ships',
   },
   {
@@ -255,6 +274,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['Personal identity and consciousness splitting', 'Consent on behalf of a self that does not yet exist', 'Labor exploitation through designed ignorance', 'Corporate control of identity and memory'],
     relatedFrameworks: ['deontology', 'existentialist-ethics', 'social-contract-theory'],
     meta: '2 seasons, Apple TV+',
+    imageUrl: '/images/media/severance.png',
     imageHint: 'corporate office retro sterile corridor',
   },
   {
@@ -267,6 +287,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['AI rights and legal personhood', 'Labor displacement and economic ethics', 'Family bonds with artificial beings', 'Discrimination and the civil-rights analogy'],
     relatedFrameworks: ['deontology', 'social-contract-theory', 'ethics-of-care'],
     meta: '3 seasons, Channel 4/AMC',
+    imageUrl: '/images/media/humans-tv.png',
     imageHint: 'humanoid robot domestic setting',
   },
   {
@@ -279,6 +300,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['Determinism and moral responsibility', 'The ethics of prediction and foreknowledge', 'Surveillance through simulation', 'Corporate secrecy and the concentration of godlike power'],
     relatedFrameworks: ['existentialist-ethics', 'utilitarianism', 'deontology'],
     meta: 'Limited series, 8 episodes, FX/Hulu',
+    imageUrl: '/images/media/devs.png',
     imageHint: 'quantum computer golden light forest',
   },
 
@@ -293,6 +315,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['Android rights and the civil-rights parallel', 'Player agency and moral responsibility in interactive narrative', 'Nonviolence vs armed resistance', 'The ethics of designed servitude'],
     relatedFrameworks: ['deontology', 'social-contract-theory', 'ubuntu-ethics'],
     meta: 'Interactive game, PS4/PC',
+    imageUrl: '/images/media/detroit-become-human.png',
     imageHint: 'android face LED temple city',
   },
   {
@@ -305,6 +328,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['Personal identity and the copy problem', 'Consciousness transfer as illusion', 'The moral status of digital copies', 'Isolation, horror, and what makes a life worth preserving'],
     relatedFrameworks: ['existentialist-ethics', 'deontology', 'buddhist-ethics'],
     meta: 'Horror game, PC/PS4',
+    imageUrl: '/images/media/soma-game.png',
     imageHint: 'underwater facility dark corridors',
   },
   {
@@ -317,6 +341,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['Free will and the illusion of choice', 'Obedience to narrative authority', 'Meta-ethics of designed systems', 'Whether meaningful agency is possible within a closed system'],
     relatedFrameworks: ['existentialist-ethics', 'discourse-ethics'],
     meta: 'Narrative game, PC/Mac/Console',
+    imageUrl: '/images/media/the-stanley-parable.png',
     imageHint: 'office corridor two doors',
   },
   {
@@ -329,6 +354,7 @@ export const scifiMediaData: SciFiMedia[] = [
     ethicsExplored: ['AI deception and the unreliable narrator', 'Institutional accountability for reckless research', 'The ethics of testing on unwilling subjects', 'Humor as a vehicle for moral discomfort'],
     relatedFrameworks: ['deontology', 'virtue-ethics', 'pragmatist-ethics'],
     meta: 'Puzzle games, PC/Console',
+    imageUrl: '/images/media/portal-game.png',
     imageHint: 'portal gun test chamber aperture',
   },
 ];

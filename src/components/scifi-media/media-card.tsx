@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +30,19 @@ export function MediaCard({ media }: MediaCardProps) {
   const Icon = CATEGORY_ICON[media.category] || Gamepad2;
   return (
     <Card className="bg-card/80 backdrop-blur-sm flex flex-col overflow-hidden group hover:border-primary/40 transition-colors">
+      {media.imageUrl && (
+        <div className="relative w-full aspect-[16/9] overflow-hidden">
+          <Image
+            src={media.imageUrl}
+            alt={`Artwork for ${media.title}`}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            data-ai-hint={media.imageHint || 'science fiction media artwork'}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-transparent" />
+        </div>
+      )}
       <CardHeader>
         <div className="flex items-center gap-2 mb-1">
           <Icon className="h-4 w-4 text-primary" />
