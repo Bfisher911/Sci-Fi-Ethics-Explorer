@@ -9,6 +9,9 @@ export interface DirectoryUser {
   avatarUrl?: string;
   dominantFramework?: string;
   bio?: string;
+  /** Present so the super-admin can see who already has the flag and
+   *  avoid re-granting it. */
+  communityManager?: boolean;
 }
 
 export interface DirectoryFilters {
@@ -69,6 +72,7 @@ export async function getDirectoryUsers(
         avatarUrl: data.avatarUrl || undefined,
         dominantFramework,
         bio: data.bio || undefined,
+        communityManager: data.communityManager === true || undefined,
       });
     }
 

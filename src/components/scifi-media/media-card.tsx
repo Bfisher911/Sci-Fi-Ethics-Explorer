@@ -31,12 +31,12 @@ export function MediaCard({ media }: MediaCardProps) {
   return (
     <Card className="bg-card/80 backdrop-blur-sm flex flex-col overflow-hidden group hover:border-primary/40 transition-colors">
       {media.imageUrl && (
-        <div className="relative w-full aspect-[16/9] overflow-hidden">
+        <div className="relative w-full aspect-[16/9] overflow-hidden bg-muted">
           <Image
             src={media.imageUrl}
             alt={`Artwork for ${media.title}`}
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover transition-transform duration-700 group-hover:scale-105"
             data-ai-hint={media.imageHint || 'science fiction media artwork'}
           />

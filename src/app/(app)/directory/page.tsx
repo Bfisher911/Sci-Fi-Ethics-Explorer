@@ -3,13 +3,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Users, Search, UserCircle, Eye, Loader2 } from 'lucide-react';
+import { Users, Search, UserCircle, Eye, Loader2, Shield, ShieldCheck } from 'lucide-react';
 
 import {
   getDirectoryUsers,
   type DirectoryUser,
 } from '@/app/actions/directory';
 import { startImpersonation } from '@/app/actions/impersonation';
+import {
+  grantCommunityManager,
+  revokeCommunityManager,
+} from '@/app/actions/community-manager';
 import { useAuth } from '@/hooks/use-auth';
 import { useAdmin } from '@/hooks/use-admin';
 import { useToast } from '@/hooks/use-toast';
@@ -63,6 +67,11 @@ interface UserMiniCardProps {
   /** Called when the super-admin clicks Impersonate; parent owns the action. */
   onImpersonate?: (uid: string) => void;
   impersonatingUid?: string | null;
+  /** When true, render the super-admin "Upgrade / revoke community
+   *  manager" control. Parent owns the mutation. */
+  showManagerToggle: boolean;
+  onToggleManager?: (uid: string, currentlyManager: boolean) => void;
+  togglingManagerUid?: string | null;
 }
 
 function UserMiniCard({
@@ -70,6 +79,9 @@ function UserMiniCard({
   showImpersonate,
   onImpersonate,
   impersonatingUid,
+  showManagerToggle,
+  onToggleManager,
+  togglingManagerUid,
 }: UserMiniCardProps): React.ReactElement {
   const initial =
     user.displayName && user.displayName.length > 0
@@ -103,6 +115,15 @@ function UserMiniCard({
               No framework yet
             </p>
           )}
+          {user.communityManager && (
+            <Badge
+              variant="outline"
+              className="mt-1 border-primary/50 text-primary max-w-full"
+            >
+              <ShieldCheck className="h-3 w-3 mr-1" />
+              <span className="truncate">Community manager</span>
+            </Badge>
+          )}
         </div>
         <div className="flex flex-col gap-2 w-full mt-2">
           <Button asChild size="sm" variant="outline">
@@ -124,6 +145,33 @@ function UserMiniCard({
               Impersonate User
             </Button>
           )}
+          {showManagerToggle && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className={
+                user.communityManager
+                  ? 'text-muted-foreground hover:text-destructive hover:bg-destructive/10'
+                  : 'text-primary hover:text-primary hover:bg-primary/10'
+              }
+              onClick={() =>
+                onToggleManager?.(user.uid, user.communityManager === true)
+              }
+              disabled={togglingManagerUid === user.uid}
+              title={
+                user.communityManager
+                  ? 'Revoke community-manager role'
+                  : 'Upgrade this member to community manager'
+              }
+            >
+              {togglingManagerUid === user.uid ? (
+                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+              ) : (
+                <Shield className="h-3.5 w-3.5 mr-1.5" />
+              )}
+              {user.communityManager ? 'Revoke manager' : 'Upgrade to manager'}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -143,6 +191,49 @@ export default function DirectoryPage(): React.ReactElement {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [frameworkFilter, setFrameworkFilter] = useState<string>(ALL_VALUE);
   const [impersonatingUid, setImpersonatingUid] = useState<string | null>(null);
+  const [togglingManagerUid, setTogglingManagerUid] = useState<string | null>(null);
+
+  const handleToggleManager = async (
+    targetUid: string,
+    currentlyManager: boolean
+  ): Promise<void> => {
+    if (!user || !isSuperAdmin) return;
+    setTogglingManagerUid(targetUid);
+    try {
+      const res = currentlyManager
+        ? await revokeCommunityManager(targetUid, user.uid)
+        : await grantCommunityManager(targetUid, user.uid);
+      if (res.success) {
+        toast({
+          title: currentlyManager
+            ? 'Community-manager role revoked'
+            : 'Member upgraded to community manager',
+        });
+        // Optimistically update the card without refetching the whole list.
+        setAllUsers((prev) =>
+          prev.map((u) =>
+            u.uid === targetUid
+              ? { ...u, communityManager: !currentlyManager }
+              : u
+          )
+        );
+      } else {
+        toast({
+          title: 'Could not update role',
+          description: res.error,
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      toast({
+        title: 'Could not update role',
+        description: err instanceof Error ? err.message : String(err),
+        variant: 'destructive',
+      });
+    } finally {
+      setTogglingManagerUid(null);
+    }
+  };
 
   const handleImpersonate = async (targetUid: string) => {
     if (!user || !isSuperAdmin) return;
@@ -297,6 +388,9 @@ export default function DirectoryPage(): React.ReactElement {
                 showImpersonate={isSuperAdmin && !!user && u.uid !== user.uid}
                 onImpersonate={handleImpersonate}
                 impersonatingUid={impersonatingUid}
+                showManagerToggle={isSuperAdmin && !!user && u.uid !== user.uid}
+                onToggleManager={handleToggleManager}
+                togglingManagerUid={togglingManagerUid}
               />
             </RevealOnScroll>
           ))

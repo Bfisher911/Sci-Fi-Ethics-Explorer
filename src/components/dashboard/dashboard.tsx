@@ -58,6 +58,7 @@ import { getDebates } from '@/app/actions/debates';
 import { addBookmark } from '@/app/actions/bookmarks';
 import { getUserProfile } from '@/app/actions/user';
 import { chapters as ALL_CHAPTERS } from '@/data/textbook';
+import { getQuoteOfTheDay, type TechEthicsQuote } from '@/data/quotes';
 import type { Chapter } from '@/types/textbook';
 import type { Debate, Story } from '@/types';
 
@@ -392,10 +393,15 @@ export function Dashboard(): JSX.Element {
     }
   }
 
+  const quote = getQuoteOfTheDay();
+
   return (
     <div className="mx-auto w-full max-w-[1400px] px-6 py-6 md:px-8 md:py-8 lg:px-10">
+      {/* Quote of the Day — prominent, above the greeting strip */}
+      <QuoteOfTheDayCard quote={quote} />
+
       {/* Greeting strip */}
-      <div className="mb-4 flex flex-wrap items-baseline gap-4">
+      <div className="mb-4 mt-5 flex flex-wrap items-baseline gap-4">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
             Mission Brief · {weekday()}
@@ -473,6 +479,119 @@ export function Dashboard(): JSX.Element {
             <DebateRail items={debatePayload} />
           </GlassCard>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   QuoteOfTheDayCard
+
+   Shows a single curated technology-ethics quote at the top of the
+   dashboard. The quote is deterministic by UTC date so every visitor
+   on a given calendar day sees the same one. The data source is
+   src/data/quotes.ts, which carries 365+ entries, and the index
+   rotates via quoteIndexForDate so adding quotes does not break the
+   rotation.
+   ────────────────────────────────────────────────────────────────── */
+
+const QUOTE_KIND_LABEL: Record<TechEthicsQuote['kind'], string> = {
+  philosopher: 'Philosopher',
+  'scifi-author': 'Sci-Fi Author',
+  'scifi-book': 'Sci-Fi Book',
+  'scifi-film': 'Sci-Fi Film',
+  'scifi-tv': 'Sci-Fi TV',
+  'scifi-game': 'Sci-Fi Game',
+  scientist: 'Scientist / Engineer',
+  other: 'Voice',
+};
+
+function QuoteOfTheDayCard({ quote }: { quote: TechEthicsQuote }): JSX.Element {
+  return (
+    <div
+      className="relative overflow-hidden rounded-2xl border p-6 backdrop-blur md:p-8"
+      style={{
+        borderColor: 'hsl(var(--primary) / 0.35)',
+        background:
+          'linear-gradient(135deg, hsl(var(--card) / 0.55) 0%, hsl(var(--sidebar-background) / 0.5) 60%, hsl(var(--accent) / 0.08) 100%)',
+      }}
+    >
+      {/* Ambient glow — identifies the card even in a thumbnail */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{
+          top: -80,
+          left: -80,
+          width: 260,
+          height: 260,
+          background:
+            'radial-gradient(circle, hsl(var(--primary) / 0.25) 0%, transparent 70%)',
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute"
+        style={{
+          bottom: -60,
+          right: -60,
+          width: 200,
+          height: 200,
+          background:
+            'radial-gradient(circle, hsl(var(--accent) / 0.2) 0%, transparent 70%)',
+        }}
+      />
+      <div className="relative flex flex-col gap-3">
+        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
+          <Sparkles className="h-3 w-3" />
+          Quote of the Day
+          <span className="opacity-50">·</span>
+          <span className="text-muted-foreground">
+            {QUOTE_KIND_LABEL[quote.kind]}
+          </span>
+        </div>
+        <blockquote
+          className="m-0 font-headline text-[22px] font-semibold leading-snug text-foreground md:text-[28px]"
+          style={{
+            textShadow: '0 1px 24px rgba(0,0,0,0.3)',
+          }}
+        >
+          <span
+            className="mr-1 text-3xl align-[-0.15em]"
+            style={{ color: 'hsl(var(--primary))' }}
+            aria-hidden
+          >
+            “
+          </span>
+          {quote.text}
+          <span
+            className="ml-1 text-3xl align-[-0.15em]"
+            style={{ color: 'hsl(var(--primary))' }}
+            aria-hidden
+          >
+            ”
+          </span>
+        </blockquote>
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
+          <span className="font-semibold text-foreground">
+            — {quote.attribution}
+          </span>
+          {quote.source && (
+            <span className="italic text-muted-foreground">{quote.source}</span>
+          )}
+          {quote.year && (
+            <span className="text-muted-foreground">· {quote.year}</span>
+          )}
+        </div>
+        {quote.context && (
+          <p
+            className="mt-1 border-t pt-3 text-[12.5px] leading-snug text-muted-foreground"
+            style={{ borderColor: 'hsl(var(--border) / 0.5)' }}
+          >
+            <span className="font-semibold text-primary">Why it matters: </span>
+            {quote.context}
+          </p>
+        )}
       </div>
     </div>
   );

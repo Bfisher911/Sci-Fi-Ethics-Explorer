@@ -35,6 +35,10 @@ export interface UserProfile {
   activeLicenseId?: string;
   onboardingComplete?: boolean;
   isAdmin?: boolean;
+  /** When true, this user has moderation powers inside any community
+   *  they are a member of. Only the super-admin can grant or revoke
+   *  this flag — see src/app/actions/community-manager.ts. */
+  communityManager?: boolean;
   /** When true, user appears as "Anonymous Explorer" on public leaderboards. */
   anonymousOnLeaderboard?: boolean;
   /**
