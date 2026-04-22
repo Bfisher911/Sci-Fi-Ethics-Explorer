@@ -701,7 +701,7 @@ Her contribution to technology ethics is the proof that a serious ethical fictio
     relatedFrameworks: ['ethics-of-care', 'virtue-ethics', 'capabilities-approach'],
     notableWorks: ['The Long Way to a Small, Angry Planet', 'A Closed and Common Orbit', 'Record of a Spaceborn Few', 'A Psalm for the Wild-Built', 'To Be Taught, If Fortunate'],
     techEthicsFocus: 'The contemporary proof that serious technology ethics can be worked out inside sustained, collaborative, non-crisis relationships — Chambers insists that repair is the substrate of civilization and that domestic attention is an engineering discipline.',
-    imageUrl: '/images/authors/becky_chambers.svg',
+    imageUrl: '/images/authors/becky-chambers.png',
     imageHint: 'american contemporary hopepunk writer',
   },
   {
@@ -726,7 +726,7 @@ Her contribution to technology ethics is the steadiest fictional treatment curre
     relatedFrameworks: ['deontology', 'ethics-of-care', 'contractualism', 'virtue-ethics'],
     notableWorks: ['All Systems Red', 'Artificial Condition', 'Rogue Protocol', 'Exit Strategy', 'Network Effect'],
     techEthicsFocus: 'The most influential contemporary fictional treatment of autonomous-agent ethics — Wells insists that a machine choosing to own itself is a political event, and that the structures deciding whose autonomy counts are exactly as important as whether the machine has an inner life.',
-    imageUrl: '/images/authors/martha_wells.svg',
+    imageUrl: '/images/authors/martha-wells.png',
     imageHint: 'american contemporary ai fiction writer',
   },
   {
@@ -751,7 +751,7 @@ His contribution to the field is the insistence that technology ethics is uninte
     relatedFrameworks: ['social-contract-theory', 'utilitarianism', 'capabilities-approach', 'discourse-ethics'],
     notableWorks: ['Little Brother', 'Walkaway', 'Homeland', 'Radicalized', 'For the Win'],
     techEthicsFocus: 'The indispensable contemporary writer at the intersection of technology, intellectual-property law, and political economy — Doctorow insists that the important fights are about who controls the affordances of a device after purchase, and that every question that pretends to be purely technical is usually a legal question wearing a costume.',
-    imageUrl: '/images/authors/cory_doctorow.svg',
+    imageUrl: '/images/authors/cory-doctorow.png',
     imageHint: 'contemporary tech activist novelist',
   },
   {
@@ -776,7 +776,7 @@ His contribution to the field is the most sustained argument that technological 
     relatedFrameworks: ['social-contract-theory', 'contractualism', 'utilitarianism'],
     notableWorks: ['Accelerando', 'The Laundry Files (series)', 'Rule 34', 'Halting State', 'Glasshouse'],
     techEthicsFocus: 'The field\'s most economically literate novelist — Stross insists that the interesting AI is already here in the form of corporations and derivatives markets, and that a technology ethics that ignores the fiscal and legal substrate is answering the wrong question.',
-    imageUrl: '/images/authors/charles_stross.svg',
+    imageUrl: '/images/authors/charles-stross.png',
     imageHint: 'british contemporary near-future novelist',
   },
   {
@@ -801,7 +801,7 @@ Her contribution to technology ethics is the most sustained serious fictional tr
     relatedFrameworks: ['utilitarianism', 'social-contract-theory', 'contractualism', 'capabilities-approach'],
     notableWorks: ['Beggars in Spain', 'Beggars and Choosers', 'Probability Moon', 'Nothing Human', 'Yesterday\'s Kin'],
     techEthicsFocus: 'The genre\'s most careful novelist of genetic and cognitive enhancement as political problems — Kress asks what a society owes to the humans it has modified, and her three decades of work on the question are now more relevant than ever to the AI-augmentation debate.',
-    imageUrl: '/images/authors/nancy_kress.svg',
+    imageUrl: '/images/authors/nancy-kress.png',
     imageHint: 'american contemporary biological science fiction writer',
   },
   {
@@ -826,7 +826,7 @@ His contribution to technology ethics is two-fold. In the Uplift books, he gives
     relatedFrameworks: ['ethics-of-care', 'virtue-ethics', 'utilitarianism', 'environmental-ethics'],
     notableWorks: ['Startide Rising', 'The Uplift War', 'Sundiver', 'Earth', 'The Transparent Society (nonfiction)'],
     techEthicsFocus: 'The field\'s most ambitious long-form treatment of uplift ethics and one of the most productive contrarian voices on the surveillance-privacy debate — Brin asks what a creator owes to a new sapience and what an open society actually requires once recording is ambient.',
-    imageUrl: '/images/authors/david_brin.svg',
+    imageUrl: '/images/authors/david-brin.png',
     imageHint: 'american contemporary hard sf writer',
   },
   {
@@ -851,7 +851,7 @@ His contribution to technology ethics is the demonstration that fiction can oper
     relatedFrameworks: ['utilitarianism', 'virtue-ethics', 'environmental-ethics', 'cosmopolitanism'],
     notableWorks: ['Last and First Men', 'Star Maker', 'Odd John', 'Sirius', 'Darkness and the Light'],
     techEthicsFocus: 'The founding author of serious deep-time fiction — Stapledon demonstrated that the novel form could operate at scales where no individual is the moral unit, and the questions he asked about obligations between successor species are now central to longtermist ethics.',
-    imageUrl: '/images/authors/olaf_stapledon.svg',
+    imageUrl: '/images/authors/olaf-stapledon.png',
     imageHint: 'early twentieth century philosophical novelist',
   },
   {
@@ -876,7 +876,7 @@ VanderMeer's technology ethics refuse the assumption that ecology and biotechnol
     relatedFrameworks: ['environmental-ethics', 'existentialist-ethics', 'ethics-of-care'],
     notableWorks: ['Annihilation', 'Authority', 'Acceptance', 'Borne', 'Hummingbird Salamander'],
     techEthicsFocus: 'The indispensable contemporary writer of eco-weird fiction and one of the strongest current arguments that ecological and biotechnology ethics cannot be worked out inside the epistemologies that created the crisis — VanderMeer insists that honest encounter with what exceeds our categories is itself a moral discipline.',
-    imageUrl: '/images/authors/jeff_vandermeer.svg',
+    imageUrl: '/images/authors/jeff-vandermeer.png',
     imageHint: 'contemporary new weird eco-horror writer',
   },
 ];

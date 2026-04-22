@@ -16,6 +16,7 @@ import { philosopherData } from '../data/philosophers';
 import { ethicalTheories } from '../data/ethical-theories';
 import { mockStories } from '../data/stories';
 import { scifiMediaData } from '../data/scifi-media';
+import { scifiAuthorData } from '../data/scifi-authors';
 
 const API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
 if (!API_KEY) {
@@ -32,7 +33,8 @@ const PHIL_DIR = path.join(PUBLIC_DIR, 'philosophers');
 const THEORY_DIR = path.join(PUBLIC_DIR, 'theories');
 const STORY_DIR = path.join(PUBLIC_DIR, 'stories');
 const MEDIA_DIR = path.join(PUBLIC_DIR, 'media');
-for (const d of [PUBLIC_DIR, PHIL_DIR, THEORY_DIR, STORY_DIR, MEDIA_DIR]) {
+const AUTHOR_DIR = path.join(PUBLIC_DIR, 'authors');
+for (const d of [PUBLIC_DIR, PHIL_DIR, THEORY_DIR, STORY_DIR, MEDIA_DIR, AUTHOR_DIR]) {
   if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
 }
 
@@ -77,6 +79,22 @@ function buildMediaPrompt(m: typeof scifiMediaData[number]): string {
   return `Cinematic conceptual art for the sci-fi ${m.category} "${m.title}". ${m.imageHint ? `Visual cue: ${m.imageHint}.` : ''} Style: highly detailed, evocative, matching the mood of the plot: ${m.plot.slice(0, 100)}. 16:9 aspect ratio. No text or logos.`;
 }
 
+function buildAuthorPrompt(a: typeof scifiAuthorData[number]): string {
+  const cuesByEra = (era: string): string => {
+    const startYear = parseInt((era.match(/\d{4}/) || ['2000'])[0], 10);
+    if (startYear < 1900) return 'victorian-era painted portrait, formal attire, warm lamplight, restrained palette, period study setting';
+    if (startYear < 1940) return 'early twentieth-century studio photograph restyled as a painted portrait, sepia-to-grayscale warmth, period attire';
+    if (startYear < 1970) return 'mid-century editorial photograph restyled with painterly depth, black-and-white with subtle warm tone, natural light';
+    if (startYear < 2000) return 'late twentieth-century editorial black-and-white portrait, restrained palette, natural light, thoughtful presence';
+    return 'contemporary editorial photographic portrait, softly desaturated, natural light, understated modern framing';
+  };
+
+  const style = cuesByEra(a.era);
+  const themeCue = (a.themes?.slice(0, 2) || []).join(' and ');
+  const genreCue = (a.subgenres?.slice(0, 2) || []).join(', ');
+  return `Portrait of the science-fiction author ${a.name}, ${a.era}. ${style}. Subject shown from the chest up, three-quarter view, looking thoughtfully past the camera. Background is muted and atmospheric, evoking ${a.imageHint || 'a writer at work'}${genreCue ? ` and the register of ${genreCue}` : ''}. No text or watermarks. High detail, dignified composition. The expression suggests the intellectual weight of a writer known for ${themeCue || 'serious work on technology and ethics'}. Avoid cliché sci-fi motifs (no robots, no spaceships, no circuit boards) — this is a literary portrait, not book cover art.`;
+}
+
 // ─── Build the job queue ───────────────────────────────────────────
 
 const jobs: GenJob[] = [];
@@ -115,6 +133,15 @@ for (const m of scifiMediaData) {
     label: `media: ${m.title}`,
     subdir: MEDIA_DIR,
     prompt: buildMediaPrompt(m),
+  });
+}
+
+for (const a of scifiAuthorData) {
+  jobs.push({
+    id: a.id,
+    label: `sci-fi author: ${a.name}`,
+    subdir: AUTHOR_DIR,
+    prompt: buildAuthorPrompt(a),
   });
 }
 
