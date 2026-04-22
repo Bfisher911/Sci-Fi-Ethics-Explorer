@@ -421,6 +421,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     authorIds: ['frank-herbert'],
     relatedFrameworks: ['environmental-ethics', 'virtue-ethics', 'social-contract-theory'],
     meta: '412 pages (Chilton first edition)',
+    imageUrl: '/images/media/dune-book.png',
     imageHint: 'desert planet sandworm spice',
   },
   {
@@ -434,6 +435,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     authorIds: ['stanislaw-lem'],
     relatedFrameworks: ['ethics-of-care', 'existentialist-ethics', 'discourse-ethics'],
     meta: '204 pages (English translation, Kilmartin/Cox 1970)',
+    imageUrl: '/images/media/solaris-book.png',
     imageHint: 'alien ocean planet research station',
   },
   {
@@ -447,6 +449,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     authorIds: ['paolo-bacigalupi'],
     relatedFrameworks: ['environmental-ethics', 'capabilities-approach', 'ethics-of-care', 'social-contract-theory'],
     meta: '361 pages',
+    imageUrl: '/images/media/the-windup-girl-book.png',
     imageHint: 'flooded bangkok seawall biopunk',
   },
   {
@@ -460,6 +463,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     authorIds: ['ann-leckie'],
     relatedFrameworks: ['deontology', 'ethics-of-care', 'contractualism', 'social-contract-theory'],
     meta: '386 pages',
+    imageUrl: '/images/media/ancillary-justice-book.png',
     imageHint: 'frozen world imperial ship ancillary',
   },
   {
@@ -473,6 +477,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     authorIds: ['greg-egan'],
     relatedFrameworks: ['utilitarianism', 'contractualism', 'existentialist-ethics'],
     meta: '310 pages',
+    imageUrl: '/images/media/permutation-city-book.png',
     imageHint: 'uploaded consciousness digital city',
   },
   {
@@ -486,6 +491,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     authorIds: ['kim-stanley-robinson'],
     relatedFrameworks: ['environmental-ethics', 'social-contract-theory', 'cosmopolitanism', 'capabilities-approach'],
     meta: '563 pages',
+    imageUrl: '/images/media/ministry-for-the-future-book.png',
     imageHint: 'climate policy global institutions',
   },
   // ─── ADDITIONAL FILMS ───────────────────────────────────────────
@@ -499,6 +505,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     ethicsExplored: ['Reproductive collapse and its political consequences', 'Refugees and the limits of sovereign obligation', 'Hope under conditions that cannot reasonably sustain it', 'Small acts of care in failing institutions', 'Who counts as a person when the future disappears'],
     relatedFrameworks: ['ethics-of-care', 'cosmopolitanism', 'deontology', 'existentialist-ethics'],
     meta: '109 min',
+    imageUrl: '/images/media/children-of-men-film.png',
     imageHint: 'dystopian london refugee checkpoint',
   },
   {
@@ -511,6 +518,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     ethicsExplored: ['Moral status of biological systems that do not share our categories', 'Identity under substrate exchange', 'Self-destruction as motive for investigation', 'What counts as communication with non-human life', 'The limits of scientific framing when the phenomenon resists categorization'],
     relatedFrameworks: ['environmental-ethics', 'existentialist-ethics', 'virtue-ethics'],
     meta: '115 min',
+    imageUrl: '/images/media/annihilation-film.png',
     imageHint: 'iridescent shimmer biological anomaly',
   },
   {
@@ -523,6 +531,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     ethicsExplored: ['Informed consent when the subject is oneself', 'Failure modes of rapid research without review', 'Genetic modification and the integrity of the person', 'Whether passion for discovery can substitute for oversight', 'Body horror as moral argument'],
     relatedFrameworks: ['deontology', 'virtue-ethics', 'ethics-of-care'],
     meta: '96 min',
+    imageUrl: '/images/media/the-fly-film.png',
     imageHint: 'teleportation pod body horror laboratory',
   },
   // ─── ADDITIONAL GAME ────────────────────────────────────────────
@@ -536,6 +545,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     ethicsExplored: ['What created beings owe each other in the absence of their creators', 'Meaning-making under inherited purpose', 'The ethics of play — what the medium asks of the player', 'War fought for an absent beneficiary', 'Grief as evidence of personhood'],
     relatedFrameworks: ['existentialist-ethics', 'ethics-of-care', 'virtue-ethics', 'buddhist-ethics'],
     meta: 'Action RPG, PS4/PC/Xbox, ~25-40 hrs for full ending',
+    imageUrl: '/images/media/nier-automata-game.png',
     imageHint: 'android combat ruined earth machines',
   },
   // ─── 10 MORE BOOKS ──────────────────────────────────────────────
@@ -550,6 +560,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     authorIds: ['h-g-wells'],
     relatedFrameworks: ['utilitarianism', 'social-contract-theory', 'environmental-ethics'],
     meta: '~38,000 words',
+    imageUrl: '/images/media/the-time-machine-book.png',
     imageHint: 'victorian time machine eloi morlocks',
   },
   {
@@ -563,6 +574,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     authorIds: ['ray-bradbury'],
     relatedFrameworks: ['virtue-ethics', 'social-contract-theory', 'existentialist-ethics'],
     meta: '249 pages',
+    imageUrl: '/images/media/fahrenheit-451-book.png',
     imageHint: 'burning books fireman parlor walls',
   },
   {
@@ -576,6 +588,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     authorIds: ['robert-heinlein'],
     relatedFrameworks: ['virtue-ethics', 'ethics-of-care', 'existentialist-ethics'],
     meta: '408 pages (uncut edition)',
+    imageUrl: '/images/media/stranger-in-a-strange-land-book.png',
     imageHint: 'martian religion commune 1960s',
   },
   {
@@ -588,6 +601,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     ethicsExplored: ['Language as a neurological technology', 'Information hazards and weaponized memes', 'Virtual environments as political spaces', 'The economic collapse that produces metaverses', 'Ancient myth recurring through modern networks'],
     relatedFrameworks: ['discourse-ethics', 'utilitarianism', 'social-contract-theory'],
     meta: '470 pages',
+    imageUrl: '/images/media/snow-crash-book.png',
     imageHint: 'cyberpunk metaverse hacker delivery',
   },
   {
@@ -600,6 +614,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     ethicsExplored: ['Technical knowledge preservation across civilizational collapse', 'Monastic duty and long-horizon commitment', 'Nuclear weapons and recurring apocalypse', 'Suicide and euthanasia under radiation sickness', 'Science without moral tradition as accelerant'],
     relatedFrameworks: ['deontology', 'virtue-ethics', 'natural-law', 'divine-command'],
     meta: '368 pages',
+    imageUrl: '/images/media/a-canticle-for-leibowitz-book.png',
     imageHint: 'desert monastery post-nuclear',
   },
   {
@@ -613,6 +628,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     authorIds: ['martha-wells'],
     relatedFrameworks: ['deontology', 'ethics-of-care', 'contractualism', 'virtue-ethics'],
     meta: '160 pages (novella)',
+    imageUrl: '/images/media/all-systems-red-book.png',
     imageHint: 'security android corporate planet',
   },
   {
@@ -626,6 +642,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     authorIds: ['becky-chambers'],
     relatedFrameworks: ['ethics-of-care', 'virtue-ethics', 'capabilities-approach'],
     meta: '441 pages',
+    imageUrl: '/images/media/the-long-way-to-a-small-angry-planet-book.png',
     imageHint: 'tunneling spaceship multispecies crew',
   },
   {
@@ -639,6 +656,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     authorIds: ['charles-stross'],
     relatedFrameworks: ['social-contract-theory', 'contractualism', 'utilitarianism'],
     meta: '390 pages',
+    imageUrl: '/images/media/accelerando-book.png',
     imageHint: 'post-singularity economy matrioshka brain',
   },
   {
@@ -652,6 +670,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     authorIds: ['cory-doctorow'],
     relatedFrameworks: ['social-contract-theory', 'deontology', 'utilitarianism', 'capabilities-approach'],
     meta: '382 pages',
+    imageUrl: '/images/media/little-brother-book.png',
     imageHint: 'san francisco mesh network surveillance resistance',
   },
   {
@@ -664,6 +683,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     ethicsExplored: ['Opaque AI infrastructure with unauditable agendas', 'Interstellar political economy under alien technologies', 'The ethics of pilgrimage and witness', 'Time travel paradoxes and identity', 'Religious meaning across technological transformation'],
     relatedFrameworks: ['utilitarianism', 'virtue-ethics', 'existentialist-ethics', 'environmental-ethics'],
     meta: '482 pages',
+    imageUrl: '/images/media/hyperion-book.png',
     imageHint: 'pilgrims space cantos time tombs',
   },
   // ─── 10 MORE FILMS ──────────────────────────────────────────────
@@ -677,6 +697,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     ethicsExplored: ['Industrial labor and its instrumentalization', 'Engineered impostors and mass manipulation', 'Class stratification encoded in architecture', 'Synthetic personhood weaponized against workers', 'Mediation as political category'],
     relatedFrameworks: ['social-contract-theory', 'deontology', 'virtue-ethics'],
     meta: '148 min (restored version)',
+    imageUrl: '/images/media/metropolis-film.png',
     imageHint: 'expressionist city robot worker',
   },
   {
@@ -689,6 +710,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     ethicsExplored: ['Free will and behavioral conditioning', 'State violence wearing therapeutic clothing', 'Punishment vs. correction', 'Aesthetic appreciation and moral status', 'The political uses of neuroscience'],
     relatedFrameworks: ['deontology', 'virtue-ethics', 'existentialist-ethics'],
     meta: '137 min',
+    imageUrl: '/images/media/a-clockwork-orange-film.png',
     imageHint: 'ludovico technique brutalist conditioning',
   },
   {
@@ -701,6 +723,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     ethicsExplored: ['Trust under conditions of fundamental impersonation', 'Epistemic infrastructure as social technology', 'Cooperation when identity cannot be verified', 'Isolation and paranoia as technical problems', 'Testing protocols and their limits'],
     relatedFrameworks: ['discourse-ethics', 'contractualism', 'existentialist-ethics'],
     meta: '109 min',
+    imageUrl: '/images/media/the-thing-film.png',
     imageHint: 'antarctic station shapeshifter isolation',
   },
   {
@@ -713,6 +736,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     ethicsExplored: ['Bureaucracy as the weight-bearing technology of modern states', 'Typographical errors with mortal consequences', 'Well-meaning employees producing predictable harm', 'The ductwork of modernity as visual argument', 'Private fantasy as last resource under total systems'],
     relatedFrameworks: ['virtue-ethics', 'social-contract-theory', 'existentialist-ethics'],
     meta: '132 min',
+    imageUrl: '/images/media/brazil-film.png',
     imageHint: 'bureaucratic dystopia ductwork paperwork',
   },
   {
@@ -737,6 +761,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
     ethicsExplored: ['Memory manipulation as political control', 'What makes a human human under experimental conditions', 'Liberation from one construct into another', 'The ethics of shepherding populations', 'Identity when biography is externally edited'],
     relatedFrameworks: ['deontology', 'virtue-ethics', 'existentialist-ethics'],
     meta: '100 min (director\'s cut)',
+    imageUrl: '/images/media/dark-city-film.png',
     imageHint: 'city perpetual night memory manipulation',
   },
   {
