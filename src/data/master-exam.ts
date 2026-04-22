@@ -2,6 +2,7 @@ import type { Quiz } from '@/types';
 import { finalExamQuiz } from '@/data/textbook/quizzes';
 import { ethicalTheoryQuizzes } from '@/data/theory-quizzes';
 import { scifiAuthorQuizzes } from '@/data/scifi-author-quizzes';
+import { scifiMediaQuizzes } from '@/data/scifi-media-quizzes';
 
 /**
  * The Master Technology Ethicist exam.
@@ -41,6 +42,17 @@ export const masterExamQuiz: Quiz = (() => {
         return {
           ...first,
           id: `master-author-${i + 1}`,
+          prompt: `[${q.subjectName}] ${first.prompt}`,
+        };
+      }),
+    // One question per sci-fi media artifact.
+    ...scifiMediaQuizzes
+      .filter((q) => q.questions.length > 0)
+      .map((q, i) => {
+        const first = q.questions[0];
+        return {
+          ...first,
+          id: `master-media-${i + 1}`,
           prompt: `[${q.subjectName}] ${first.prompt}`,
         };
       }),

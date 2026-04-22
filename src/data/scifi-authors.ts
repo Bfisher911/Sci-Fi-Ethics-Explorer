@@ -278,7 +278,7 @@ Clarke's broader legacy is less a single ethical thesis than a posture: hold tec
     relatedFrameworks: ['utilitarianism', 'deontology', 'existentialist-ethics'],
     notableWorks: ['2001: A Space Odyssey', 'Childhood\'s End', 'Rendezvous with Rama', 'The City and the Stars', 'The Fountains of Paradise'],
     techEthicsFocus: 'The literary prototype for AI-alignment discourse (HAL 9000) and for the problem of governing technologies too powerful for their users to audit — the "sufficiently advanced technology is indistinguishable from magic" maxim is diagnosis, not celebration.',
-    imageUrl: '/images/authors/arthur_c_clarke.svg',
+    imageUrl: '/images/authors/arthur-c-clarke.png',
     imageHint: 'british golden age science fiction writer',
   },
   {
@@ -303,7 +303,7 @@ Lem's technology ethics can be summed up as epistemic humility with teeth. We do
     relatedFrameworks: ['virtue-ethics', 'discourse-ethics', 'existentialist-ethics'],
     notableWorks: ['Solaris', 'His Master\'s Voice', 'The Cyberiad', 'Summa Technologiae', 'The Futurological Congress'],
     techEthicsFocus: 'The definitive literary treatment of epistemic humility in the face of powerful technology and non-human intelligence — Lem insists that the honest engineer admits what the system exceeds, rather than manufacturing meaning to match the tool.',
-    imageUrl: '/images/authors/stanislaw_lem.svg',
+    imageUrl: '/images/authors/stanislaw-lem.png',
     imageHint: 'polish philosophical science fiction writer',
   },
   {
@@ -328,7 +328,7 @@ Herbert's legacy for technology ethics is that he asked, with more seriousness t
     relatedFrameworks: ['environmental-ethics', 'virtue-ethics', 'social-contract-theory'],
     notableWorks: ['Dune', 'Dune Messiah', 'Children of Dune', 'God Emperor of Dune', 'The Dosadi Experiment'],
     techEthicsFocus: 'The canonical fictional exploration of technology as civilizational design — Herbert asks what it means to deliberately renounce a class of tools, how societies pay for such renunciations, and why every "control" technology produces new dependencies that eventually control their users.',
-    imageUrl: '/images/authors/frank_herbert.svg',
+    imageUrl: '/images/authors/frank-herbert.png',
     imageHint: 'american mid-century science fiction writer',
   },
   {
@@ -351,7 +351,7 @@ Her contribution to technology ethics is the insistence that every speculative f
     relatedFrameworks: ['ethics-of-care', 'social-contract-theory', 'discourse-ethics', 'virtue-ethics'],
     notableWorks: ['The Female Man', 'We Who Are About To...', 'The Two of Them', 'How to Suppress Women\'s Writing', 'Picnic on Paradise'],
     techEthicsFocus: 'The indispensable critic of who gets to design futures and on whose behalf — Russ forces any speculative-technology discussion to ask which bodies are doing the invisible labor and which consents are being assumed.',
-    imageUrl: '/images/authors/joanna_russ.svg',
+    imageUrl: '/images/authors/joanna-russ.png',
     imageHint: 'twentieth century feminist science fiction writer',
   },
   {
@@ -376,7 +376,7 @@ Delany's contribution to technology ethics is to refuse the gadget-first framing
     relatedFrameworks: ['discourse-ethics', 'ethics-of-care', 'existentialist-ethics'],
     notableWorks: ['Babel-17', 'Dhalgren', 'Stars in My Pocket Like Grains of Sand', 'Trouble on Triton', 'The Einstein Intersection'],
     techEthicsFocus: 'The essential argument against gadget-only technology ethics — Delany insists that language, urban design, kinship, and genre are the deep technologies that shape what futures are even imaginable, and that ignoring them leaves the real political work undone.',
-    imageUrl: '/images/authors/samuel_r_delany.svg',
+    imageUrl: '/images/authors/samuel-r-delany.png',
     imageHint: 'african american experimental science fiction writer',
   },
   {
@@ -401,7 +401,7 @@ His contribution to technology ethics is the insistence that some technological 
     relatedFrameworks: ['utilitarianism', 'deontology', 'existentialist-ethics'],
     notableWorks: ['A Fire Upon the Deep', 'A Deepness in the Sky', 'True Names', 'Rainbows End', 'Marooned in Realtime'],
     techEthicsFocus: 'The originator of the modern singularity discourse and the clearest fictional thinker about AI takeoff as a political-ethical problem — Vinge asks what honest preparation looks like for a transition whose far side is, by definition, unreadable.',
-    imageUrl: '/images/authors/vernor_vinge.svg',
+    imageUrl: '/images/authors/vernor-vinge.png',
     imageHint: 'american mathematician science fiction writer',
   },
   {
@@ -426,7 +426,7 @@ Egan's contribution to technology ethics is the conviction that personal identit
     relatedFrameworks: ['utilitarianism', 'contractualism', 'existentialist-ethics'],
     notableWorks: ['Permutation City', 'Diaspora', 'Schild\'s Ladder', 'Distress', 'Quarantine'],
     techEthicsFocus: 'The most rigorous fictional treatment of personhood under conditions of uploadable minds, forkable selves, and editable cognition — Egan insists that the coming century\'s engineering problems are identity problems, and that pretending otherwise is an abdication.',
-    imageUrl: '/images/authors/greg_egan.svg',
+    imageUrl: '/images/authors/greg-egan.png',
     imageHint: 'australian hard science fiction writer',
   },
   {
@@ -451,7 +451,7 @@ Robinson's contribution to technology ethics is his insistence that the question
     relatedFrameworks: ['environmental-ethics', 'social-contract-theory', 'cosmopolitanism', 'capabilities-approach'],
     notableWorks: ['Red Mars', 'Green Mars', 'Blue Mars', 'The Ministry for the Future', 'Aurora'],
     techEthicsFocus: 'The indispensable novelist of climate and space transitions as institutional design problems — Robinson insists that "what we can build" is always less important than "who decides and who pays," and treats technology choice as inseparable from political economy.',
-    imageUrl: '/images/authors/kim_stanley_robinson.svg',
+    imageUrl: '/images/authors/kim-stanley-robinson.png',
     imageHint: 'american contemporary climate fiction writer',
   },
   {
@@ -476,7 +476,7 @@ Leckie's contribution to technology ethics is the insistence that distributed co
     relatedFrameworks: ['deontology', 'ethics-of-care', 'contractualism', 'social-contract-theory'],
     notableWorks: ['Ancillary Justice', 'Ancillary Sword', 'Ancillary Mercy', 'Provenance', 'Translation State'],
     techEthicsFocus: 'The sharpest recent novelistic treatment of distributed AI personhood and of empire as a cognitive technology — Leckie insists that the moral frame for a self that spans many bodies cannot be built from the usual individualist premises.',
-    imageUrl: '/images/authors/ann_leckie.svg',
+    imageUrl: '/images/authors/ann-leckie.png',
     imageHint: 'american contemporary space opera writer',
   },
   {
@@ -501,7 +501,7 @@ Bacigalupi's contribution to technology ethics is the refusal to separate biotec
     relatedFrameworks: ['environmental-ethics', 'capabilities-approach', 'ethics-of-care', 'social-contract-theory'],
     notableWorks: ['The Windup Girl', 'The Water Knife', 'Ship Breaker', 'Pump Six and Other Stories', 'The Drowned Cities'],
     techEthicsFocus: 'The essential contemporary novelist of biotech + climate + political economy as a single problem — Bacigalupi insists that seed-patent law, water rights, and engineered-person ethics cannot be thought separately, and that the costs of doing so fall on the bodies least able to refuse them.',
-    imageUrl: '/images/authors/paolo_bacigalupi.svg',
+    imageUrl: '/images/authors/paolo-bacigalupi.png',
     imageHint: 'american contemporary biopunk writer',
   },
   {
@@ -526,7 +526,7 @@ Every contemporary debate about AI, genetic engineering, surveillance, or atomic
     relatedFrameworks: ['utilitarianism', 'social-contract-theory', 'environmental-ethics'],
     notableWorks: ['The Time Machine', 'The Island of Doctor Moreau', 'The War of the Worlds', 'The Invisible Man', 'When the Sleeper Wakes'],
     techEthicsFocus: 'The founding English-language author of technology ethics as a continuing project — Wells insisted, decades before the field had a name, that every new power is a social question and that the engineer who refuses the political frame is abdicating.',
-    imageUrl: '/images/authors/hg_wells.svg',
+    imageUrl: '/images/authors/h-g-wells.png',
     imageHint: 'victorian science fiction writer',
   },
   {
@@ -551,7 +551,7 @@ His contribution to technology ethics is the most sustained literary case for th
     relatedFrameworks: ['virtue-ethics', 'existentialist-ethics', 'environmental-ethics'],
     notableWorks: ['Fahrenheit 451', 'The Martian Chronicles', 'The Illustrated Man', 'Something Wicked This Way Comes', 'Dandelion Wine'],
     techEthicsFocus: 'The definitive literary warning about ambient consumer technology as a political force — Bradbury insists that the threat to a free society is rarely the dramatic ban from above and almost always the voluntary erosion of attention from below.',
-    imageUrl: '/images/authors/ray_bradbury.svg',
+    imageUrl: '/images/authors/ray-bradbury.png',
     imageHint: 'american mid-century science fiction writer',
   },
   {
@@ -576,7 +576,7 @@ His contribution is partly the literary architecture he built, which almost ever
     relatedFrameworks: ['virtue-ethics', 'social-contract-theory', 'utilitarianism'],
     notableWorks: ['Starship Troopers', 'Stranger in a Strange Land', 'The Moon Is a Harsh Mistress', 'Have Space Suit—Will Travel', 'Time Enough for Love'],
     techEthicsFocus: 'The architect of mid-century American science fiction and its dominant ethical frame — Heinlein insists that technology magnifies whoever operates it, that competence is a civic virtue, and that no powerful system absolves its operators from ownership of what it produces.',
-    imageUrl: '/images/authors/robert_heinlein.svg',
+    imageUrl: '/images/authors/robert-heinlein.png',
     imageHint: 'mid-century american science fiction writer',
   },
   {
@@ -601,7 +601,7 @@ Her contribution to the field is partly the revelation, through her work under t
     relatedFrameworks: ['ethics-of-care', 'existentialist-ethics', 'virtue-ethics', 'environmental-ethics'],
     notableWorks: ['"The Women Men Don\'t See"', '"Houston, Houston, Do You Read?"', '"The Screwfly Solution"', '"Love Is the Plan the Plan Is Death"', 'Up the Walls of the World'],
     techEthicsFocus: 'The sharpest short-fiction writer in the genre\'s history, and the one who insisted most rigorously that the technology question is downstream of the biology-and-politics question — Tiptree asks what kind of animal is operating the device and refuses to let the engineering question be answered without an answer to that one.',
-    imageUrl: '/images/authors/james_tiptree_jr.svg',
+    imageUrl: '/images/authors/james-tiptree-jr.png',
     imageHint: 'new wave science fiction writer pseudonymous',
   },
   {
@@ -626,7 +626,7 @@ Her contribution to technology ethics is the steadiest argument in the genre for
     relatedFrameworks: ['virtue-ethics', 'ethics-of-care', 'deontology'],
     notableWorks: ['Doomsday Book', 'To Say Nothing of the Dog', 'Blackout / All Clear', 'Passage', 'Bellwether'],
     techEthicsFocus: 'The most sustained fictional treatment of observation-as-ethical-act — Willis insists that any tool that lets you watch others without their knowledge or consent produces a moral burden, and that the person holding the tool is responsible for discharging it.',
-    imageUrl: '/images/authors/connie_willis.svg',
+    imageUrl: '/images/authors/connie-willis.png',
     imageHint: 'american contemporary science fiction writer',
   },
   {
@@ -651,7 +651,7 @@ Her contribution to the field is the most rigorous long-form treatment of plural
     relatedFrameworks: ['social-contract-theory', 'discourse-ethics', 'virtue-ethics', 'cosmopolitanism'],
     notableWorks: ['Downbelow Station', 'The Pride of Chanur (Chanur cycle)', 'Cyteen', 'Foreigner (ongoing series)', 'Rimrunners'],
     techEthicsFocus: 'The field\'s most rigorous long-form treatment of interspecies and cross-cultural politics — Cherryh insists that the hard technology question is always a translation question, and that the engineer who treats cognition as universal is building something dangerous.',
-    imageUrl: '/images/authors/cj_cherryh.svg',
+    imageUrl: '/images/authors/cj-cherryh.png',
     imageHint: 'american contemporary space opera writer',
   },
   {
@@ -676,7 +676,7 @@ Her contribution to technology ethics is the steady expansion of whose tradition
     relatedFrameworks: ['ubuntu-ethics', 'ethics-of-care', 'virtue-ethics', 'cosmopolitanism'],
     notableWorks: ['Binti (trilogy)', 'Who Fears Death', 'Lagoon', 'The Book of Phoenix', 'Akata Witch'],
     techEthicsFocus: 'The indispensable contemporary argument that the question "what is this technology for?" cannot be answered without asking whose epistemology gets to define the answer — Okorafor expands the serious knowledge systems that count as scientific frames and forces the genre to reckon with that expansion.',
-    imageUrl: '/images/authors/nnedi_okorafor.svg',
+    imageUrl: '/images/authors/nnedi-okorafor.png',
     imageHint: 'contemporary africanfuturist writer',
   },
   {
