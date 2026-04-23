@@ -178,6 +178,14 @@ export interface LeaderboardEntry {
 
 /**
  * Gets the leaderboard — top users by score.
+ *
+ * Score now reflects the full platform activity model (see
+ * `calculateScore` in lib/badge-engine.ts): stories, debates,
+ * analyses, dilemmas, Framework Explorer runs, Perspectives
+ * comparisons, subject-quizzes passed, curricula completed, and
+ * certificates earned. The extra counters are fetched in parallel
+ * with a single query per collection and indexed by userId, avoiding
+ * the per-user fan-out of the previous implementation.
  */
 export async function getLeaderboard(
   limitCount: number = 20
@@ -187,43 +195,137 @@ export async function getLeaderboard(
   }
 
   try {
-    // Fetch all user progress docs (for a production app this should be pre-computed)
-    const progressQuery = query(collection(db, 'userProgress'));
-    const progressSnap = await getDocs(progressQuery);
+    // Top-level collections we aggregate across for the extended score.
+    // Each read is a single round-trip; per-user counters are derived
+    // from the indexed maps below.
+    const [
+      progressSnap,
+      quizAttemptsSnap,
+      perspectivesSnap,
+      debatesSnap,
+      certsSnap,
+      curriculumProgressSnap,
+    ] = await Promise.all([
+      getDocs(collection(db, 'userProgress')),
+      getDocs(collection(db, 'quizAttempts')),
+      getDocs(collection(db, 'perspectives')),
+      getDocs(collection(db, 'debates')),
+      getDocs(collection(db, 'certificates')),
+      getDocs(collection(db, 'curriculumProgress')),
+    ]);
 
-    const entries: Omit<LeaderboardEntry, 'rank'>[] = [];
-
-    for (const docSnap of progressSnap.docs) {
-      const progress = docSnap.data() as UserProgress;
-      const score = calculateScore(progress);
-
-      // Fetch user profile for display name
-      const profileRef = doc(db, 'users', progress.userId);
-      const profileSnap = await getDoc(profileRef);
-      const profileData = profileSnap.data();
-
-      // Fetch badge count
-      const badgesRef = doc(db, 'userBadges', progress.userId);
-      const badgesSnap = await getDoc(badgesRef);
-      const badgeCount = badgesSnap.exists()
-        ? ((badgesSnap.data().badges as UserBadge[]) ?? []).length
-        : 0;
-
-      entries.push({
-        userId: progress.userId,
-        displayName:
-          profileData?.name ??
-          profileData?.displayName ??
-          profileData?.email ??
-          'Anonymous',
-        avatarUrl: profileData?.avatarUrl,
-        score,
-        badgeCount,
-        anonymousOnLeaderboard: profileData?.anonymousOnLeaderboard === true,
-      });
+    // Index: userId -> set of subjectIds they've PASSED a quiz on.
+    const quizPassedBySubject = new Map<string, Set<string>>();
+    // Index: userId -> Framework Explorer runs (quizAttempts where subjectType is 'framework' etc.)
+    // Framework Explorer results are stored in UserProgress.quizResults, so
+    // we read that from the progress doc below — not this index.
+    for (const d of quizAttemptsSnap.docs) {
+      const data = d.data();
+      if (!data.passed) continue;
+      const uid = String(data.userId ?? '');
+      if (!uid) continue;
+      const subjectKey = `${data.subjectType ?? ''}:${data.subjectId ?? ''}`;
+      let set = quizPassedBySubject.get(uid);
+      if (!set) {
+        set = new Set<string>();
+        quizPassedBySubject.set(uid, set);
+      }
+      set.add(subjectKey);
     }
 
-    // Sort by score descending and apply limit
+    // Index: userId -> count of saved perspectives.
+    const perspectivesByUser = new Map<string, number>();
+    for (const d of perspectivesSnap.docs) {
+      const uid = String(d.data().authorId ?? '');
+      if (!uid) continue;
+      perspectivesByUser.set(uid, (perspectivesByUser.get(uid) ?? 0) + 1);
+    }
+
+    // Index: userId -> count of debates they created.
+    const debatesCreatedByUser = new Map<string, number>();
+    for (const d of debatesSnap.docs) {
+      const uid = String(d.data().creatorId ?? '');
+      if (!uid) continue;
+      debatesCreatedByUser.set(uid, (debatesCreatedByUser.get(uid) ?? 0) + 1);
+    }
+
+    // Index: userId -> count of active (non-revoked) certificates.
+    const certsByUser = new Map<string, number>();
+    for (const d of certsSnap.docs) {
+      const data = d.data();
+      const uid = String(data.userId ?? '');
+      if (!uid) continue;
+      if (data.revokedAt) continue; // skip revoked
+      certsByUser.set(uid, (certsByUser.get(uid) ?? 0) + 1);
+    }
+
+    // Index: userId -> count of fully-completed curricula. We approximate
+    // "fully completed" by the presence of a completedAt timestamp on
+    // the progress doc (set when the user crosses 100%). Callers that
+    // need the stricter "completed items === total items" check should
+    // use the per-user version in checkAndAwardBadges.
+    const curriculaCompletedByUser = new Map<string, number>();
+    for (const d of curriculumProgressSnap.docs) {
+      const data = d.data();
+      const uid = String(data.userId ?? '');
+      if (!uid) continue;
+      if (data.completedAt || data.isComplete === true) {
+        curriculaCompletedByUser.set(
+          uid,
+          (curriculaCompletedByUser.get(uid) ?? 0) + 1,
+        );
+      }
+    }
+
+    // Per-user profile + badge-count lookup. Still per-user but in
+    // parallel via Promise.all to stay responsive on medium-sized
+    // leaderboards.
+    const rawEntries = await Promise.all(
+      progressSnap.docs.map(async (docSnap) => {
+        const progress = docSnap.data() as UserProgress;
+        const uid = progress.userId;
+
+        const extras = {
+          quizzesPassed: quizPassedBySubject.get(uid)?.size ?? 0,
+          frameworkExplorerRuns: Array.isArray(progress.quizResults)
+            ? progress.quizResults.length
+            : 0,
+          perspectivesCount: perspectivesByUser.get(uid) ?? 0,
+          debatesCreated: debatesCreatedByUser.get(uid) ?? 0,
+          certificatesEarned: certsByUser.get(uid) ?? 0,
+          curriculaCompleted: curriculaCompletedByUser.get(uid) ?? 0,
+        };
+        const score = calculateScore(progress, extras);
+
+        const [profileSnap, badgesSnap] = await Promise.all([
+          getDoc(doc(db, 'users', uid)),
+          getDoc(doc(db, 'userBadges', uid)),
+        ]);
+        const profileData = profileSnap.data();
+        const badgeCount = badgesSnap.exists()
+          ? ((badgesSnap.data().badges as UserBadge[]) ?? []).length
+          : 0;
+
+        return {
+          userId: uid,
+          displayName:
+            profileData?.name ??
+            profileData?.displayName ??
+            profileData?.email ??
+            'Anonymous',
+          avatarUrl: profileData?.avatarUrl,
+          score,
+          badgeCount,
+          anonymousOnLeaderboard: profileData?.anonymousOnLeaderboard === true,
+        } satisfies Omit<LeaderboardEntry, 'rank'>;
+      }),
+    );
+
+    // Zero-score users clutter the board without adding signal. Filter
+    // them out before ranking. Someone who's truly done nothing still
+    // has a score of zero and wouldn't appear.
+    const entries = rawEntries.filter((e) => e.score > 0);
+
     entries.sort((a, b) => b.score - a.score);
     const ranked: LeaderboardEntry[] = entries
       .slice(0, limitCount)

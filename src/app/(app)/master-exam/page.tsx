@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
+  ArrowRight,
   CheckCircle2,
   Circle,
   Lock,
@@ -23,6 +24,7 @@ import {
   getMasterExamUnlockState,
   awardMasterTechnologyEthicistCertificate,
   type MasterExamUnlockState,
+  type MasterExamRequirement,
 } from '@/app/actions/master-exam';
 import { masterExamQuiz } from '@/data/master-exam';
 import type { QuizAttempt } from '@/types';
@@ -38,7 +40,12 @@ export default function MasterExamPage() {
     let cancelled = false;
     if (authLoading) return;
     if (!user) {
-      setLoading(false);
+      // Show the zero-progress informational view for signed-out visitors.
+      getMasterExamUnlockState('').then((res) => {
+        if (cancelled) return;
+        if (res.success) setState(res.data);
+        setLoading(false);
+      });
       return;
     }
     getMasterExamUnlockState(user.uid).then((res) => {
@@ -112,21 +119,16 @@ export default function MasterExamPage() {
 
   if (!state) return null;
 
-  const alreadyAwarded = state.alreadyAwarded;
-  const unlocked = state.unlocked;
-  const totalPrereqs = state.earned.length + state.remaining.length;
-  const pct = totalPrereqs
-    ? Math.round((state.earned.length / totalPrereqs) * 100)
-    : 0;
+  const { alreadyAwarded, unlocked, requirements, completedCount, totalCount, overallPercent } = state;
 
   return (
     <div className="container mx-auto py-6 md:py-10 px-4 max-w-3xl space-y-6">
       <div>
         <Link
-          href="/"
+          href="/dashboard"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary mb-2"
         >
-          <ArrowLeft className="h-3 w-3" /> Back to Home
+          <ArrowLeft className="h-3 w-3" /> Back to Dashboard
         </Link>
         <h1 className="font-headline text-3xl md:text-4xl font-bold flex items-center gap-2">
           <Trophy className="h-7 w-7 text-primary" /> Master Technology Ethicist Exam
@@ -134,7 +136,7 @@ export default function MasterExamPage() {
         <p className="text-muted-foreground mt-1">
           {masterExamQuiz.questions.length} cumulative questions · pass at{' '}
           {masterExamQuiz.passingScorePercent}% · unlimited retakes · earns the{' '}
-          Master Certificate.
+          <strong>Ethics of Technology Through Science Fiction Master&apos;s Certificate</strong>.
         </p>
       </div>
 
@@ -149,7 +151,7 @@ export default function MasterExamPage() {
                 Master Certificate earned
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                You're credentialed as a Sci-Fi Ethics Explorer Master Technology
+                You&apos;re credentialed as a Sci-Fi Ethics Explorer Master Technology
                 Ethicist.
               </p>
             </div>
@@ -177,55 +179,28 @@ export default function MasterExamPage() {
             </CardTitle>
             <p className="text-center text-muted-foreground mt-2 max-w-lg mx-auto">
               The Master exam is the capstone of the platform. It unlocks once
-              you've earned the Textbook Master Certificate and a certificate
-              for every Official Learning Path.
+              you&apos;ve cleared the activity checklist below — textbook complete
+              plus a breadth of real engagement across stories, frameworks,
+              perspectives, dilemmas, and debates.
             </p>
           </CardHeader>
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-6">
+            {/* Overall progress bar */}
             <div>
               <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
-                <span>Prerequisites complete</span>
+                <span>Overall readiness</span>
                 <span className="font-medium">
-                  {state.earned.length} / {totalPrereqs} ({pct}%)
+                  {completedCount} of {totalCount} complete · {overallPercent}%
                 </span>
               </div>
-              <Progress value={pct} />
+              <Progress value={overallPercent} />
             </div>
 
-            <ul className="space-y-2">
-              {[...state.earned.map((id) => ({ id, earned: true })), ...state.remaining.map((r) => ({ id: r.curriculumId, earned: false }))]
-                .map(({ id, earned }) => {
-                  const title =
-                    state.remaining.find((r) => r.curriculumId === id)?.title ||
-                    (id === 'textbook-master'
-                      ? 'Textbook Master Certificate'
-                      : id);
-                  const path =
-                    id === 'textbook-master' ? '/textbook' : `/curriculum/${id}`;
-                  return (
-                    <li key={id}>
-                      <Link
-                        href={path}
-                        className="group flex items-center gap-3 rounded-md border border-border bg-background/30 p-3 hover:border-primary/50 transition-colors"
-                      >
-                        {earned ? (
-                          <CheckCircle2 className="h-5 w-5 text-chart-2 shrink-0" />
-                        ) : (
-                          <Circle className="h-5 w-5 text-muted-foreground shrink-0" />
-                        )}
-                        <span className="flex-1 text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-                          {title}
-                        </span>
-                        <Badge
-                          variant={earned ? 'default' : 'outline'}
-                          className="text-xs shrink-0"
-                        >
-                          {earned ? 'Earned' : 'Go'}
-                        </Badge>
-                      </Link>
-                    </li>
-                  );
-                })}
+            {/* Per-requirement rows */}
+            <ul className="space-y-3">
+              {requirements.map((req) => (
+                <RequirementRow key={req.id} req={req} />
+              ))}
             </ul>
           </CardContent>
         </Card>
@@ -243,5 +218,60 @@ export default function MasterExamPage() {
         </>
       )}
     </div>
+  );
+}
+
+/**
+ * A single prerequisite row with its own progress bar, count, and
+ * deep-link CTA to where the user can continue making progress.
+ */
+function RequirementRow({ req }: { req: MasterExamRequirement }) {
+  const pct = req.target > 0 ? Math.min(Math.round((req.current / req.target) * 100), 100) : req.complete ? 100 : 0;
+  return (
+    <li
+      className="rounded-md border border-border bg-background/30 p-4 transition-colors hover:border-primary/40"
+    >
+      <div className="flex items-start gap-3">
+        {req.complete ? (
+          <CheckCircle2 className="h-5 w-5 text-chart-2 shrink-0 mt-0.5" />
+        ) : (
+          <Circle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-3 flex-wrap">
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">{req.title}</div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {req.description}
+              </p>
+            </div>
+            <Badge
+              variant={req.complete ? 'default' : 'outline'}
+              className="text-[11px] shrink-0"
+            >
+              {req.complete
+                ? 'Complete'
+                : `${req.current} / ${req.target}`}
+            </Badge>
+          </div>
+          <div className="mt-2.5 flex items-center gap-3">
+            <Progress value={pct} className="h-1.5 flex-1" />
+            <span className="text-[11px] font-mono text-muted-foreground shrink-0 w-9 text-right">
+              {pct}%
+            </span>
+          </div>
+          {!req.complete && (
+            <div className="mt-2">
+              <Link
+                href={req.href}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-accent"
+              >
+                Go there <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    </li>
   );
 }

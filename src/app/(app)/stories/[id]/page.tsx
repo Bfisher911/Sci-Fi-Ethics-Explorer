@@ -209,20 +209,40 @@ export default function StoryDetailPage() {
       const result = await generateEndingReflection({
         storyTitle: storyTitle,
         userChoices: choices,
+        storyGenre: story?.genre,
+        storyTheme: story?.theme,
       });
-      setReflection(result.reflection);
 
-      // Record story completion when reflection is generated
-      if (user?.uid && storyId) {
-        try {
-          await recordStoryCompletion(user.uid, storyId);
-        } catch (err) {
-          console.error('Failed to record story completion:', err);
+      // The flow always resolves. When it couldn't produce a real
+      // reflection it returns an empty `reflection` + a diagnostic
+      // `error` / `errorCode` pair. Surface that specific message to
+      // the reader instead of the old catch-all "Failed to generate".
+      if (result.reflection && result.reflection.trim()) {
+        setReflection(result.reflection);
+        // Record story completion only on a real reflection.
+        if (user?.uid && storyId) {
+          try {
+            await recordStoryCompletion(user.uid, storyId);
+          } catch (err) {
+            console.error('Failed to record story completion:', err);
+          }
         }
+      } else {
+        const message =
+          result.error ??
+          'The reflection engine returned an empty response. Try again in a moment.';
+        console.warn('[reflection] generation returned no text:', result);
+        setReflection(`⚠️ ${message}`);
       }
     } catch (err) {
-      console.error("Error generating reflection:", err);
-      setReflection("Failed to generate reflection. Please try again later.");
+      // The flow shouldn't throw anymore (it returns errorCode instead),
+      // but we still guard against network failures reaching the client
+      // server-action call itself.
+      console.error('[reflection] unexpected throw:', err);
+      const msg = err instanceof Error ? err.message : String(err);
+      setReflection(
+        `⚠️ Could not reach the reflection service (${msg}). Try again in a moment.`,
+      );
     } finally {
       setIsLoadingReflection(false);
     }

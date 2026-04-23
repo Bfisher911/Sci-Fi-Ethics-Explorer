@@ -12,6 +12,7 @@ import type {
 import { timestampToDate } from '@/lib/firebase/firestore-helpers';
 import { requireAdmin } from '@/lib/admin';
 import { getStaticScifiAuthorQuiz } from '@/data/scifi-author-quizzes';
+import { getStaticScifiMediaQuiz } from '@/data/scifi-media-quizzes';
 import { getStaticTextbookQuiz } from '@/data/textbook/quizzes';
 import { getStaticEthicalTheoryQuiz } from '@/data/theory-quizzes';
 import { masterExamQuiz } from '@/data/master-exam';
@@ -91,6 +92,10 @@ export async function getQuizForSubject(
       const fallback = getStaticScifiAuthorQuiz(subjectId);
       if (fallback) return { success: true, data: fallback };
     }
+    if (subjectType === 'scifi-media') {
+      const fallback = getStaticScifiMediaQuiz(subjectId);
+      if (fallback) return { success: true, data: fallback };
+    }
     if (subjectType === 'theory') {
       const fallback = getStaticEthicalTheoryQuiz(subjectId);
       if (fallback) return { success: true, data: fallback };
@@ -111,6 +116,10 @@ export async function getQuizForSubject(
     console.error('[quizzes] getQuizForSubject error:', error);
     if (subjectType === 'scifi-author') {
       const fallback = getStaticScifiAuthorQuiz(subjectId);
+      if (fallback) return { success: true, data: fallback };
+    }
+    if (subjectType === 'scifi-media') {
+      const fallback = getStaticScifiMediaQuiz(subjectId);
       if (fallback) return { success: true, data: fallback };
     }
     if (subjectType === 'theory') {
@@ -152,6 +161,9 @@ export async function submitQuizAttempt(input: {
       : null;
     if (!quiz && input.subjectType === 'scifi-author') {
       quiz = getStaticScifiAuthorQuiz(input.subjectId);
+    }
+    if (!quiz && input.subjectType === 'scifi-media') {
+      quiz = getStaticScifiMediaQuiz(input.subjectId);
     }
     if (!quiz && input.subjectType === 'theory') {
       quiz = getStaticEthicalTheoryQuiz(input.subjectId);

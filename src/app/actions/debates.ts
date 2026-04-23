@@ -173,6 +173,21 @@ export async function submitArgument(data: {
     const debateRef = doc(db, 'debates', data.debateId);
     await updateDoc(debateRef, { participantCount: increment(1) });
 
+    // Record that this user participated in this debate on their
+    // userProgress doc. The Master Exam prereq ("Participate in 5
+    // debates") + the leaderboard's debate weighting both read from
+    // this field, so failing to record would silently zero out a
+    // real signal. Fire-and-forget so a failure here doesn't block
+    // the argument write that's already committed above.
+    try {
+      const { recordDebateParticipation } = await import('@/app/actions/progress');
+      void recordDebateParticipation(data.authorId, data.debateId).catch(
+        (err) => console.warn('[debates] recordDebateParticipation failed:', err),
+      );
+    } catch (err) {
+      console.warn('[debates] recordDebateParticipation import failed:', err);
+    }
+
     return { success: true, data: docRef.id };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

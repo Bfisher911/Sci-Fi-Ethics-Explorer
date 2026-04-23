@@ -89,12 +89,39 @@ export function PerspectiveComparison({
         userChoice: userChoice.trim(),
         frameworks: selectedFrameworks,
       });
-      setResult(output);
+
+      // The flow always resolves. When it can't produce a real
+      // analysis it returns an empty `comparisons` array plus a
+      // diagnostic `error` / `errorCode` pair. Surface that specific
+      // message instead of the old catch-all.
+      if (output.error || output.comparisons.length === 0) {
+        console.warn('[perspectives] analysis returned error:', output);
+        toast({
+          title:
+            output.errorCode === 'rate_limited'
+              ? 'Rate limited'
+              : output.errorCode === 'missing_api_key'
+                ? 'AI not configured'
+                : output.errorCode === 'parse_error'
+                  ? 'Unparseable response'
+                  : 'Analysis failed',
+          description:
+            output.error ||
+            'An error occurred while analyzing perspectives. Please try again.',
+          variant: 'destructive',
+        });
+      } else {
+        setResult(output);
+      }
     } catch (error) {
-      console.error('Failed to compare perspectives:', error);
+      // The flow shouldn't throw (it returns errorCode instead), but
+      // we still guard network-level failures reaching the server
+      // action call itself.
+      console.error('[perspectives] unexpected throw:', error);
+      const msg = error instanceof Error ? error.message : String(error);
       toast({
         title: 'Analysis failed',
-        description: 'An error occurred while analyzing perspectives. Please try again.',
+        description: `Could not reach the analysis service (${msg}). Try again in a moment.`,
         variant: 'destructive',
       });
     } finally {
