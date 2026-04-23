@@ -741,6 +741,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   },
   {
     id: 'twelve-monkeys-film',
+    imageUrl: '/images/media/twelve-monkeys-film.png',
     title: 'Twelve Monkeys',
     category: 'movie',
     year: '1995',
@@ -766,6 +767,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   },
   {
     id: 'moon-film',
+    imageUrl: '/images/media/moon-film.png',
     title: 'Moon',
     category: 'movie',
     year: '2009',
@@ -778,6 +780,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   },
   {
     id: 'never-let-me-go-film',
+    imageUrl: '/images/media/never-let-me-go-film.png',
     title: 'Never Let Me Go',
     category: 'movie',
     year: '2010',
@@ -790,6 +793,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   },
   {
     id: 'upgrade-film',
+    imageUrl: '/images/media/upgrade-film.png',
     title: 'Upgrade',
     category: 'movie',
     year: '2018',
@@ -802,6 +806,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   },
   {
     id: 'after-yang-film',
+    imageUrl: '/images/media/after-yang-film.png',
     title: 'After Yang',
     category: 'movie',
     year: '2021',
@@ -815,6 +820,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   // ─── 7 MORE TV ──────────────────────────────────────────────────
   {
     id: 'star-trek-tng-tv',
+    imageUrl: '/images/media/star-trek-tng-tv.png',
     title: 'Star Trek: The Next Generation',
     category: 'tv',
     year: '1987-1994',
@@ -827,6 +833,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   },
   {
     id: 'battlestar-galactica-tv',
+    imageUrl: '/images/media/battlestar-galactica-tv.png',
     title: 'Battlestar Galactica (2004)',
     category: 'tv',
     year: '2004-2009',
@@ -839,6 +846,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   },
   {
     id: 'person-of-interest-tv',
+    imageUrl: '/images/media/person-of-interest-tv.png',
     title: 'Person of Interest',
     category: 'tv',
     year: '2011-2016',
@@ -851,6 +859,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   },
   {
     id: 'mr-robot-tv',
+    imageUrl: '/images/media/mr-robot-tv.png',
     title: 'Mr. Robot',
     category: 'tv',
     year: '2015-2019',
@@ -863,6 +872,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   },
   {
     id: 'dark-tv',
+    imageUrl: '/images/media/dark-tv.png',
     title: 'Dark',
     category: 'tv',
     year: '2017-2020',
@@ -875,6 +885,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   },
   {
     id: 'foundation-tv',
+    imageUrl: '/images/media/foundation-tv.png',
     title: 'Foundation',
     category: 'tv',
     year: '2021-',
@@ -888,6 +899,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   },
   {
     id: 'pantheon-tv',
+    imageUrl: '/images/media/pantheon-tv.png',
     title: 'Pantheon',
     category: 'tv',
     year: '2022-2023',
@@ -901,6 +913,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   // ─── 3 MORE GAMES ───────────────────────────────────────────────
   {
     id: 'bioshock-game',
+    imageUrl: '/images/media/bioshock-game.png',
     title: 'BioShock',
     category: 'other',
     year: '2007',
@@ -913,6 +926,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   },
   {
     id: 'outer-wilds-game',
+    imageUrl: '/images/media/outer-wilds-game.png',
     title: 'Outer Wilds',
     category: 'other',
     year: '2019',
@@ -925,6 +939,7 @@ Portal operates as a thought experiment on institutional ethics under abandonmen
   },
   {
     id: '13-sentinels-game',
+    imageUrl: '/images/media/13-sentinels-game.png',
     title: '13 Sentinels: Aegis Rim',
     category: 'other',
     year: '2019',
