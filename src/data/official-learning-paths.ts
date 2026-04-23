@@ -420,12 +420,12 @@ export const officialLearningPaths: CurriculumPath[] = [
           {
             id: 'ofsp-m2-i1',
             type: 'scifi-media',
-            referenceId: 'the-lives-of-others',
-            title: 'Watch / Read: The Lives of Others',
+            referenceId: 'person-of-interest-tv',
+            title: 'Watch: Person of Interest',
             order: 1,
             isRequired: true,
             instructions:
-              "Study the film's transformation of the surveiller — at what point does watching become a moral act in itself?",
+              'Study the show\u2019s core premise \u2014 a surveillance state that works perfectly, only sometimes. At what point does the act of watching, even with benevolent intent, become a moral problem in itself?',
           },
           {
             id: 'ofsp-m2-i2',
@@ -651,12 +651,12 @@ export const officialLearningPaths: CurriculumPath[] = [
           {
             id: 'ofuw-m2-i1',
             type: 'scifi-media',
-            referenceId: 'the-forever-war',
-            title: "Read: The Forever War (Haldeman)",
+            referenceId: 'dune-book',
+            title: 'Read: Dune (Herbert)',
             order: 1,
             isRequired: true,
             instructions:
-              "Haldeman's veterans-eye view is the utilitarian case under stress. Note what the calculation can't account for.",
+              "Dune is the utilitarian calculation under maximum stress: Paul Atreides sees every possible future and picks the one with the lowest body count. Note what the math still can't account for \u2014 the moral residue of being the person who made the choice.",
           },
           {
             id: 'ofuw-m2-i2',
@@ -758,12 +758,12 @@ export const officialLearningPaths: CurriculumPath[] = [
           {
             id: 'ofve-m2-i1',
             type: 'scifi-media',
-            referenceId: 'the-martian-book',
-            title: "Read: The Martian (Weir)",
+            referenceId: 'all-systems-red-book',
+            title: "Read: All Systems Red (Wells' Murderbot)",
             order: 1,
             isRequired: true,
             instructions:
-              "Watney's survival is phronesis in action — practical wisdom solving novel problems with what's on hand. Track where his character enables the engineering.",
+              "Murderbot is phronesis in action \u2014 practical wisdom solving novel problems with whatever is on hand, shaped by a character that resists the role the system assigns it. Track where its character enables (and constrains) its engineering.",
           },
           {
             id: 'ofve-m2-i2',

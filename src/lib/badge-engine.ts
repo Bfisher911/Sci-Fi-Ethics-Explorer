@@ -100,39 +100,60 @@ export interface ScoreExtras {
 }
 
 /**
+ * Per-activity point values used to compute the leaderboard score.
+ *
+ * Single source of truth. If any UI ever renders a "points breakdown
+ * by activity" surface (profile page, explainer tooltip, badge
+ * tour), import this object directly instead of repeating numbers
+ * inline — drift is how scoreboards lose user trust.
+ *
+ * Weighting philosophy (in ascending order of commitment required):
+ *   consumption (stories)   — light weight
+ *   engagement (debates,    — medium weight
+ *     analyses, quizzes)
+ *   contribution (dilemmas, — high weight (takes real work)
+ *     debates started)
+ *   credentials (curricula, — highest weight (durable, audited)
+ *     certificates)
+ */
+export const LEADERBOARD_SCORE_WEIGHTS = {
+  storyCompletion: 10,
+  debateParticipation: 15,
+  scenarioAnalysis: 5,
+  dilemmaSubmission: 20,
+  frameworkExplorerRun: 5,
+  perspectiveComparison: 8,
+  subjectQuizPassed: 12,
+  debateCreated: 25,
+  curriculumCompleted: 40,
+  certificateEarned: 50,
+} as const;
+
+export type LeaderboardScoreWeightKey = keyof typeof LEADERBOARD_SCORE_WEIGHTS;
+
+/**
  * Calculates a leaderboard score from user progress.
  *
- * Weighted so that durable learning (certificates, passed quizzes,
- * finished curricula) tops one-off activity. Published contributions
- * (dilemmas, debates started) weigh more than consumption (stories
- * finished) because they require more effort.
- *
- * Breakdown (points per unit):
- *   stories completed ............... 10
- *   debates participated in ......... 15
- *   debates created ................. 25
- *   scenarios analyzed ...............  5
- *   dilemmas submitted .............. 20
- *   Framework Explorer runs ..........  5
- *   Perspectives comparisons .........  8
- *   subject-quizzes passed ........... 12
- *   curricula fully completed ....... 40
- *   certificates earned ............. 50
+ * See `LEADERBOARD_SCORE_WEIGHTS` for the per-activity weights. Keep
+ * this function thin — it should just multiply and sum; any policy
+ * change (e.g. different weights per tier, decay over time) belongs
+ * on the weights constant, not in this reducer.
  */
 export function calculateScore(
   progress: UserProgress,
   extras: ScoreExtras = {},
 ): number {
+  const W = LEADERBOARD_SCORE_WEIGHTS;
   return (
-    progress.storiesCompleted.length * 10 +
-    progress.debatesParticipated.length * 15 +
-    progress.scenariosAnalyzed * 5 +
-    progress.dilemmasSubmitted.length * 20 +
-    (extras.frameworkExplorerRuns ?? 0) * 5 +
-    (extras.perspectivesCount ?? 0) * 8 +
-    (extras.quizzesPassed ?? 0) * 12 +
-    (extras.debatesCreated ?? 0) * 25 +
-    (extras.curriculaCompleted ?? 0) * 40 +
-    (extras.certificatesEarned ?? 0) * 50
+    progress.storiesCompleted.length * W.storyCompletion +
+    progress.debatesParticipated.length * W.debateParticipation +
+    progress.scenariosAnalyzed * W.scenarioAnalysis +
+    progress.dilemmasSubmitted.length * W.dilemmaSubmission +
+    (extras.frameworkExplorerRuns ?? 0) * W.frameworkExplorerRun +
+    (extras.perspectivesCount ?? 0) * W.perspectiveComparison +
+    (extras.quizzesPassed ?? 0) * W.subjectQuizPassed +
+    (extras.debatesCreated ?? 0) * W.debateCreated +
+    (extras.curriculaCompleted ?? 0) * W.curriculumCompleted +
+    (extras.certificatesEarned ?? 0) * W.certificateEarned
   );
 }

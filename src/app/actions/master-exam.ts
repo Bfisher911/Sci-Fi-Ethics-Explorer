@@ -34,6 +34,7 @@ import { getTextbookProgress } from '@/app/actions/textbook';
 import { getUserProgress } from '@/app/actions/progress';
 import { getUserPerspectives } from '@/app/actions/perspectives';
 import { chapters as ALL_CHAPTERS } from '@/data/textbook';
+import { countFrameworkExplorerRuns } from '@/lib/master-exam-helpers';
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -122,14 +123,10 @@ async function countDebatesCreatedByUser(userId: string): Promise<number> {
   }
 }
 
-/**
- * Count of Framework Explorer quiz completions. Framework Explorer
- * results are stored in `userProgress.quizResults` (one entry per
- * retake).
- */
-function countFrameworkExplorer(quizResults: Array<unknown>): number {
-  return Array.isArray(quizResults) ? quizResults.length : 0;
-}
+// countFrameworkExplorerRuns lives in src/lib/master-exam-helpers.ts
+// because Server Actions only allow async exports, and this helper is
+// synchronous (and also used from the leaderboard path, so it needs
+// to be freely importable).
 
 /**
  * Compute the user's current unlock state for the Master exam.
@@ -187,7 +184,7 @@ export async function getMasterExamUnlockState(
       ? progressRes.data.storiesCompleted.length
       : 0;
     const frameworkExplorerRuns = progressRes.success
-      ? countFrameworkExplorer(progressRes.data.quizResults)
+      ? countFrameworkExplorerRuns(progressRes.data.quizResults)
       : 0;
     const debatesParticipatedCount = progressRes.success
       ? progressRes.data.debatesParticipated.length

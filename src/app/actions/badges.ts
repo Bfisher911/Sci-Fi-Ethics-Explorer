@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore';
 import type { UserProgress, BadgeId, UserBadge } from '@/types';
 import { evaluateBadges, calculateScore } from '@/lib/badge-engine';
+import { countFrameworkExplorerRuns } from '@/lib/master-exam-helpers';
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -177,6 +178,20 @@ export interface LeaderboardEntry {
 }
 
 /**
+ * Hard ceiling on how many `userProgress` docs the leaderboard will
+ * scan per request. Chosen to stay well under a Firestore single-query
+ * round-trip at current platform scale. When the user base grows past
+ * this, move leaderboard computation to a pre-aggregated `userScores`
+ * collection rebuilt via a scheduled function — see the comment at
+ * the bottom of getLeaderboard for the migration sketch.
+ *
+ * Not exported (Server Actions only allow async exports). If another
+ * module ever needs to read this number, move the constant into
+ * `src/lib/leaderboard-config.ts` at that point.
+ */
+const LEADERBOARD_MAX_USERS_SCANNED = 2000;
+
+/**
  * Gets the leaderboard — top users by score.
  *
  * Score now reflects the full platform activity model (see
@@ -186,6 +201,13 @@ export interface LeaderboardEntry {
  * certificates earned. The extra counters are fetched in parallel
  * with a single query per collection and indexed by userId, avoiding
  * the per-user fan-out of the previous implementation.
+ *
+ * Scale note: this action is O(users) in round trips (one
+ * `Promise.all` over every userProgress doc for profile + badge
+ * lookup). We cap the scanned population at `LEADERBOARD_MAX_USERS_SCANNED`
+ * so a blown-up deployment doesn't stall the page. When the platform
+ * crosses that threshold, swap to a pre-aggregated `userScores`
+ * collection (see bottom-of-function note).
  */
 export async function getLeaderboard(
   limitCount: number = 20
@@ -277,19 +299,32 @@ export async function getLeaderboard(
       }
     }
 
+    // Cap the scan so a runaway userProgress collection can't stall
+    // the page. `progressSnap.docs` is in collection-order, which
+    // is typically insertion-order; on a blown-up deployment we'd
+    // want a pre-aggregated `userScores` collection instead (see note
+    // at the bottom of this function).
+    const progressDocs = progressSnap.docs.slice(
+      0,
+      LEADERBOARD_MAX_USERS_SCANNED,
+    );
+
     // Per-user profile + badge-count lookup. Still per-user but in
     // parallel via Promise.all to stay responsive on medium-sized
     // leaderboards.
     const rawEntries = await Promise.all(
-      progressSnap.docs.map(async (docSnap) => {
+      progressDocs.map(async (docSnap) => {
         const progress = docSnap.data() as UserProgress;
         const uid = progress.userId;
 
         const extras = {
           quizzesPassed: quizPassedBySubject.get(uid)?.size ?? 0,
-          frameworkExplorerRuns: Array.isArray(progress.quizResults)
-            ? progress.quizResults.length
-            : 0,
+          // Dedup FE runs by distinct calendar day so repeat sessions on
+          // the same day don't compound the score (matches the Master
+          // Exam prereq counter exactly — same helper).
+          frameworkExplorerRuns: countFrameworkExplorerRuns(
+            Array.isArray(progress.quizResults) ? progress.quizResults : [],
+          ),
           perspectivesCount: perspectivesByUser.get(uid) ?? 0,
           debatesCreated: debatesCreatedByUser.get(uid) ?? 0,
           certificatesEarned: certsByUser.get(uid) ?? 0,
@@ -331,6 +366,24 @@ export async function getLeaderboard(
       .slice(0, limitCount)
       .map((entry, index) => ({ ...entry, rank: index + 1 }));
 
+    // ─── Migration sketch (defer until userProgress > LEADERBOARD_MAX_USERS_SCANNED) ─
+    //
+    // When this function becomes the bottleneck:
+    //   1. Add a new `userScores/{uid}` collection with fields
+    //      { score, badgeCount, displayName, avatarUrl, anonymousOnLeaderboard,
+    //        updatedAt } — one doc per user.
+    //   2. Add a Firestore-triggered function that rebuilds a user's
+    //      score row on any write to: userProgress, perspectives,
+    //      debates, quizAttempts, certificates, curriculumProgress,
+    //      userBadges, users. Implementation lives in functions/ —
+    //      call calculateScore + the weighted extras defined in this
+    //      file, then setDoc(userScores/{uid}).
+    //   3. Swap this function to query userScores directly with
+    //      orderBy('score', 'desc').limit(limitCount). That drops the
+    //      whole O(users) scan to a bounded O(limitCount) read.
+    //   4. Keep the current path as a one-time reconcile command:
+    //      `tsx src/scripts/rebuild-user-scores.ts` — runs this logic
+    //      once and populates userScores for every existing user.
     return { success: true, data: ranked };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
