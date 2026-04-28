@@ -167,43 +167,12 @@ export default function MasterExamPage() {
       )}
 
       {!unlocked && !alreadyAwarded ? (
-        <Card className="bg-card/80 backdrop-blur-sm border-2 border-primary/30">
-          <CardHeader>
-            <div className="flex justify-center mb-3">
-              <div className="rounded-full bg-primary/10 p-4">
-                <Lock className="h-9 w-9 text-primary" />
-              </div>
-            </div>
-            <CardTitle className="text-center font-headline text-2xl md:text-3xl">
-              Earn the Prerequisites First
-            </CardTitle>
-            <p className="text-center text-muted-foreground mt-2 max-w-lg mx-auto">
-              The Master exam is the capstone of the platform. It unlocks once
-              you&apos;ve cleared the activity checklist below — textbook complete
-              plus a breadth of real engagement across stories, frameworks,
-              perspectives, dilemmas, and debates.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Overall progress bar */}
-            <div>
-              <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
-                <span>Overall readiness</span>
-                <span className="font-medium">
-                  {completedCount} of {totalCount} complete · {overallPercent}%
-                </span>
-              </div>
-              <Progress value={overallPercent} />
-            </div>
-
-            {/* Per-requirement rows */}
-            <ul className="space-y-3">
-              {requirements.map((req) => (
-                <RequirementRow key={req.id} req={req} />
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <PrerequisiteCard
+          requirements={requirements}
+          completedCount={completedCount}
+          totalCount={totalCount}
+          overallPercent={overallPercent}
+        />
       ) : (
         <>
           {awarding && (
@@ -273,5 +242,273 @@ function RequirementRow({ req }: { req: MasterExamRequirement }) {
         </div>
       </div>
     </li>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   PrerequisiteCard
+
+   Wraps the 7 prerequisites in 3 collapsible THEMES, plus a
+   zero-progress banner for brand-new users so they see one CTA
+   ("Start the textbook →") instead of seven unmet rows.
+   ────────────────────────────────────────────────────────────────── */
+
+interface PrerequisiteCardProps {
+  requirements: MasterExamRequirement[];
+  completedCount: number;
+  totalCount: number;
+  overallPercent: number;
+}
+
+interface ThemeDef {
+  id: 'read-reflect' | 'apply' | 'contribute';
+  title: string;
+  blurb: string;
+  reqIds: MasterExamRequirement['id'][];
+}
+
+const THEMES: ThemeDef[] = [
+  {
+    id: 'read-reflect',
+    title: 'Read & Reflect',
+    blurb:
+      'Cover the platform’s long-form material and process it back as your own thinking.',
+    reqIds: ['textbook', 'stories'],
+  },
+  {
+    id: 'apply',
+    title: 'Apply',
+    blurb:
+      'Use the platform tools to test ideas against frameworks and rival positions.',
+    reqIds: ['framework-explorer', 'perspectives'],
+  },
+  {
+    id: 'contribute',
+    title: 'Contribute',
+    blurb:
+      'Put something back — your own dilemmas, your own debates, your own arguments.',
+    reqIds: ['dilemmas', 'debates-submitted', 'debates-participated'],
+  },
+];
+
+function themePercent(reqs: MasterExamRequirement[]): number {
+  if (reqs.length === 0) return 0;
+  const sum = reqs.reduce(
+    (s, r) =>
+      s + (r.target > 0 ? Math.min(r.current / r.target, 1) : r.complete ? 1 : 0),
+    0,
+  );
+  return Math.round((sum / reqs.length) * 100);
+}
+
+function PrerequisiteCard({
+  requirements,
+  completedCount,
+  totalCount,
+  overallPercent,
+}: PrerequisiteCardProps): JSX.Element {
+  const reqsById = new Map(requirements.map((r) => [r.id, r]));
+
+  // Brand-new user: nothing complete and no progress on anything.
+  // Show a single banner instead of 7 unmet rows.
+  const isBrandNew =
+    completedCount === 0 && requirements.every((r) => r.current === 0);
+
+  if (isBrandNew) {
+    return (
+      <Card className="bg-card/80 backdrop-blur-sm border-2 border-primary/30">
+        <CardContent className="p-6 md:p-8 flex flex-col items-center text-center gap-4">
+          <div className="rounded-full bg-primary/10 p-4">
+            <Lock className="h-9 w-9 text-primary" />
+          </div>
+          <div>
+            <h2 className="font-headline text-2xl md:text-3xl font-semibold">
+              Locked &mdash; for now
+            </h2>
+            <p className="mt-2 text-muted-foreground max-w-lg">
+              The Master Exam unlocks once you&apos;ve completed the textbook
+              and a breadth of real activity across the platform. The shortest
+              path is to start with Chapter 1.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Button asChild size="lg">
+              <Link href="/textbook">
+                Start the textbook <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            <PrerequisiteDisclosure requirements={requirements} reqsById={reqsById} />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="bg-card/80 backdrop-blur-sm border-2 border-primary/30">
+      <CardHeader>
+        <div className="flex justify-center mb-3">
+          <div className="rounded-full bg-primary/10 p-4">
+            <Lock className="h-9 w-9 text-primary" />
+          </div>
+        </div>
+        <CardTitle className="text-center font-headline text-2xl md:text-3xl">
+          Earn the Prerequisites First
+        </CardTitle>
+        <p className="text-center text-muted-foreground mt-2 max-w-lg mx-auto">
+          The Master Exam is the capstone of the platform. It unlocks once
+          you&apos;ve cleared the activity checklist below.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Overall progress bar */}
+        <div>
+          <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
+            <span>Overall readiness</span>
+            <span className="font-medium">
+              {completedCount} of {totalCount} complete &middot; {overallPercent}%
+            </span>
+          </div>
+          <Progress value={overallPercent} />
+        </div>
+
+        {/* Three themes, each collapsible */}
+        <div className="space-y-3">
+          {THEMES.map((theme) => {
+            const themeReqs = theme.reqIds
+              .map((id) => reqsById.get(id))
+              .filter((r): r is MasterExamRequirement => Boolean(r));
+            const tPct = themePercent(themeReqs);
+            const tDone = themeReqs.filter((r) => r.complete).length;
+            return (
+              <ThemeBlock
+                key={theme.id}
+                theme={theme}
+                requirements={themeReqs}
+                themeDone={tDone}
+                themeTotal={themeReqs.length}
+                themePercent={tPct}
+              />
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ThemeBlock({
+  theme,
+  requirements,
+  themeDone,
+  themeTotal,
+  themePercent: tPct,
+}: {
+  theme: ThemeDef;
+  requirements: MasterExamRequirement[];
+  themeDone: number;
+  themeTotal: number;
+  themePercent: number;
+}) {
+  // Default-open the theme that has the most outstanding work, so the
+  // user lands on actionable content.
+  const allDone = themeDone === themeTotal;
+  const [open, setOpen] = useState<boolean>(!allDone);
+  return (
+    <div className="rounded-lg border border-border bg-background/30 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="w-full p-4 text-left flex items-center gap-3 hover:bg-primary/5 transition-colors"
+      >
+        {allDone ? (
+          <CheckCircle2 className="h-5 w-5 text-chart-2 shrink-0" />
+        ) : (
+          <Circle className="h-5 w-5 text-muted-foreground shrink-0" />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-semibold">{theme.title}</span>
+            <Badge variant={allDone ? 'default' : 'outline'} className="text-[10px]">
+              {themeDone} / {themeTotal}
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5">{theme.blurb}</p>
+          <div className="mt-2 flex items-center gap-3">
+            <Progress value={tPct} className="h-1.5 flex-1" />
+            <span className="text-[11px] font-mono text-muted-foreground w-9 text-right">
+              {tPct}%
+            </span>
+          </div>
+        </div>
+        <ArrowRight
+          className={`h-4 w-4 text-muted-foreground transition-transform shrink-0 ${
+            open ? 'rotate-90' : ''
+          }`}
+        />
+      </button>
+      {open && (
+        <div className="px-4 pb-4 pt-0">
+          <ul className="space-y-3">
+            {requirements.map((req) => (
+              <RequirementRow key={req.id} req={req} />
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Disclosure used by the brand-new-user mode — collapsed by default. */
+function PrerequisiteDisclosure({
+  requirements,
+  reqsById,
+}: {
+  requirements: MasterExamRequirement[];
+  reqsById: Map<string, MasterExamRequirement>;
+}) {
+  const [open, setOpen] = useState(false);
+  if (!open) {
+    return (
+      <Button
+        variant="outline"
+        size="lg"
+        onClick={() => setOpen(true)}
+      >
+        Show full checklist
+      </Button>
+    );
+  }
+  return (
+    <div className="w-full text-left mt-4 space-y-3">
+      <div className="text-sm font-semibold text-foreground">
+        Full prerequisite checklist
+      </div>
+      {THEMES.map((theme) => {
+        const themeReqs = theme.reqIds
+          .map((id) => reqsById.get(id))
+          .filter((r): r is MasterExamRequirement => Boolean(r));
+        return (
+          <div key={theme.id} className="rounded-md border border-border p-3">
+            <div className="text-xs font-bold uppercase tracking-wider text-primary">
+              {theme.title}
+            </div>
+            <ul className="mt-2 space-y-2">
+              {themeReqs.map((r) => (
+                <li
+                  key={r.id}
+                  className="flex items-start gap-2 text-xs text-muted-foreground"
+                >
+                  <Circle className="h-3 w-3 mt-0.5 shrink-0" />
+                  <span>{r.title}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+    </div>
   );
 }
