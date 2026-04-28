@@ -60,6 +60,8 @@ import { getUserProfile } from '@/app/actions/user';
 import { chapters as ALL_CHAPTERS } from '@/data/textbook';
 import { getQuoteOfTheDay, type TechEthicsQuote } from '@/data/quotes';
 import { FirstRunCards } from '@/components/dashboard/first-run-cards';
+import { RoleBadge, pickHighestTier } from '@/components/identity/role-badge';
+import { hasOwnedLicenses } from '@/app/actions/scope';
 import type { Chapter } from '@/types/textbook';
 import type { Debate, Story } from '@/types';
 
@@ -232,6 +234,31 @@ export function Dashboard(): JSX.Element {
       // ignore
     }
   }
+
+  // Role tier — resolved from a small bag of signals into a single
+  // hierarchy (super-admin > license-admin > instructor > member). One
+  // badge, never stacked. We only check license ownership here; the
+  // instructor signal would need a per-community lookup which we skip
+  // on the dashboard for budget — instructor-only users still see
+  // "Member" here, which is benign (the community pages show the
+  // instructor role explicitly when they're acting as one).
+  const [hasLicense, setHasLicense] = useState(false);
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    hasOwnedLicenses(user.uid).then((res) => {
+      if (cancelled) return;
+      setHasLicense(res.success ? res.data : false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+  const roleTier = pickHighestTier({
+    isSuperAdmin: !!isSuperAdmin,
+    hasOwnedLicense: hasLicense,
+    isCommunityInstructor: false,
+  });
 
   // Per-user data: textbook progress, badges, profile stats. Skipped
   // when no user is signed in (the page will already have redirected
@@ -455,15 +482,15 @@ export function Dashboard(): JSX.Element {
           </h1>
         </div>
         <span className="flex-1" />
-        <div className="text-xs text-muted-foreground">
-          {doneCount > 0
-            ? `${doneCount} of ${ALL_CHAPTERS.length} chapters earned`
-            : 'Start your study arc'}
-          {isSuperAdmin && (
-            <span className="ml-3 rounded-md bg-accent/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-accent">
-              Owner
-            </span>
-          )}
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <span>
+            {doneCount > 0
+              ? `${doneCount} of ${ALL_CHAPTERS.length} chapters earned`
+              : 'Start your study arc'}
+          </span>
+          {/* Single role badge — never stacked. Members get a "Member"
+              label too, so the visual is consistent across users. */}
+          <RoleBadge tier={roleTier} />
         </div>
       </div>
 
