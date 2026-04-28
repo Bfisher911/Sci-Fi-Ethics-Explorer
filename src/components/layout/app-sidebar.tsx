@@ -21,11 +21,9 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import {
   BookOpen,
-  FlaskConical,
   BookText,
   Compass,
   Home,
-  MessageSquare,
   MessageCircle,
   Users,
   Scale,
@@ -36,7 +34,6 @@ import {
   ScrollText,
   Presentation,
   ShieldCheck,
-  GitCompare,
   Rocket,
   Clapperboard,
   Newspaper,
@@ -45,6 +42,7 @@ import {
   Library,
   Layers,
   Microscope,
+  Sparkles,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -100,17 +98,17 @@ const SECTIONS: NavSection[] = [
       { href: '/certificates', label: 'Certificates', icon: Award },
     ],
   },
-  // Section 3 — Practice (formerly the AI surfaces + interactive tools)
+  // Section 3 — Practice. The four AI surfaces (Counselor / Analyzer /
+  // Perspectives / Reflection) consolidated into a single `/studio`
+  // route with tab modes; one sidebar entry, four tools.
   {
     id: 'practice',
     label: 'Practice',
     icon: Microscope,
     items: [
       { href: '/stories', label: 'Stories', icon: BookOpen },
-      { href: '/analyzer', label: 'Scenario Analyzer', icon: FlaskConical },
       { href: '/framework-explorer', label: 'Framework Explorer', icon: Compass },
-      { href: '/perspective-comparison', label: 'Perspectives', icon: GitCompare },
-      { href: '/ai-counselor', label: 'AI Counselor', icon: MessageSquare },
+      { href: '/studio', label: 'Studio (AI tools)', icon: Sparkles },
     ],
   },
   // Section 4 — Community
