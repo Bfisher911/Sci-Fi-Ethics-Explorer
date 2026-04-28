@@ -122,17 +122,15 @@ export function LicenseStatusCard() {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button asChild>
-            <Link href="/billing">
-              <Users className="h-4 w-4 mr-2" />
-              Manage seats
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Link>
-          </Button>
+        {/* Single CTA — seat management lives on /billing only.
+            "Create a community" is gone from this card; profile is for
+            "what's the state of my license?", not for taking action.
+            That action moved to /billing where it belongs. */}
+        <div>
           <Button asChild variant="outline">
-            <Link href="/communities/create">
-              Create a community
+            <Link href="/billing">
+              Open billing &amp; seats
+              <ArrowRight className="h-4 w-4 ml-2" />
             </Link>
           </Button>
         </div>
