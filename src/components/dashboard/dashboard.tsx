@@ -37,9 +37,9 @@ import {
   ArrowRight,
   Award,
   Bookmark,
+  BookmarkCheck,
   BookMarked,
   BookOpen,
-  Check,
   GraduationCap,
   Loader2,
   Lock,
@@ -59,6 +59,7 @@ import { addBookmark } from '@/app/actions/bookmarks';
 import { getUserProfile } from '@/app/actions/user';
 import { chapters as ALL_CHAPTERS } from '@/data/textbook';
 import { getQuoteOfTheDay, type TechEthicsQuote } from '@/data/quotes';
+import { FirstRunCards } from '@/components/dashboard/first-run-cards';
 import type { Chapter } from '@/types/textbook';
 import type { Debate, Story } from '@/types';
 
@@ -196,6 +197,41 @@ export function Dashboard(): JSX.Element {
   const [openDebates, setOpenDebates] = useState<Debate[] | null>(null);
   const [bookmarkSaved, setBookmarkSaved] = useState(false);
   const [bookmarkSaving, setBookmarkSaving] = useState(false);
+
+  // Compact-mode hero + first-run cards: both gated off the same
+  // localStorage flag.
+  //   - first dashboard visit ever → show 3-card welcome, full hero
+  //   - subsequent visits same day → compact hero, no welcome
+  //   - subsequent visits later   → full hero, no welcome
+  const [compactHero, setCompactHero] = useState(false);
+  const [showFirstRun, setShowFirstRun] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const last = localStorage.getItem('sfe.lastDashboardVisit');
+      const dismissed = localStorage.getItem('sfe.firstRunDismissed') === 'true';
+      if (!last && !dismissed) {
+        // Brand-new user — full hero AND first-run cards on top.
+        setShowFirstRun(true);
+      } else if (last === today) {
+        // Same-day return — compact hero, no welcome.
+        setCompactHero(true);
+      }
+      localStorage.setItem('sfe.lastDashboardVisit', today);
+    } catch {
+      // Storage unavailable — leave hero at full size.
+    }
+  }, []);
+
+  function dismissFirstRun() {
+    setShowFirstRun(false);
+    try {
+      localStorage.setItem('sfe.firstRunDismissed', 'true');
+    } catch {
+      // ignore
+    }
+  }
 
   // Per-user data: textbook progress, badges, profile stats. Skipped
   // when no user is signed in (the page will already have redirected
@@ -350,10 +386,10 @@ export function Dashboard(): JSX.Element {
           href: `/debate-arena/${d.id}`,
         }));
 
-  const debateCardTitle =
-    openDebates && openDebates.length > 0
-      ? `${openDebates.length === 1 ? 'One thread' : `${openDebates.length} threads`} need you`
-      : 'Debate Arena';
+  // Card title is static; the per-thread count lives on each row's
+  // badge. Previously the title and the rendered list could disagree
+  // (title said "Three" while data showed 1 or 12), which read as a bug.
+  const debateCardTitle = 'Active debates';
 
   // Bookmark the current hero story (Dilemma of the Day or the
   // latest-story fallback — whichever CinematicHero is rendering).
@@ -397,6 +433,14 @@ export function Dashboard(): JSX.Element {
 
   return (
     <div className="mx-auto w-full max-w-[1400px] px-6 py-6 md:px-8 md:py-8 lg:px-10">
+      {/* First-run welcome (one-time, dismissible) */}
+      {showFirstRun && (
+        <FirstRunCards
+          startReadingHref={`/textbook/chapters/${reading.slug}`}
+          onDismiss={dismissFirstRun}
+        />
+      )}
+
       {/* Quote of the Day — prominent, above the greeting strip */}
       <QuoteOfTheDayCard quote={quote} />
 
@@ -423,7 +467,7 @@ export function Dashboard(): JSX.Element {
         </div>
       </div>
 
-      {/* Cinematic Hero */}
+      {/* Cinematic Hero — compact on repeat-of-day visits */}
       <CinematicHero
         dilemma={dilemmaPayload}
         resume={resumePayload}
@@ -432,14 +476,67 @@ export function Dashboard(): JSX.Element {
           bookmarkSaving ? 'saving' : bookmarkSaved ? 'saved' : 'idle'
         }
         canSave={!!user && !!dilemmaPayload}
+        compact={compactHero}
       />
 
-      {/* Stat row */}
+      {/* Zero-progress users get an oversized "Start here" CTA right
+          below the hero. The Resume Reading inset on the hero already
+          shows Chapter 1 in this case but the inset's "Continue →"
+          link is small; this banner makes the next move unmissable.
+          Hidden once they finish at least one chapter quiz. */}
+      {doneCount === 0 && !finalExamPassed && (
+        <div className="mt-4">
+          <Link
+            href={`/textbook/chapters/${reading.slug}`}
+            className="group flex flex-col items-start gap-2 rounded-2xl border-2 p-5 transition-colors hover:border-primary md:flex-row md:items-center md:gap-5 md:p-6"
+            style={{
+              borderColor: 'hsl(var(--primary) / 0.5)',
+              background:
+                'linear-gradient(135deg, hsl(var(--card) / 0.7) 0%, hsl(var(--primary) / 0.08) 100%)',
+            }}
+          >
+            <div
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-xl"
+              style={{
+                background: 'hsl(var(--primary) / 0.18)',
+                color: 'hsl(var(--primary))',
+              }}
+            >
+              <BookOpen className="h-6 w-6" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                Start here
+              </div>
+              <div className="mt-0.5 text-lg font-bold text-foreground">
+                Open Chapter 1 of the textbook
+              </div>
+              <div className="text-sm text-muted-foreground">
+                The shortest path into the platform — one chapter, ~30 min.
+                You can come back here anytime.
+              </div>
+            </div>
+            <div
+              className="inline-flex h-11 items-center gap-2 rounded-md px-5 text-sm font-bold text-primary-foreground transition-transform group-hover:translate-x-0.5"
+              style={{
+                background: 'hsl(var(--primary))',
+                boxShadow: '0 0 22px hsl(var(--primary) / 0.4)',
+              }}
+            >
+              Begin <ArrowRight className="h-4 w-4" />
+            </div>
+          </Link>
+        </div>
+      )}
+
+      {/* Stat row — three tiles: Chapters, Debates, Certs.
+          Stories used to be a fourth tile but it overlapped with
+          Chapters for engaged users; the Practice section in the
+          sidebar already has it one click away. */}
       <div className="mt-5">
         <PulseStatRow
           chaptersDone={doneCount}
           totalChapters={ALL_CHAPTERS.length}
-          storiesCompleted={storiesCompleted ?? 0}
           debatesActive={openDebates?.length ?? 0}
           certs={badgeCount ?? 0}
         />
@@ -639,6 +736,11 @@ interface CinematicHeroProps {
   /** Whether the bookmark CTA can act — false when the user is
    *  signed out. Renders a disabled button with a tooltip hint. */
   canSave: boolean;
+  /** When true, the hero renders at ~half height with smaller copy.
+   *  Activated for repeat visits in the same day so returning users
+   *  don't have to scroll past 460px of cinematic real estate every
+   *  time. See Dashboard's lastVisit localStorage logic. */
+  compact?: boolean;
 }
 
 function CinematicHero({
@@ -647,7 +749,13 @@ function CinematicHero({
   onSave,
   savedState,
   canSave,
+  compact = false,
 }: CinematicHeroProps): JSX.Element {
+  const heroMinHeight = compact ? 240 : 460;
+  const heroPadding = compact ? 'p-5 md:p-6' : 'p-8 md:p-10';
+  const titleClampedFontSize = compact
+    ? 'clamp(28px, 3.5vw, 44px)'
+    : 'clamp(38px, 5.5vw, 68px)';
   // No real story to headline the hero — render an explicit empty
   // state with actionable CTAs (submit / browse) instead of fake
   // copy linking to the generic index.
@@ -694,7 +802,7 @@ function CinematicHero({
     <div
       className="relative overflow-hidden rounded-2xl border"
       style={{
-        minHeight: 460,
+        minHeight: heroMinHeight,
         // Layered backdrop: the cover SVG via CSS background-image
         // (silently fails — never shows a broken-image icon) on top
         // of a vivid cinematic gradient that's tinted toward the
@@ -742,8 +850,8 @@ function CinematicHero({
 
       {/* Content */}
       <div
-        className="relative grid items-end gap-6 p-8 md:p-10 lg:grid-cols-[1.5fr_1fr]"
-        style={{ minHeight: 460 }}
+        className={`relative grid items-end gap-6 ${heroPadding} lg:grid-cols-[1.5fr_1fr]`}
+        style={{ minHeight: heroMinHeight }}
       >
         <div className="flex flex-col gap-3.5">
           <div
@@ -759,7 +867,7 @@ function CinematicHero({
           <h1
             className="m-0 font-headline font-bold text-white"
             style={{
-              fontSize: 'clamp(38px, 5.5vw, 68px)',
+              fontSize: titleClampedFontSize,
               lineHeight: 1,
               letterSpacing: '-0.035em',
               textShadow: '0 2px 40px rgba(0,0,0,0.7)',
@@ -832,6 +940,10 @@ function CinematicHero({
                 <ArrowRight className="h-3.5 w-3.5" />
               </span>
             </Link>
+            {/* Save → icon-only button. The previous full-width "Save"
+                button competed with "Enter Dilemma" for visual weight
+                and added an extra decision; an icon expresses the
+                affordance without diluting the primary CTA. */}
             <button
               type="button"
               onClick={() => {
@@ -839,35 +951,37 @@ function CinematicHero({
                 void onSave();
               }}
               disabled={!canSave || savedState !== 'idle'}
-              title={
-                canSave
-                  ? 'Save this dilemma to your bookmarks'
-                  : 'Sign in to bookmark dilemmas'
+              aria-label={
+                savedState === 'saved'
+                  ? 'Saved to your bookmarks'
+                  : canSave
+                    ? 'Save this story to your bookmarks'
+                    : 'Sign in to save'
               }
-              className="inline-flex h-[52px] items-center justify-center border px-5 text-[13px] font-semibold uppercase tracking-[0.14em] text-white backdrop-blur transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
+              title={
+                savedState === 'saved'
+                  ? 'Saved'
+                  : canSave
+                    ? 'Save'
+                    : 'Sign in to save'
+              }
+              className="grid h-[52px] w-[52px] place-items-center rounded-full border text-white backdrop-blur transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
               style={{
-                background: 'rgba(255,255,255,0.06)',
-                borderColor: 'rgba(255,255,255,0.3)',
-                transform: 'skewX(-10deg)',
+                background: savedState === 'saved'
+                  ? 'hsl(var(--accent) / 0.85)'
+                  : 'rgba(255,255,255,0.06)',
+                borderColor: savedState === 'saved'
+                  ? 'hsl(var(--accent))'
+                  : 'rgba(255,255,255,0.3)',
               }}
             >
-              <span
-                className="inline-flex items-center gap-2.5"
-                style={{ transform: 'skewX(10deg)' }}
-              >
-                {savedState === 'saving' ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : savedState === 'saved' ? (
-                  <Check className="h-3.5 w-3.5" />
-                ) : (
-                  <Bookmark className="h-3.5 w-3.5" />
-                )}
-                {savedState === 'saving'
-                  ? 'Saving'
-                  : savedState === 'saved'
-                    ? 'Saved'
-                    : 'Save'}
-              </span>
+              {savedState === 'saving' ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : savedState === 'saved' ? (
+                <BookmarkCheck className="h-4 w-4" />
+              ) : (
+                <Bookmark className="h-4 w-4" />
+              )}
             </button>
           </div>
         </div>
@@ -944,8 +1058,6 @@ interface PulseStatRowProps {
   /** Number of textbook chapters with quiz passed. */
   chaptersDone: number;
   totalChapters: number;
-  /** Branching stories the user has completed (from userProfile). */
-  storiesCompleted: number;
   /** Total open / voting debates platform-wide. */
   debatesActive: number;
   /** Earned badges (per userBadges/{uid}). */
@@ -953,15 +1065,16 @@ interface PulseStatRowProps {
 }
 
 /**
- * Honest stat row. Every value here comes from the user's actual
- * progress (chapters earned, stories finished, certs) or platform
- * state (open debates) — no placeholder XP / streak numbers. Each
- * tile links to where you can see the underlying detail.
+ * Honest stat row. Three tiles only — Stories was previously the fourth
+ * but it overlapped too heavily with Chapters for engaged users (you
+ * only finish a story by also progressing in the textbook flow most of
+ * the time). Stories list is one click away via the sidebar's Practice
+ * section. Tiles link to where the underlying number is rendered in
+ * detail.
  */
 function PulseStatRow({
   chaptersDone,
   totalChapters,
-  storiesCompleted,
   debatesActive,
   certs,
 }: PulseStatRowProps): JSX.Element {
@@ -972,13 +1085,6 @@ function PulseStatRow({
       value: `${chaptersDone} / ${totalChapters}`,
       accent: false,
       href: '/textbook',
-    },
-    {
-      Icon: Sparkles,
-      label: 'Stories',
-      value: storiesCompleted === 1 ? '1 read' : `${storiesCompleted} read`,
-      accent: false,
-      href: '/stories',
     },
     {
       Icon: Scale,
@@ -997,7 +1103,7 @@ function PulseStatRow({
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+    <div className="grid grid-cols-3 gap-3">
       {stats.map((s) => (
         <Link
           key={s.label}
