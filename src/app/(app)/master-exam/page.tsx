@@ -70,7 +70,7 @@ export default function MasterExamPage() {
     setAwarding(true);
     const res = await awardMasterTechnologyEthicistCertificate({
       userId: user.uid,
-      userName: user.displayName || user.email || 'Master Technology Ethicist',
+      userName: user.displayName || user.email || 'Master Ethicist',
     });
     setAwarding(false);
     if (res.success) {
@@ -79,7 +79,7 @@ export default function MasterExamPage() {
       toast({
         title: 'Master Certificate awarded!',
         description:
-          'You are now credentialed as a Sci-Fi Ethics Explorer Master Technology Ethicist.',
+          'You hold the Master Certificate in the Ethics of Technology Through Science Fiction.',
       });
     } else {
       toast({
@@ -131,12 +131,12 @@ export default function MasterExamPage() {
           <ArrowLeft className="h-3 w-3" /> Back to Dashboard
         </Link>
         <h1 className="font-headline text-3xl md:text-4xl font-bold flex items-center gap-2">
-          <Trophy className="h-7 w-7 text-primary" /> Master Technology Ethicist Exam
+          <Trophy className="h-7 w-7 text-primary" /> Master Exam
         </h1>
         <p className="text-muted-foreground mt-1">
           {masterExamQuiz.questions.length} cumulative questions · pass at{' '}
           {masterExamQuiz.passingScorePercent}% · unlimited retakes · earns the{' '}
-          <strong>Ethics of Technology Through Science Fiction Master&apos;s Certificate</strong>.
+          <strong>Master Certificate</strong> in <em>The Ethics of Technology Through Science Fiction</em>.
         </p>
       </div>
 
@@ -210,7 +210,7 @@ export default function MasterExamPage() {
             <Card className="border-primary/30">
               <CardContent className="p-4 flex items-center gap-3 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                Issuing your Master Technology Ethicist Certificate…
+                Issuing your Master Certificate…
               </CardContent>
             </Card>
           )}

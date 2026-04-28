@@ -21,9 +21,9 @@ export default function GlossaryPage() {
     <div className="container mx-auto py-8 px-4">
       <Card className="mb-8 p-6 bg-card/80 backdrop-blur-sm">
         <CardContent className="p-0">
-          <h1 className="text-4xl font-bold mb-4 text-primary font-headline">Ethical Theory Glossary</h1>
+          <h1 className="text-4xl font-bold mb-4 text-primary font-headline">Ethical Frameworks</h1>
           <p className="text-lg text-muted-foreground mb-6">
-            Explore foundational ethical theories to better understand and analyze complex moral dilemmas.
+            Explore the foundational ethical frameworks you&apos;ll use across the platform &mdash; the lenses you can hold up to any decision, story, or system.
           </p>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />

@@ -43,16 +43,16 @@ function CurriculumPageInner() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-4xl font-bold mb-2 text-primary font-headline">
-                Guided Curricula
+                Learning Paths
               </h1>
               <p className="text-lg text-muted-foreground">
-                Structured learning paths to deepen your understanding of ethics
-                through stories, quizzes, and debates.
+                Structured paths that connect stories, chapters, philosophers,
+                and frameworks into one coherent journey.
               </p>
             </div>
             <Button onClick={() => setShowBuilder(!showBuilder)}>
               <Plus className="h-4 w-4 mr-2" />
-              {showBuilder ? 'Browse Curricula' : 'Create Curriculum'}
+              {showBuilder ? 'Browse Paths' : 'Create a Path'}
             </Button>
           </div>
         </CardContent>
