@@ -156,6 +156,14 @@ export function JourneyTourDialog({ trigger }: JourneyTourDialogProps) {
               </Link>
             </Button>
           )}
+          {/* Persistent "long read" link to the platform mental-model
+              page. Visible on every step so the user can opt out of
+              the tour into the calmer reading surface. */}
+          <Button asChild variant="ghost" size="sm" className="text-xs text-muted-foreground">
+            <Link href="/help" onClick={() => setOpen(false)}>
+              Read the full mental model
+            </Link>
+          </Button>
           <div className="ml-auto flex items-center gap-2">
             <Button
               variant="ghost"

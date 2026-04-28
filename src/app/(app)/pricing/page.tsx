@@ -263,6 +263,19 @@ export default function PricingPage() {
       <p className="text-center text-sm text-muted-foreground mt-12 max-w-lg mx-auto">
         Secure checkout powered by Stripe. Promo codes supported at checkout.
       </p>
+      {/* Soft pointer for the most-confused prospect: "I have an invite
+          code from my school — do I need to buy anything?" The answer
+          lives on /onboarding (where the invite-code field is), not
+          here. */}
+      <p className="text-center text-xs text-muted-foreground mt-3 max-w-lg mx-auto">
+        Already have an invite code from a school or organization?{' '}
+        <a
+          href="/onboarding"
+          className="text-primary hover:underline"
+        >
+          You don&apos;t need to buy anything &mdash; redeem it here.
+        </a>
+      </p>
       {isCheckingOut && (
         <p className="text-center text-xs text-muted-foreground mt-2">
           Redirecting to secure checkout…

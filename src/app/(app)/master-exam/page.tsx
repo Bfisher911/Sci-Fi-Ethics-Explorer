@@ -197,51 +197,69 @@ export default function MasterExamPage() {
 function RequirementRow({ req }: { req: MasterExamRequirement }) {
   const pct = req.target > 0 ? Math.min(Math.round((req.current / req.target) * 100), 100) : req.complete ? 100 : 0;
   return (
-    <li
-      className="rounded-md border border-border bg-background/30 p-4 transition-colors hover:border-primary/40"
-    >
-      <div className="flex items-start gap-3">
-        {req.complete ? (
-          <CheckCircle2 className="h-5 w-5 text-chart-2 shrink-0 mt-0.5" />
-        ) : (
-          <Circle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-3 flex-wrap">
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">{req.title}</div>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {req.description}
-              </p>
-            </div>
-            <Badge
-              variant={req.complete ? 'default' : 'outline'}
-              className="text-[11px] shrink-0"
-            >
-              {req.complete
-                ? 'Complete'
-                : `${req.current} / ${req.target}`}
-            </Badge>
-          </div>
-          <div className="mt-2.5 flex items-center gap-3">
-            <Progress value={pct} className="h-1.5 flex-1" />
-            <span className="text-[11px] font-mono text-muted-foreground shrink-0 w-9 text-right">
-              {pct}%
-            </span>
-          </div>
-          {!req.complete && (
-            <div className="mt-2">
-              <Link
-                href={req.href}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-accent"
-              >
-                Go there <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-          )}
+    <li>
+      {/* Whole-row tap target on mobile: incomplete reqs become a
+          full-bleed Link, complete reqs stay non-interactive (nothing
+          to do). The previous design only made the "Go there" anchor
+          tappable, which on touch devices was a small hit zone. */}
+      {req.complete ? (
+        <div className="block rounded-md border border-border bg-background/30 p-4">
+          <RequirementRowBody req={req} pct={pct} />
         </div>
-      </div>
+      ) : (
+        <Link
+          href={req.href}
+          className="block rounded-md border border-border bg-background/30 p-4 transition-colors hover:border-primary/40 active:bg-primary/5"
+        >
+          <RequirementRowBody req={req} pct={pct} showCta />
+        </Link>
+      )}
     </li>
+  );
+}
+
+function RequirementRowBody({
+  req,
+  pct,
+  showCta = false,
+}: {
+  req: MasterExamRequirement;
+  pct: number;
+  showCta?: boolean;
+}): JSX.Element {
+  return (
+    <div className="flex items-start gap-3">
+      {req.complete ? (
+        <CheckCircle2 className="h-5 w-5 text-chart-2 shrink-0 mt-0.5" />
+      ) : (
+        <Circle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+      )}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-semibold text-foreground">{req.title}</div>
+            <p className="text-xs text-muted-foreground mt-0.5">{req.description}</p>
+          </div>
+          <Badge
+            variant={req.complete ? 'default' : 'outline'}
+            className="text-[11px] shrink-0"
+          >
+            {req.complete ? 'Complete' : `${req.current} / ${req.target}`}
+          </Badge>
+        </div>
+        <div className="mt-2.5 flex items-center gap-3">
+          <Progress value={pct} className="h-1.5 flex-1" />
+          <span className="text-[11px] font-mono text-muted-foreground shrink-0 w-9 text-right">
+            {pct}%
+          </span>
+        </div>
+        {showCta && (
+          <div className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+            Go there <ArrowRight className="h-3 w-3" />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
