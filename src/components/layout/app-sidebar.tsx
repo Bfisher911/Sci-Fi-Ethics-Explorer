@@ -121,11 +121,12 @@ const SECTIONS: NavSection[] = [
       { href: '/debate-arena', label: 'Debates', icon: Scale },
       { href: '/workshops', label: 'Workshops', icon: Presentation },
       { href: '/communities', label: 'Communities', icon: Users },
-      { href: '/directory', label: 'Directory', icon: Users },
+      { href: '/people', label: 'People', icon: Users },
       { href: '/messages', label: 'Messages', icon: MessageCircle },
     ],
   },
-  // Section 5 — Library
+  // Section 5 — Library. Leaderboard is no longer a separate entry —
+  // it's the second tab on /people now.
   {
     id: 'library',
     label: 'Library',
@@ -136,7 +137,6 @@ const SECTIONS: NavSection[] = [
       { href: '/scifi-authors', label: 'Sci-Fi Authors', icon: Rocket },
       { href: '/scifi-media', label: 'Sci-Fi Media', icon: Clapperboard },
       { href: '/blog', label: 'Blog', icon: Newspaper },
-      { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     ],
   },
 ];
