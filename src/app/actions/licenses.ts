@@ -307,7 +307,9 @@ export async function assignSeat(data: {
     }
 
     // Reject if this license already has an active seat for the same
-    // recipient (uid OR email) — keeps usedSeats honest.
+    // recipient (uid OR email) — keeps usedSeats honest. Use a more
+    // actionable error message that points the admin at the existing
+    // seats list (mirrors the auth-error pattern).
     const dupQ = query(
       collection(db, 'seatAssignments'),
       where('licenseId', '==', data.licenseId),
@@ -318,7 +320,11 @@ export async function assignSeat(data: {
     if (!dupSnap.empty) {
       return {
         success: false,
-        error: `That email is already assigned a seat on this license.`,
+        error:
+          `${email} already has an active seat on this license. ` +
+          'Look for them in the seat list below; if they say they ' +
+          'can’t access the platform, ask them to sign in once ' +
+          'with that email and the seat will activate automatically.',
       };
     }
 

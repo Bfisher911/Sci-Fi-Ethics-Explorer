@@ -59,7 +59,19 @@ import { addBookmark } from '@/app/actions/bookmarks';
 import { getUserProfile } from '@/app/actions/user';
 import { chapters as ALL_CHAPTERS } from '@/data/textbook';
 import { getQuoteOfTheDay, type TechEthicsQuote } from '@/data/quotes';
-import { FirstRunCards } from '@/components/dashboard/first-run-cards';
+// Lazy-load FirstRunCards — only first-ever visitors render it, but
+// it'd otherwise ship in every dashboard bundle. `dynamic` defers the
+// download until the gating effect actually decides to show the
+// welcome overlay.
+import dynamic from 'next/dynamic';
+const FirstRunCards = dynamic(
+  () =>
+    import('@/components/dashboard/first-run-cards').then((m) => m.FirstRunCards),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
 import { RoleBadge, pickHighestTier } from '@/components/identity/role-badge';
 import { hasOwnedLicenses } from '@/app/actions/scope';
 import type { Chapter } from '@/types/textbook';
