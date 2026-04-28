@@ -12,7 +12,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Moon, Sun, User as UserIcon, LogOut, Search as SearchIcon, PanelLeft, MessageCircle, Route as RouteIcon } from 'lucide-react';
+import {
+  Moon,
+  Sun,
+  User as UserIcon,
+  LogOut,
+  Search as SearchIcon,
+  PanelLeft,
+  MessageCircle,
+  Route as RouteIcon,
+  Bookmark,
+  Gem,
+  CreditCard,
+  HelpCircle,
+} from 'lucide-react';
+import { hasOwnedLicenses } from '@/app/actions/scope';
 import { JourneyTourDialog } from './journey-tour-dialog';
 import { useAuth } from '@/hooks/use-auth';
 import { auth } from '@/lib/firebase/config';
@@ -92,6 +106,25 @@ export function AppHeader() {
 
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
+  // Whether the signed-in user owns at least one license. Gates the
+  // "Billing & Seats" entry in the user menu — members with a claimed
+  // seat (but no license of their own) shouldn't see billing surfaces.
+  const [licenseAdmin, setLicenseAdmin] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      setLicenseAdmin(false);
+      return;
+    }
+    let cancelled = false;
+    hasOwnedLicenses(user.uid).then((res) => {
+      if (cancelled) return;
+      setLicenseAdmin(res.success ? res.data : false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   // Sync theme from localStorage on mount
   useEffect(() => {
@@ -176,15 +209,47 @@ export function AppHeader() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>{user.displayName || user.email}</DropdownMenuLabel>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="truncate">
+                  {user.displayName || user.email}
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/profile">Profile</Link>
+                  <Link href="/profile">
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    Profile
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/billing">Billing &amp; Seats</Link>
+                  <Link href="/bookmarks">
+                    <Bookmark className="mr-2 h-4 w-4" />
+                    Bookmarks
+                  </Link>
                 </DropdownMenuItem>
+                {/* Billing only renders for license owners. A member
+                    with a claimed seat shouldn't see seat-management
+                    UI for someone else's license. */}
+                {licenseAdmin && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/billing">
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      Billing &amp; Seats
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem asChild>
+                  <Link href="/pricing">
+                    <Gem className="mr-2 h-4 w-4" />
+                    Pricing &amp; Plans
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/help">
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    Help
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
