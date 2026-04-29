@@ -340,9 +340,20 @@ export default function CommunityDetailPage() {
         </Link>
       </Button>
 
-      <h1 className="text-3xl font-bold text-primary font-headline mb-6">
-        {community.name}
-      </h1>
+      <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
+        <h1 className="text-3xl font-bold text-primary font-headline">
+          {community.name}
+        </h1>
+        {/* Quick-link to the chronological activity feed. The tabs
+            below are organized by content kind (forum, contributions,
+            members, etc.) — the feed is the cross-cut "what's
+            happening here" view. */}
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/communities/${community.id}/feed`}>
+            Activity feed
+          </Link>
+        </Button>
+      </div>
 
       <Tabs defaultValue="contributions" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4 md:grid-cols-8">
