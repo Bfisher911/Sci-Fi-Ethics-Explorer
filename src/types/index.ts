@@ -661,6 +661,7 @@ export type CurriculumItemType =
   | 'quiz'
   | 'debate'
   | 'analysis'
+  | 'analyzer-prompt'
   | 'discussion'
   | 'perspective'
   | 'philosopher'
@@ -1096,6 +1097,12 @@ export interface Subscription {
   cancelAtPeriodEnd?: boolean;
   createdAt: Date | any;
   updatedAt?: Date | any;
+  /** Stripe customer ID. Set by the webhook on
+   *  `checkout.session.completed`. Used by the billing page to gate
+   *  the "Manage payment & invoices" portal link. */
+  stripeCustomerId?: string;
+  /** Stripe subscription ID. Set by the webhook. */
+  stripeSubscriptionId?: string;
 }
 
 // ─── Seat Licensing ─────────────────────────────────────────────────

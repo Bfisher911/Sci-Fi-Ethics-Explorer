@@ -11,6 +11,7 @@ import {
   type Timestamp,
 } from 'firebase/firestore';
 import type { UserProgress, QuizResult } from '@/types';
+import { computeNextStreak } from '@/lib/streak';
 
 type ProgressActionResult<T = undefined> =
   | { success: true; data: T }
@@ -190,22 +191,18 @@ export async function recordDailyActivity(
     const currentStreak: number = data.currentStreakDays ?? 0;
     const longestStreak: number = data.longestStreakDays ?? 0;
 
-    if (lastDay === today) {
+    // Pure rule lives in src/lib/streak.ts so it can be unit-tested
+    // without Firestore. Same-day visits are a no-op write.
+    const { nextStreak, isNewDay } = computeNextStreak({
+      lastDay,
+      today,
+      currentStreak,
+    });
+    if (!isNewDay) {
       return {
         success: true,
-        data: { currentStreakDays: currentStreak, isNewDay: false },
+        data: { currentStreakDays: nextStreak, isNewDay: false },
       };
-    }
-    let nextStreak = 1;
-    if (lastDay) {
-      const last = new Date(lastDay + 'T00:00:00Z');
-      const now = new Date(today + 'T00:00:00Z');
-      const diffDays = Math.round(
-        (now.getTime() - last.getTime()) / (24 * 60 * 60 * 1000),
-      );
-      if (diffDays === 1) nextStreak = currentStreak + 1;
-      else if (diffDays < 0) nextStreak = currentStreak; // clock skew safety
-      // else (>1) reset to 1
     }
     const nextLongest = Math.max(longestStreak, nextStreak);
 

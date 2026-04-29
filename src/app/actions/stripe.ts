@@ -9,8 +9,11 @@ type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
 
-function getOrigin(): string {
-  const hdrs = headers();
+async function getOrigin(): Promise<string> {
+  // Next 15 made `headers()` async — it returns a Promise<ReadonlyHeaders>.
+  // Awaiting fixes the previous type error and is otherwise a no-op
+  // since the value resolves synchronously in the request scope.
+  const hdrs = await headers();
   const host = hdrs.get('x-forwarded-host') ?? hdrs.get('host');
   const proto = hdrs.get('x-forwarded-proto') ?? 'https';
   if (host) return `${proto}://${host}`;
@@ -30,7 +33,7 @@ export async function createCheckoutSession(input: {
   try {
     const stripe = getStripe();
     const priceId = resolvePriceId(input.period);
-    const origin = getOrigin();
+    const origin = await getOrigin();
 
     // Re-use an existing Stripe customer if we've stored one on the user doc.
     const userRef = doc(db, 'users', input.uid);
@@ -128,7 +131,7 @@ export async function createLicenseCheckoutSession(input: {
 }): Promise<ActionResult<{ url: string; sessionId: string }>> {
   try {
     const stripe = getStripe();
-    const origin = getOrigin();
+    const origin = await getOrigin();
 
     const userRef = doc(db, 'users', input.uid);
     const userSnap = await getDoc(userRef);
@@ -198,7 +201,7 @@ export async function createPortalSession(
       return { success: false, error: 'No Stripe customer on file for this user.' };
     }
     const stripe = getStripe();
-    const origin = getOrigin();
+    const origin = await getOrigin();
     const portal = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: `${origin}/billing`,

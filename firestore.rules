@@ -332,5 +332,47 @@ service cloud.firestore {
       allow read: if true;
       allow create, update, delete: if true;
     }
+
+    // ─── Textbook highlights ────────────────────────────────────
+    // Reader-saved passages with optional notes. Auto-generated doc IDs;
+    // the doc carries `userId` + `slug` for queries. Server actions
+    // (see saveHighlight / getUserHighlights / deleteHighlight in
+    // src/app/actions/textbook.ts) gate ownership at write time —
+    // these rules match the rest of this file's "server-action
+    // enforced" pattern.
+    match /textbookHighlights/{highlightId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // ─── Blog posts ─────────────────────────────────────────────
+    // Site blog content. Reads are public (the /blog index renders
+    // for unsigned-in users). Writes go through server actions that
+    // enforce admin / author identity in application code.
+    match /blogPosts/{postId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create, update, delete: if true;
+      }
+    }
+
+    // ─── Community blog posts ──────────────────────────────────
+    // Mirror of blogPosts for the per-community blog. Same rationale.
+    match /communityBlogPosts/{postId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // ─── Default deny ───────────────────────────────────────────
+    // Catches any collection we haven't explicitly listed above.
+    // Without this, Firestore's default is also deny — but being
+    // explicit means a future developer can't accidentally rely on
+    // an unwritten rule.
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
 }

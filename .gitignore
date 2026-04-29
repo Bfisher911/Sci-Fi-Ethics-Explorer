@@ -38,7 +38,11 @@ yarn-error.log*
 next-env.d.ts
 
 .genkit/*
+
+# Environment files — never commit real secrets, but always commit
+# .env.example as a template for other contributors / fresh deploys.
 .env*
+!.env.example
 
 # firebase
 firebase-debug.log

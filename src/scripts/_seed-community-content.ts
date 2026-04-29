@@ -12,10 +12,24 @@ import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-const PROJECT_ID = 'sci-fi-ethics-explorer-rlmgn';
-const CLIENT_ID =
-  '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com';
-const CLIENT_SECRET = 'j9iVZfS8kkCEFUPaAeJV0sAi';
+// Read from env so this script works against any Firebase project
+// (dev, staging, prod) without code changes. Falls back to the historic
+// project ID for back-compat with existing local setups.
+const PROJECT_ID =
+  process.env.FIREBASE_PROJECT_ID ||
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
+  'sci-fi-ethics-explorer-rlmgn';
+const CLIENT_ID = process.env.FIREBASE_OAUTH_CLIENT_ID || '';
+const CLIENT_SECRET = process.env.FIREBASE_OAUTH_CLIENT_SECRET || '';
+if (!CLIENT_ID || !CLIENT_SECRET) {
+  // Soft warning rather than throw — the script's other uses of these
+  // are gated behind a token-refresh path that fails clearly when the
+  // tokens are absent.
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[seed-community-content] FIREBASE_OAUTH_CLIENT_ID / _SECRET not set. Token refresh will fail.',
+  );
+}
 
 // ─── Firestore value helpers ────────────────────────────────────────
 

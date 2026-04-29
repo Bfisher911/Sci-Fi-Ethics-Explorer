@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
+import { reportError } from '@/lib/observability/report';
 
 export default function Error({
   error,
@@ -12,8 +13,9 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
-    console.error(error);
+    // eslint-disable-next-line no-console
+    console.error('[app-error]', error);
+    reportError(error, { where: 'app/(app)/error', digest: error.digest });
   }, [error]);
 
   return (

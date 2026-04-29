@@ -241,7 +241,7 @@ export function UserProfileCard() {
   return (
     <>
     {profileError && (
-        <Alert variant={isPermissionError ? "destructive" : "info"} className="mb-6 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm">
+        <Alert variant={isPermissionError ? "destructive" : "default"} className="mb-6 max-w-2xl mx-auto bg-card/80 backdrop-blur-sm">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>{isPermissionError ? "Error Loading Profile" : "Profile Information"}</AlertTitle>
           <AlertDescription>

@@ -136,8 +136,15 @@ export async function generateQuizForSubject(
       };
     }
 
+    // Narrow the broader QuizSubjectType to the schema's accepted set.
+    // The flow currently only handles 'philosopher' / 'theory'; the
+    // server action lets other subject types through for static-fallback
+    // routing in getQuizForSubject. Anything that gets here past the
+    // earlier static-fallback fallthrough has already been validated.
+    const generationSubjectType: 'philosopher' | 'theory' =
+      subjectType === 'theory' ? 'theory' : 'philosopher';
     const generated = await generateQuiz({
-      subjectType,
+      subjectType: generationSubjectType,
       subjectName: subject.name,
       context: subject.context || undefined,
       questionCount,

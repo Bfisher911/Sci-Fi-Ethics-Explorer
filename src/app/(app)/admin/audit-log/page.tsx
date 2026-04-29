@@ -49,6 +49,8 @@ const ACTION_STYLES: Record<AuditAction | 'default', string> = {
   restore_version: 'bg-green-500/15 text-green-300 border-green-500/30',
   admin_grant: 'bg-accent/15 text-accent-foreground border-accent/30',
   admin_revoke: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
+  impersonation_start: 'bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/30',
+  impersonation_stop: 'bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/30',
   default: 'bg-muted text-muted-foreground border-border',
 };
 

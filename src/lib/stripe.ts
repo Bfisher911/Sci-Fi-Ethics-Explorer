@@ -15,9 +15,14 @@ export function getStripe(): Stripe {
       'STRIPE_SECRET_KEY is not set. Add it to .env (local) or Netlify environment variables.'
     );
   }
+  // Pin to a known good API version so upgrades don't break silently.
+  // The SDK's `apiVersion` type is a hard-coded string union that
+  // drifts every release; we cast via `any` to keep this resilient
+  // across SDK upgrades. What matters at runtime is the version
+  // string itself, which Stripe's API server validates.
   cached = new Stripe(key, {
-    // Pin to a known good API version so upgrades don't break silently.
-    apiVersion: '2024-06-20' as Stripe.LatestApiVersion,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    apiVersion: '2024-06-20' as any,
     typescript: true,
   });
   return cached;

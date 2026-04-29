@@ -177,7 +177,7 @@ const comparePerspectivesFlow = ai.defineFlow(
     inputSchema: ComparePerspectivesInputSchema,
     outputSchema: ComparePerspectivesOutputSchema,
   },
-  async (input) => {
+  async (input): Promise<ComparePerspectivesOutput> => {
     const frameworksList = input.frameworks.map((f) => `- ${f}`).join('\n');
 
     const userPrompt = `Analyze the following scenario and the user's choice through the lens of each requested ethical framework. For each framework, explain (a) how it would evaluate the choice, (b) what verdict it would render (support / oppose / mixed), and (c) the concise one-word "strength" label. Then write a short synthesis that highlights agreements and disagreements across frameworks.

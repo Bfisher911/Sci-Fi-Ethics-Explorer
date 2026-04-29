@@ -69,7 +69,13 @@ export function AICounselorChat({ sessionId, initialMessages, onMessagesUpdate }
     setQuotaInfo(null);
 
     try {
-      const flowInputMessages = [...messages, userMessage].map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }));
+      const flowInputMessages: { role: 'user' | 'assistant'; content: string }[] = [
+        ...messages,
+        userMessage,
+      ].map((m) => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: m.content,
+      }));
       const result = await chatWithCounselor({ messages: flowInputMessages, mode: devilsAdvocateMode ? 'devils-advocate' : 'counselor' });
 
       // The server action now always resolves with a structured payload.

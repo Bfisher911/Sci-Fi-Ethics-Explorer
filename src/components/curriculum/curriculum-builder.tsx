@@ -134,6 +134,7 @@ const ITEM_TYPE_META: Record<
   quiz: { label: 'Quiz', icon: SparklesIcon },
   debate: { label: 'Debate', icon: SparklesIcon },
   analysis: { label: 'Analyzer exercise', icon: SparklesIcon },
+  'analyzer-prompt': { label: 'Analyzer prompt', icon: SparklesIcon },
   discussion: { label: 'Discussion', icon: SparklesIcon },
   perspective: { label: 'Perspective comparison', icon: SparklesIcon },
   philosopher: { label: 'Philosopher page', icon: ScrollText },
