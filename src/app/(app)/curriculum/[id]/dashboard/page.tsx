@@ -22,16 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  Cell,
-} from 'recharts';
+import dynamic from 'next/dynamic';
 import {
   ArrowLeft,
   Users,
@@ -46,6 +37,27 @@ import {
   getCurriculumProgressAggregate,
 } from '@/app/actions/curriculum';
 import type { CurriculumPath, CurriculumItem } from '@/types';
+
+// recharts is ~80 KB and only the curriculum's creator (or an admin)
+// ever loads this page. Defer the chart bundles so the dashboard
+// shell — header, drop-off callout, and per-user table — paints
+// immediately while the visualisations stream in.
+const ItemCompletionChart = dynamic(
+  () =>
+    import('./dashboard-charts').then((m) => m.ItemCompletionChart),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-[400px] w-full" />,
+  },
+);
+const CompletionRateChart = dynamic(
+  () =>
+    import('./dashboard-charts').then((m) => m.CompletionRateChart),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-[280px] w-full" />,
+  },
+);
 
 interface Aggregate {
   enrolled: number;
@@ -272,78 +284,8 @@ export default function CurriculumDashboardPage() {
         </Card>
       ) : (
         <>
-          {/* Item completion bar chart */}
-          <Card className="bg-card/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-lg text-primary">
-                Items completed
-              </CardTitle>
-              <CardDescription>
-                Number of users who have completed each item (low-completion
-                items are dimmed).
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="w-full h-[320px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={itemBarData}
-                    margin={{ top: 10, right: 10, bottom: 40, left: 0 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="hsl(var(--border))"
-                    />
-                    <XAxis
-                      dataKey="name"
-                      angle={-30}
-                      textAnchor="end"
-                      interval={0}
-                      height={60}
-                      tick={{
-                        fontSize: 11,
-                        fill: 'hsl(var(--muted-foreground))',
-                      }}
-                    />
-                    <YAxis
-                      allowDecimals={false}
-                      tick={{
-                        fontSize: 12,
-                        fill: 'hsl(var(--muted-foreground))',
-                      }}
-                    />
-                    <Tooltip
-                      cursor={{ fill: 'hsl(var(--muted) / 0.3)' }}
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--popover))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '0.5rem',
-                        color: 'hsl(var(--popover-foreground))',
-                      }}
-                      labelFormatter={(_label, payload) =>
-                        payload && payload[0]
-                          ? (payload[0].payload as { fullName: string })
-                              .fullName
-                          : ''
-                      }
-                    />
-                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                      {itemBarData.map((entry) => (
-                        <Cell
-                          key={entry.id}
-                          fill={
-                            entry.dim
-                              ? 'hsl(var(--primary) / 0.25)'
-                              : 'hsl(var(--primary))'
-                          }
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Item completion bar chart (lazy-loaded) */}
+          <ItemCompletionChart data={itemBarData} />
 
           {/* Drop-off callout */}
           {dropoffPoints.length > 0 && (
@@ -388,79 +330,8 @@ export default function CurriculumDashboardPage() {
             </Card>
           )}
 
-          {/* Completion rate horizontal chart */}
-          <Card className="bg-card/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-lg text-primary">
-                Completion rate
-              </CardTitle>
-              <CardDescription>
-                % of enrolled users who completed each item.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div
-                className="w-full"
-                style={{
-                  height: `${Math.max(240, completionRateData.length * 32)}px`,
-                }}
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={completionRateData}
-                    layout="vertical"
-                    margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
-                  >
-                    <CartesianGrid
-                      horizontal={false}
-                      strokeDasharray="3 3"
-                      stroke="hsl(var(--border))"
-                    />
-                    <XAxis
-                      type="number"
-                      domain={[0, 100]}
-                      tickFormatter={(v) => `${v}%`}
-                      tick={{
-                        fontSize: 11,
-                        fill: 'hsl(var(--muted-foreground))',
-                      }}
-                    />
-                    <YAxis
-                      dataKey="name"
-                      type="category"
-                      width={160}
-                      interval={0}
-                      tick={{
-                        fontSize: 11,
-                        fill: 'hsl(var(--foreground))',
-                      }}
-                    />
-                    <Tooltip
-                      cursor={{ fill: 'hsl(var(--muted) / 0.3)' }}
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--popover))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '0.5rem',
-                        color: 'hsl(var(--popover-foreground))',
-                      }}
-                      formatter={(v: number) => [`${v}%`, 'Completion rate']}
-                      labelFormatter={(_l, payload) =>
-                        payload && payload[0]
-                          ? (payload[0].payload as { fullName: string })
-                              .fullName
-                          : ''
-                      }
-                    />
-                    <Bar
-                      dataKey="rate"
-                      radius={[0, 4, 4, 0]}
-                      fill="hsl(var(--accent))"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Completion rate horizontal chart (lazy-loaded) */}
+          <CompletionRateChart data={completionRateData} />
 
           {/* Per-user table */}
           <Card className="bg-card/80 backdrop-blur-sm">

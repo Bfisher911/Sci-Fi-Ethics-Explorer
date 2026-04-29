@@ -13,8 +13,36 @@ import {
   getCommunityMembers,
   getCommunityInvites,
 } from '@/app/actions/communities';
-import { InstructorAnalytics } from '@/components/communities/instructor-analytics';
-import { CommunityGradebookView } from '@/components/communities/community-gradebook';
+import dynamic from 'next/dynamic';
+
+// Both panels are heavy — InstructorAnalytics pulls in recharts
+// (~80 KB) and CommunityGradebookView only mounts when the user
+// clicks the Gradebook tab. Defer both so the page shell paints
+// instantly while the chart code streams in.
+const InstructorAnalytics = dynamic(
+  () =>
+    import('@/components/communities/instructor-analytics').then(
+      (m) => m.InstructorAnalytics,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-96 w-full rounded-lg bg-muted/20 animate-pulse" />
+    ),
+  },
+);
+const CommunityGradebookView = dynamic(
+  () =>
+    import('@/components/communities/community-gradebook').then(
+      (m) => m.CommunityGradebookView,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-96 w-full rounded-lg bg-muted/20 animate-pulse" />
+    ),
+  },
+);
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { BarChart3, GraduationCap } from 'lucide-react';
 import type { Community, CommunityMemberInfo, CommunityInvite } from '@/types';

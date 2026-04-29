@@ -45,13 +45,43 @@ import {
   updateCommunity,
 } from '@/app/actions/communities';
 import { getCurricula } from '@/app/actions/curriculum';
+import dynamic from 'next/dynamic';
 import { CommunityMembers } from '@/components/communities/community-members';
-import { CommunityInvites } from '@/components/communities/community-invites';
 import { ContributionsFeed } from '@/components/communities/contributions-feed';
-import { CommunityForum } from '@/components/forum/community-forum';
-import { CommunityMediaList } from '@/components/forum/community-media-list';
 import type { Community, CommunityMemberInfo, CurriculumPath } from '@/types';
 import Link from 'next/link';
+
+// The instructor view ships a row of seven other tabs. Only the
+// default ("contributions") renders on first paint, so we lazy-load
+// the heaviest siblings — the Forum (~640 LOC of date-fns + dialogs),
+// the Media list, and the Invites pane only download once the user
+// switches tabs. The skeleton matches the typical tab body height
+// so layout shift on click is negligible.
+const tabSkeleton = (
+  <div className="h-64 w-full rounded-lg bg-muted/20 animate-pulse" />
+);
+
+const CommunityInvites = dynamic(
+  () =>
+    import('@/components/communities/community-invites').then(
+      (m) => m.CommunityInvites,
+    ),
+  { ssr: false, loading: () => tabSkeleton },
+);
+const CommunityForum = dynamic(
+  () =>
+    import('@/components/forum/community-forum').then(
+      (m) => m.CommunityForum,
+    ),
+  { ssr: false, loading: () => tabSkeleton },
+);
+const CommunityMediaList = dynamic(
+  () =>
+    import('@/components/forum/community-media-list').then(
+      (m) => m.CommunityMediaList,
+    ),
+  { ssr: false, loading: () => tabSkeleton },
+);
 
 /**
  * Community detail page with role-based tabs for instructors and members.
@@ -393,7 +423,7 @@ export default function CommunityDetailPage() {
                   <span className="text-3xl font-bold font-mono text-primary tracking-widest">
                     {community.inviteCode}
                   </span>
-                  <Button variant="ghost" size="icon" onClick={handleCopy}>
+                  <Button variant="ghost" size="icon" onClick={handleCopy} aria-label="Copy invite code">
                     <Copy className="h-5 w-5" />
                   </Button>
                 </div>
