@@ -249,15 +249,21 @@ export function AppHeader() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
+                  <Link href="/me">
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    My journey
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link href="/profile">
                     <UserIcon className="mr-2 h-4 w-4" />
-                    Profile
+                    Profile settings
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/bookmarks">
                     <Bookmark className="mr-2 h-4 w-4" />
-                    Bookmarks
+                    Saved
                   </Link>
                 </DropdownMenuItem>
                 {/* Billing only renders for license owners. A member

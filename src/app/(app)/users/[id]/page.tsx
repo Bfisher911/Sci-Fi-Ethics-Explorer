@@ -3,15 +3,24 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import {
-  PolarAngleAxis,
-  PolarGrid,
-  PolarRadiusAxis,
-  Radar,
-  RadarChart,
-  ResponsiveContainer,
-  Tooltip,
-} from 'recharts';
+import dynamic from 'next/dynamic';
+
+// Lazy-load the radar chart — recharts is ~80 KB. Most visitors to a
+// user profile don't have the chart open above the fold, and many
+// users they're viewing haven't taken the framework quiz yet (in
+// which case we render a tiny "no quiz" message and never need the
+// chart at all). The skeleton placeholder uses the page's existing
+// Skeleton import (further down) and a fixed height so the layout
+// doesn't shift on load.
+const FrameworkRadar = dynamic(
+  () => import('@/components/charts/framework-radar').then((m) => m.FrameworkRadar),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[380px] w-full rounded-lg bg-muted/30 animate-pulse" />
+    ),
+  },
+);
 import {
   Flag,
   Lock,
@@ -503,42 +512,7 @@ export default function PublicUserProfilePage(): React.ReactElement {
         </CardHeader>
         <CardContent>
           {hasQuiz ? (
-            <div className="h-[380px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="75%" data={chartData}>
-                  <PolarGrid
-                    stroke="hsl(var(--muted-foreground))"
-                    strokeOpacity={0.3}
-                  />
-                  <PolarAngleAxis
-                    dataKey="name"
-                    tick={{ fill: 'hsl(var(--foreground))', fontSize: 11 }}
-                  />
-                  <PolarRadiusAxis
-                    angle={30}
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-                    axisLine={false}
-                  />
-                  <Radar
-                    name="Framework alignment"
-                    dataKey="score"
-                    stroke="hsl(var(--primary))"
-                    fill="hsl(var(--primary))"
-                    fillOpacity={0.25}
-                    strokeWidth={2}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                      color: 'hsl(var(--foreground))',
-                      fontSize: '12px',
-                    }}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
+            <FrameworkRadar data={chartData} />
           ) : (
             <p className="text-sm text-muted-foreground py-6 text-center">
               This explorer hasn&apos;t taken the Framework Explorer quiz yet.

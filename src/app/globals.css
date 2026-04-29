@@ -86,3 +86,36 @@
     @apply bg-background text-foreground font-body antialiased;
   }
 }
+
+/* ─── Accessibility: reduced-motion respect ──────────────────────────
+ * Honor the user's system-level "reduce motion" preference (set via
+ * macOS / Windows / Linux accessibility settings or the
+ * prefers-reduced-motion media query). Disables non-essential
+ * animations + transitions so users who get nauseous from motion
+ * (or simply find it distracting) get a calm experience.
+ *
+ * Applied broadly via a global rule rather than per-component, so
+ * future motion we add inherits the protection automatically. The
+ * !important is intentional — it has to override component-level
+ * inline transitions like the cinematic hero's gradient pulse.
+ * ─────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Accessibility: visible focus ring across interactive elements ──
+ * Some shadcn primitives strip the default browser focus ring. Add
+ * a fallback so keyboard users always see where they are.
+ * ─────────────────────────────────────────────────────────────────── */
+:where(a, button, [role='button'], input, select, textarea):focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
