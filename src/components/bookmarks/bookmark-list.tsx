@@ -3,9 +3,10 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, ExternalLink } from 'lucide-react';
+import { Trash2, ExternalLink, Bookmark as BookmarkIcon } from 'lucide-react';
 import type { Bookmark } from '@/types';
 import Link from 'next/link';
+import { EmptyState } from '@/components/empty/empty-state';
 
 interface BookmarkListProps {
   bookmarks: Bookmark[];
@@ -28,12 +29,16 @@ function getItemLink(bookmark: Bookmark): string {
 export function BookmarkList({ bookmarks, onRemove }: BookmarkListProps) {
   if (bookmarks.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-xl text-muted-foreground">No bookmarks yet.</p>
-        <p className="text-sm text-muted-foreground/80 mt-1">
-          Bookmark stories, dilemmas, and debates to save them here.
-        </p>
-      </div>
+      <EmptyState
+        icon={BookmarkIcon}
+        title="Nothing saved yet"
+        blurb="Tap the bookmark icon on any story, dilemma, or debate to keep it here for later."
+        action={
+          <Button asChild>
+            <Link href="/stories">Browse stories</Link>
+          </Button>
+        }
+      />
     );
   }
 
