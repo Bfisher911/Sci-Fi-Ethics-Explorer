@@ -821,7 +821,7 @@ function SortableModule({
           </button>
           <CardTitle className="text-base">Module {index + 1}</CardTitle>
         </div>
-        <Button variant="ghost" size="icon" onClick={onRemoveModule}>
+        <Button variant="ghost" size="icon" onClick={onRemoveModule} aria-label="Remove module">
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
       </CardHeader>
@@ -1098,6 +1098,7 @@ function SortableItem({
               size="icon"
               className="h-8 w-8"
               onClick={onRemove}
+              aria-label="Remove item"
             >
               <Trash2 className="h-3 w-3 text-destructive" />
             </Button>

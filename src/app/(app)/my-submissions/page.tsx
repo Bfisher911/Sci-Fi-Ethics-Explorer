@@ -444,9 +444,11 @@ export default function MySubmissionsPage() {
     <div className="container mx-auto py-8 px-4">
       <Card className="mb-8 bg-card/80 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-3xl text-primary font-headline">
-            <FileCheck className="h-7 w-7" />
-            My Submissions
+          <CardTitle>
+            <h1 className="flex items-center gap-3 text-3xl text-primary font-headline">
+              <FileCheck className="h-7 w-7" />
+              My Submissions
+            </h1>
           </CardTitle>
           <CardDescription>
             Manage everything you have created: stories, dilemmas, analyses,

@@ -114,6 +114,7 @@ export function ChatSessionList({
                       e.stopPropagation();
                       setDeletingId(session.id);
                     }}
+                    aria-label="Delete chat session"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>

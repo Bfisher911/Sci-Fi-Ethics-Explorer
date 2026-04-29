@@ -453,6 +453,20 @@ export default function MePage(): JSX.Element {
           collected in one place.
         </p>
       </section>
+
+      {/* ─── Highlights archive (linked) ──────────────────────────── */}
+      <section>
+        <SectionHeader
+          title="Saved passages & notes"
+          actionHref="/me/highlights"
+          actionLabel="Open highlights"
+        />
+        <p className="text-sm text-muted-foreground">
+          Anywhere you select text inside a chapter, a "Save quote" toolbar
+          appears so you can keep the passage with an optional note. They all
+          come back here.
+        </p>
+      </section>
     </div>
   );
 }

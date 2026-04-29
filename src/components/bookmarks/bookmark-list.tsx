@@ -59,7 +59,7 @@ export function BookmarkList({ bookmarks, onRemove }: BookmarkListProps) {
               </Link>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <Button asChild variant="ghost" size="icon">
+              <Button asChild variant="ghost" size="icon" aria-label={`Open ${bm.title}`}>
                 <Link href={getItemLink(bm)}>
                   <ExternalLink className="h-4 w-4" />
                 </Link>
@@ -68,6 +68,7 @@ export function BookmarkList({ bookmarks, onRemove }: BookmarkListProps) {
                 variant="ghost"
                 size="icon"
                 onClick={() => onRemove(bm.id)}
+                aria-label={`Remove bookmark ${bm.title}`}
               >
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>

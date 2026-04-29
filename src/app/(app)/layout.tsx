@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useSubscription } from '@/hooks/use-subscription';
 import { AppHeader } from '@/components/layout/app-header';
 import { AppSidebar } from '@/components/layout/app-sidebar';
+import { ThemeVariantHydrator } from '@/components/layout/theme-switcher';
 import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -146,6 +147,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider defaultOpen={true}>
+      {/* Hydrates the user's saved theme variant (default / low-stim /
+          high-contrast) before the first paint. Renders nothing. */}
+      <ThemeVariantHydrator />
       {/* Skip-to-content link — visually hidden until focused via Tab.
           First focusable element on every authenticated page. Required
           for keyboard + screen-reader users to bypass the sidebar +

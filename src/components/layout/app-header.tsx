@@ -184,7 +184,11 @@ export function AppHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
+      <header
+        data-app-header
+        role="banner"
+        className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6"
+      >
         {isMobile && (
            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="md:hidden">
               <PanelLeft className="h-5 w-5" />
@@ -234,7 +238,7 @@ export function AppHeader() {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
+                <Button variant="ghost" size="icon" className="rounded-full" aria-label="User menu">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || 'User'} />
                     <AvatarFallback>

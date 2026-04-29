@@ -321,6 +321,129 @@ export async function getAllUserReflections(
 }
 
 /**
+ * Highlights — the user's selected-text "marginalia" with optional notes.
+ * Stored at `textbookHighlights/{auto-id}` with userId + slug for queries.
+ *
+ * Highlights are intentionally lightweight: we persist the text the user
+ * selected (so we can show it back to them) plus an optional note, but
+ * we DON'T try to anchor the highlight back into the rendered chapter
+ * DOM on subsequent visits — that's a hard problem (text re-flows,
+ * normalization, etc.) and the value is ~80% from the standalone
+ * archive view. If a future iteration wants in-text persistence we can
+ * add it without re-shaping the data model.
+ */
+const HIGHLIGHTS_COLLECTION = 'textbookHighlights';
+
+export interface ChapterHighlight {
+  id: string;
+  userId: string;
+  slug: string;
+  text: string;
+  note?: string;
+  createdAt?: Date;
+}
+
+export async function saveHighlight(input: {
+  userId: string;
+  slug: string;
+  text: string;
+  note?: string;
+}): Promise<ActionResult<{ id: string }>> {
+  try {
+    const { userId, slug, text, note } = input;
+    if (!userId) return { success: false, error: 'Not signed in.' };
+    if (!text || !text.trim()) {
+      return { success: false, error: 'Empty highlight.' };
+    }
+    // Cap the stored text. Long selections (entire paragraphs) are
+    // valid but a 4kb cap keeps the doc small for the index/list view.
+    const trimmed = text.trim().slice(0, 4000);
+    const trimmedNote = (note || '').trim().slice(0, 1000) || undefined;
+    const ref = await import('firebase/firestore').then((m) =>
+      m.addDoc(collection(db, HIGHLIGHTS_COLLECTION), {
+        userId,
+        slug,
+        text: trimmed,
+        note: trimmedNote ?? null,
+        createdAt: serverTimestamp(),
+      }),
+    );
+    return { success: true, data: { id: ref.id } };
+  } catch (error) {
+    console.error('[textbook] saveHighlight error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
+export async function getUserHighlights(
+  userId: string,
+  opts?: { slug?: string; limit?: number },
+): Promise<ActionResult<ChapterHighlight[]>> {
+  try {
+    if (!userId) return { success: true, data: [] };
+    const cap = Math.max(1, Math.min(opts?.limit ?? 200, 500));
+    const filters = [where('userId', '==', userId)];
+    if (opts?.slug) filters.push(where('slug', '==', opts.slug));
+    const q = query(collection(db, HIGHLIGHTS_COLLECTION), ...filters);
+    const snap = await getDocs(q);
+    const out: ChapterHighlight[] = [];
+    snap.forEach((d) => {
+      const data = d.data() as {
+        userId?: string;
+        slug?: string;
+        text?: string;
+        note?: string;
+        createdAt?: unknown;
+      };
+      out.push({
+        id: d.id,
+        userId: String(data.userId || userId),
+        slug: String(data.slug || ''),
+        text: String(data.text || ''),
+        note: data.note || undefined,
+        createdAt:
+          timestampToDate(
+            data.createdAt as Parameters<typeof timestampToDate>[0],
+          ) ?? undefined,
+      });
+    });
+    out.sort(
+      (a, b) =>
+        (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0),
+    );
+    return { success: true, data: out.slice(0, cap) };
+  } catch (error) {
+    console.error('[textbook] getUserHighlights error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
+export async function deleteHighlight(
+  userId: string,
+  highlightId: string,
+): Promise<ActionResult<void>> {
+  try {
+    if (!userId || !highlightId) {
+      return { success: false, error: 'Missing identifiers.' };
+    }
+    const ref = doc(db, HIGHLIGHTS_COLLECTION, highlightId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      return { success: false, error: 'Highlight not found.' };
+    }
+    if ((snap.data() as { userId?: string }).userId !== userId) {
+      return { success: false, error: 'Not your highlight.' };
+    }
+    const { deleteDoc } = await import('firebase/firestore');
+    await deleteDoc(ref);
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error('[textbook] deleteHighlight error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
  * Persist a user's "Promise vs. Reality" 0-5 scoring for a chapter.
  * Stored as a single doc keyed by (user, chapter).
  */

@@ -64,6 +64,7 @@ import { chapters as ALL_CHAPTERS } from '@/data/textbook';
 import { getQuoteOfTheDay, type TechEthicsQuote } from '@/data/quotes';
 import { getLatestChangelog } from '@/data/changelog';
 import { ReadingGoalCard } from '@/components/dashboard/reading-goal-card';
+import { SpacedRepetitionRail } from '@/components/dashboard/spaced-repetition-rail';
 // Lazy-load FirstRunCards — only first-ever visitors render it, but
 // it'd otherwise ship in every dashboard bundle. `dynamic` defers the
 // download until the gating effect actually decides to show the
@@ -693,6 +694,13 @@ export function Dashboard(): JSX.Element {
           <ReadingGoalCard chaptersPassedAllTime={doneCount} />
         </div>
       )}
+
+      {/* Spaced repetition — only renders if the user has at least one
+          chapter quiz pass that's older than 7 days. Self-hides
+          otherwise so it doesn't clutter early-stage dashboards. */}
+      <div className="mt-5">
+        <SpacedRepetitionRail />
+      </div>
 
       {/* Master-certificate progress */}
       <div className="mt-5">
