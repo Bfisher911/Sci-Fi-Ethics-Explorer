@@ -73,6 +73,7 @@ export function CommunityCard({ community, userRole }: CommunityCardProps) {
                   size="icon"
                   className="h-6 w-6"
                   onClick={handleCopyCode}
+                  aria-label="Copy invite code"
                 >
                   <Copy className="h-3 w-3" />
                 </Button>

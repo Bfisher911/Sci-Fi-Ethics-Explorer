@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { ChevronLeft, Clock, Target, BookOpen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,9 +12,25 @@ import { PrimerCacheSection } from './primer-cache';
 import { ShortStoryBlock } from './short-story-block';
 import { DiscussionSection } from './discussion-section';
 import { DiscussionQuestions } from './discussion-questions';
-import { PromiseVsReality } from './promise-vs-reality';
 import { ChapterNavFooter } from './chapter-nav-footer';
 import { ChapterProgressBanner } from './chapter-progress-banner';
+import { HighlightToolbar } from './highlight-toolbar';
+import { ReaderFocusToggle } from './reader-focus-toggle';
+
+// Lazy-load PromiseVsReality. It only renders for chapters whose
+// section list includes a `promise-vs-reality` entry, sits well below
+// the fold, and pulls in the Slider primitive plus the textbook
+// server-action client bundle. Defer until the section scrolls in.
+const PromiseVsReality = dynamic(
+  () =>
+    import('./promise-vs-reality').then((m) => m.PromiseVsReality),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-48 w-full rounded-lg bg-muted/20 animate-pulse" />
+    ),
+  },
+);
 
 interface ChapterReaderProps {
   chapter: Chapter;
@@ -27,7 +44,13 @@ interface ChapterReaderProps {
  */
 export function ChapterReader({ chapter, prev, next }: ChapterReaderProps) {
   return (
-    <article className="relative pb-24">
+    <article
+      className="relative pb-24"
+      // Marks this subtree as the only place text selection should
+      // surface the highlight toolbar. Components outside this article
+      // (sidebar, nav) won't trigger it.
+      data-highlightable="true"
+    >
       {/* Hero */}
       <header className="relative overflow-hidden rounded-2xl border border-primary/20 mb-10">
         <div className="relative aspect-[3/1] md:aspect-[5/2] w-full">
@@ -42,12 +65,15 @@ export function ChapterReader({ chapter, prev, next }: ChapterReaderProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/70 to-card/20" />
         </div>
         <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
-          <Link
-            href="/textbook"
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary mb-3 self-start"
-          >
-            <ChevronLeft className="h-3 w-3" /> Back to Textbook
-          </Link>
+          <div className="mb-3 flex w-full items-center justify-between gap-2">
+            <Link
+              href="/textbook"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary"
+            >
+              <ChevronLeft className="h-3 w-3" /> Back to Textbook
+            </Link>
+            <ReaderFocusToggle />
+          </div>
           <Badge
             variant="outline"
             className="self-start mb-3 border-primary/40 text-primary uppercase tracking-wider text-[10px]"
@@ -157,6 +183,10 @@ export function ChapterReader({ chapter, prev, next }: ChapterReaderProps) {
 
       <ChapterNavFooter prev={prev} next={next} />
       <ChapterProgressBanner chapter={chapter} />
+      {/* Floating toolbar that appears on text selection. Mounted as a
+          sibling of the article so its fixed position is computed from
+          the viewport, not the article. */}
+      <HighlightToolbar chapterSlug={chapter.slug} />
     </article>
   );
 }

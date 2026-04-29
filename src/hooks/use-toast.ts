@@ -8,8 +8,16 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+// Toast config — sane defaults the previous shadcn-template numbers
+// undermined.
+//   - LIMIT: 3 stacked. Was 1, which silently dropped earlier toasts
+//     when a new one fired.
+//   - REMOVE_DELAY: 5 minutes (was 16). Time after a toast is *closed*
+//     before it's removed from state. Auto-dismiss duration itself
+//     is controlled by the Radix Toast primitive's `duration` prop
+//     on each toast.
+const TOAST_LIMIT = 3
+const TOAST_REMOVE_DELAY = 5 * 60 * 1000
 
 type ToasterToast = ToastProps & {
   id: string

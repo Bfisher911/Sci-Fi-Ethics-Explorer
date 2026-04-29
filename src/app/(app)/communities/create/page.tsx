@@ -113,7 +113,7 @@ export default function CreateCommunityPage() {
                 <span className="text-4xl font-bold font-mono text-primary tracking-widest">
                   {created.inviteCode}
                 </span>
-                <Button variant="ghost" size="icon" onClick={handleCopy}>
+                <Button variant="ghost" size="icon" onClick={handleCopy} aria-label="Copy invite code">
                   <Copy className="h-5 w-5" />
                 </Button>
               </div>

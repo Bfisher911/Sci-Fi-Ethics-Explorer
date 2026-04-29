@@ -1,5 +1,7 @@
 import { UserProfileCard } from '@/components/profile/user-profile-card';
 import { PrivacySettingsCard } from '@/components/profile/privacy-settings-card';
+import { EmailPreferencesCard } from '@/components/profile/email-preferences-card';
+import { VisualSettingsCard } from '@/components/profile/visual-settings-card';
 import { ProgressDashboard } from '@/components/profile/progress-dashboard';
 import { AchievementsSection } from '@/components/profile/achievements-section';
 import { LicenseStatusCard } from '@/components/profile/license-status-card';
@@ -35,6 +37,12 @@ export default async function ProfilePage() {
       <UserProfileCard />
       <LicenseStatusCard />
       <PrivacySettingsCard />
+      <div className="mt-8">
+        <EmailPreferencesCard />
+      </div>
+      <div className="mt-8">
+        <VisualSettingsCard />
+      </div>
       <div className="mt-8">
         <TextbookProgressCard />
       </div>

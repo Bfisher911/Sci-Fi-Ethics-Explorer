@@ -101,6 +101,7 @@ export function CommunityMembers({
                       size="icon"
                       className="h-8 w-8 text-destructive hover:text-destructive"
                       onClick={() => onRemove(member.uid)}
+                      aria-label={`Remove ${member.displayName || 'member'}`}
                     >
                       <UserMinus className="h-4 w-4" />
                     </Button>

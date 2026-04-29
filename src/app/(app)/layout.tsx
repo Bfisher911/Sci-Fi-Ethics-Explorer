@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useSubscription } from '@/hooks/use-subscription';
 import { AppHeader } from '@/components/layout/app-header';
 import { AppSidebar } from '@/components/layout/app-sidebar';
+import { ThemeVariantHydrator } from '@/components/layout/theme-switcher';
 import { ImpersonationBanner } from '@/components/admin/impersonation-banner';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -146,11 +147,28 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider defaultOpen={true}>
+      {/* Hydrates the user's saved theme variant (default / low-stim /
+          high-contrast) before the first paint. Renders nothing. */}
+      <ThemeVariantHydrator />
+      {/* Skip-to-content link — visually hidden until focused via Tab.
+          First focusable element on every authenticated page. Required
+          for keyboard + screen-reader users to bypass the sidebar +
+          header on every navigation. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+      >
+        Skip to content
+      </a>
       <AppSidebar />
       <SidebarInset className="flex flex-col">
         <ImpersonationBanner />
         <AppHeader />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8"
+        >
           {showOnboardingBanner && (
             <div className="mb-4 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
               <span>

@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ConfirmAction } from '@/components/ui/confirm-action';
 
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
@@ -99,10 +100,6 @@ export function CommunityMediaList({ communityId, canCurate }: Props): JSX.Eleme
 
   async function handleRemove(mediaId: string): Promise<void> {
     if (!user || !canCurate) return;
-    const confirmed = window.confirm(
-      'Remove this media item from the community? Existing discussions will be preserved but no longer surfaced here.'
-    );
-    if (!confirmed) return;
     setRemovingId(mediaId);
     const res = await removeMediaFromCommunity({
       communityId,
@@ -230,20 +227,27 @@ export function CommunityMediaList({ communityId, canCurate }: Props): JSX.Eleme
                     </Link>
                   </Button>
                   {canCurate && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-muted-foreground hover:text-destructive shrink-0"
-                      onClick={() => handleRemove(entry.mediaId)}
-                      disabled={removingId === entry.mediaId}
-                      title="Remove from community"
-                    >
-                      {removingId === entry.mediaId ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-3 w-3" />
-                      )}
-                    </Button>
+                    <ConfirmAction
+                      trigger={
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-muted-foreground hover:text-destructive shrink-0"
+                          disabled={removingId === entry.mediaId}
+                          title="Remove from community"
+                        >
+                          {removingId === entry.mediaId ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3 w-3" />
+                          )}
+                        </Button>
+                      }
+                      title="Remove from community?"
+                      description="Existing discussions will be preserved but the work will no longer be surfaced here. Members can still find it from the global library."
+                      confirmLabel="Remove"
+                      onConfirm={() => handleRemove(entry.mediaId)}
+                    />
                   )}
                 </div>
               );

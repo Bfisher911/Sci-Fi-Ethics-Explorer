@@ -223,6 +223,7 @@ export function WorkshopRoom({ workshop }: WorkshopRoomProps) {
                     type="submit"
                     size="icon"
                     disabled={sending || !messageInput.trim()}
+                    aria-label="Send message"
                   >
                     {sending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />

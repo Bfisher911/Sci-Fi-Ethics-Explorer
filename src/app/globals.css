@@ -86,3 +86,118 @@
     @apply bg-background text-foreground font-body antialiased;
   }
 }
+
+/* ─── Accessibility: reduced-motion respect ──────────────────────────
+ * Honor the user's system-level "reduce motion" preference (set via
+ * macOS / Windows / Linux accessibility settings or the
+ * prefers-reduced-motion media query). Disables non-essential
+ * animations + transitions so users who get nauseous from motion
+ * (or simply find it distracting) get a calm experience.
+ *
+ * Applied broadly via a global rule rather than per-component, so
+ * future motion we add inherits the protection automatically. The
+ * !important is intentional — it has to override component-level
+ * inline transitions like the cinematic hero's gradient pulse.
+ * ─────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Accessibility: visible focus ring across interactive elements ──
+ * Some shadcn primitives strip the default browser focus ring. Add
+ * a fallback so keyboard users always see where they are.
+ * ─────────────────────────────────────────────────────────────────── */
+:where(a, button, [role='button'], input, select, textarea):focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Theme: low-stim ──────────────────────────────────────────────
+ * Applied via `<html class="theme-low-stim">` (managed by the theme
+ * switcher in app-header.tsx). Reduces contrast saturation on accent
+ * + primary, kills the magenta accent in favor of a calm cyan, and
+ * disables non-essential animations. Aimed at users with sensory
+ * sensitivity, ADHD, migraines, or anyone who finds the default
+ * sci-fi palette too loud for long reading sessions.
+ *
+ * Implementation: re-binds the dark-theme HSL variables to a more
+ * muted palette. Only applies on top of `.dark` since the site is
+ * dark-by-default; light theme already reads as low-stim.
+ * ─────────────────────────────────────────────────────────────────── */
+.dark.theme-low-stim {
+  /* Pull saturation down across the board so the eyes can rest. */
+  --primary: 195 50% 70%;       /* desaturated cyan */
+  --accent: 195 30% 60%;        /* same family — kills the magenta clash */
+  --sidebar-accent: 195 30% 55%;
+  --chart-2: 195 30% 60%;
+  --ring: 195 50% 70%;
+  --muted-foreground: 200 15% 75%;
+  --foreground: 200 15% 92%;
+}
+.theme-low-stim *,
+.theme-low-stim *::before,
+.theme-low-stim *::after {
+  /* Force-disable non-essential animation regardless of the user's
+     system preference. Same mechanism as prefers-reduced-motion. */
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+.theme-low-stim {
+  /* Slightly tighter line-height and reduced backdrop-blur intensity
+     to lower visual buzz on glass cards. backdrop-filter is expensive
+     for some folks too. */
+  --tw-backdrop-blur: blur(0px);
+}
+
+/* ─── Theme: high-contrast ─────────────────────────────────────────
+ * For users who need stronger borders + more legible text. Pumps the
+ * border opacity, brightens the foreground, and removes background
+ * glass effects on cards.
+ * ─────────────────────────────────────────────────────────────────── */
+.dark.theme-high-contrast {
+  --foreground: 0 0% 98%;
+  --muted-foreground: 0 0% 80%;
+  --border: 200 30% 60%;
+  --input: 200 30% 50%;
+  --card: 240 55% 24%;
+  --primary: 181 100% 80%;
+  --ring: 181 100% 80%;
+}
+.theme-high-contrast .backdrop-blur-sm,
+.theme-high-contrast .backdrop-blur-md,
+.theme-high-contrast .backdrop-blur {
+  /* Glass effects sap legibility for the people who need this theme.
+     Drop them in favor of solid cards. */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ─── Reader focus mode ────────────────────────────────────────────
+ * Toggled on via `<html class="reader-focus">` from the chapter
+ * page when the user clicks "Focus". Hides the sidebar + header and
+ * the chapter progress banner so only the prose remains. The user
+ * can dismiss with Esc (handled in the focus-mode toggle component).
+ * ─────────────────────────────────────────────────────────────────── */
+.reader-focus [data-sidebar='sidebar'],
+.reader-focus [data-app-header],
+.reader-focus header[role='banner'] {
+  display: none !important;
+}
+.reader-focus #main-content {
+  padding-top: 0 !important;
+}
+.reader-focus [data-chapter-progress-banner] {
+  display: none !important;
+}
+.reader-focus [data-focus-bar] {
+  display: flex !important;
+}

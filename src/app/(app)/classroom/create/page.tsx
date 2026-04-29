@@ -72,7 +72,7 @@ export default function CreateClassroomPage() {
               <span className="text-4xl font-bold font-mono text-primary tracking-widest">
                 {created.joinCode}
               </span>
-              <Button variant="ghost" size="icon" onClick={handleCopy}>
+              <Button variant="ghost" size="icon" onClick={handleCopy} aria-label="Copy join code">
                 <Copy className="h-5 w-5" />
               </Button>
             </div>

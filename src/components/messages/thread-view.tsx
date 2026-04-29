@@ -504,6 +504,7 @@ export function ThreadView({
             disabled={!content.trim() || sending}
             size="icon"
             className="h-11 w-11 shrink-0"
+            aria-label="Send message"
           >
             {sending ? (
               <Loader2 className="h-4 w-4 animate-spin" />

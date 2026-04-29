@@ -36,6 +36,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { ConfirmAction } from '@/components/ui/confirm-action';
 
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
@@ -482,10 +483,6 @@ export function ForumTopicDetail({
 
   async function handleRemove(reply: ForumReply): Promise<void> {
     if (!user || !viewerIsManager) return;
-    const confirmed = window.confirm(
-      'Remove this reply? The body will be scrubbed and the post will show as removed by a manager.'
-    );
-    if (!confirmed) return;
     setRemovingId(reply.id);
     const res = await removeForumReply({
       communityId: topic.communityId,
@@ -559,20 +556,27 @@ export function ForumTopicDetail({
                   </Badge>
                 )}
                 {viewerIsManager && !r.removedByManagerId && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="ml-auto h-7 px-2 text-[11px] text-destructive"
-                    onClick={() => handleRemove(r)}
-                    disabled={removingId === r.id}
-                  >
-                    {removingId === r.id ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-3 w-3 mr-1" />
-                    )}
-                    Remove
-                  </Button>
+                  <ConfirmAction
+                    trigger={
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="ml-auto h-7 px-2 text-[11px] text-destructive"
+                        disabled={removingId === r.id}
+                      >
+                        {removingId === r.id ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-3 w-3 mr-1" />
+                        )}
+                        Remove
+                      </Button>
+                    }
+                    title="Remove this reply?"
+                    description="The body will be scrubbed and the post will show as removed by a manager. The author will not be notified, and you can't undo this."
+                    confirmLabel="Remove reply"
+                    onConfirm={() => handleRemove(r)}
+                  />
                 )}
               </div>
               <div

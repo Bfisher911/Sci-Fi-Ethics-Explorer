@@ -188,6 +188,39 @@ export async function submitArgument(data: {
       console.warn('[debates] recordDebateParticipation import failed:', err);
     }
 
+    // Notify the parent argument's author that someone replied (only
+    // when this is a reply, not a top-level argument). Best-effort —
+    // notification failure never blocks the debate write.
+    if (data.parentArgumentId) {
+      try {
+        const parentSnap = await getDoc(
+          doc(db, 'debates', data.debateId, 'arguments', data.parentArgumentId),
+        );
+        const parent = parentSnap.exists() ? parentSnap.data() : null;
+        if (parent && parent.authorId && parent.authorId !== data.authorId) {
+          const { createNotification } = await import('@/app/actions/notifications');
+          const debateData = (await getDoc(debateRef)).data();
+          await createNotification({
+            userId: parent.authorId,
+            type: 'debate_reply',
+            title: `${data.authorName} replied to your argument`,
+            body:
+              data.content.length > 140
+                ? data.content.slice(0, 140).trim() + '…'
+                : data.content,
+            link: `/debate-arena/${data.debateId}`,
+            metadata: {
+              debateId: data.debateId,
+              debateTitle: debateData?.title ?? null,
+              argumentId: docRef.id,
+            },
+          });
+        }
+      } catch (err) {
+        console.warn('[debates] reply notification failed:', err);
+      }
+    }
+
     return { success: true, data: docRef.id };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

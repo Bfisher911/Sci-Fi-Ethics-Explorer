@@ -94,7 +94,10 @@ export function ChapterProgressBanner({ chapter }: ChapterProgressBannerProps) {
   }
 
   return (
-    <div className="sticky bottom-0 left-0 right-0 z-40 backdrop-blur-md bg-background/85 border-t border-border">
+    <div
+      data-chapter-progress-banner
+      className="sticky bottom-0 left-0 right-0 z-40 backdrop-blur-md bg-background/85 border-t border-border"
+    >
       <div className="max-w-5xl mx-auto px-4 py-3">
         <div className="flex items-center gap-3 mb-2 text-xs text-muted-foreground">
           <span className="font-headline">

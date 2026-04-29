@@ -62,7 +62,7 @@ export function TeacherDashboard({
                   {classroom.joinCode}
                 </p>
               </div>
-              <Button variant="ghost" size="icon" onClick={handleCopyCode}>
+              <Button variant="ghost" size="icon" onClick={handleCopyCode} aria-label="Copy join code">
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
