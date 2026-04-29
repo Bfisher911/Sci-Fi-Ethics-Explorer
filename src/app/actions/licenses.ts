@@ -18,9 +18,23 @@ import { isSuperAdminEmail } from '@/lib/super-admins';
  */
 const UNLIMITED_SEATS = 1_000_000;
 
+/**
+ * Stable codes the client can switch on for actionable error UI.
+ * Mirrors the auth-form `errorCode` pattern so the receiving UI can
+ * render context-specific copy + a CTA without parsing strings.
+ */
+export type LicenseErrorCode =
+  | 'missing_email'
+  | 'license_not_found'
+  | 'license_inactive'
+  | 'no_seats_available'
+  | 'duplicate_seat'
+  | 'permission_denied'
+  | 'upstream_error';
+
 type ActionResult<T = void> =
   | { success: true; data: T }
-  | { success: false; error: string };
+  | { success: false; error: string; errorCode?: LicenseErrorCode };
 
 /**
  * Returns true when the given license document is unmetered (super-admin
@@ -267,24 +281,42 @@ export async function assignSeat(data: {
 }): Promise<ActionResult<string>> {
   try {
     if (!data.userEmail || !data.userEmail.trim()) {
-      return { success: false, error: 'Email is required.' };
+      return {
+        success: false,
+        error: 'Email is required.',
+        errorCode: 'missing_email',
+      };
     }
     const email = data.userEmail.trim().toLowerCase();
 
     // Check license has available seats
     const licenseSnap = await getDoc(doc(db, 'licenses', data.licenseId));
-    if (!licenseSnap.exists()) return { success: false, error: 'License not found.' };
+    if (!licenseSnap.exists()) {
+      return {
+        success: false,
+        error: 'License not found.',
+        errorCode: 'license_not_found',
+      };
+    }
 
     const license = licenseSnap.data();
     if (license.status !== 'active') {
-      return { success: false, error: 'License is not active.' };
+      return {
+        success: false,
+        error: 'License is not active.',
+        errorCode: 'license_inactive',
+      };
     }
     // Skip the seat-cap check when the license is owned by the super
     // admin OR explicitly flagged as unmetered. Super-admin licenses
     // are unlimited by policy (see CLAUDE.md / lib/super-admins.ts).
     const isUnmetered = await isUnmeteredLicense(license);
     if (!isUnmetered && license.usedSeats >= license.totalSeats) {
-      return { success: false, error: 'No seats available. All seats are in use.' };
+      return {
+        success: false,
+        error: 'No seats available. All seats are in use.',
+        errorCode: 'no_seats_available',
+      };
     }
 
     // Resolve recipient uid:
@@ -320,6 +352,7 @@ export async function assignSeat(data: {
     if (!dupSnap.empty) {
       return {
         success: false,
+        errorCode: 'duplicate_seat',
         error:
           `${email} already has an active seat on this license. ` +
           'Look for them in the seat list below; if they say they ' +

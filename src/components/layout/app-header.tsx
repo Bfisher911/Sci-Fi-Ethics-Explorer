@@ -106,6 +106,30 @@ export function AppHeader() {
 
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  // Cmd+K / Ctrl+K opens the global search omnibox from anywhere in
+  // the app. Skip the shortcut when a text input or contenteditable
+  // surface is focused so it doesn't hijack typing.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const isCmdK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
+      if (!isCmdK) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        // user is typing into an actual editor — don't steal the key
+        return;
+      }
+      e.preventDefault();
+      setSearchOpen(true);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   // Whether the signed-in user owns at least one license. Gates the
   // "Billing & Seats" entry in the user menu — members with a claimed
   // seat (but no license of their own) shouldn't see billing surfaces.
@@ -184,13 +208,23 @@ export function AppHeader() {
               </Button>
             }
           />
+          {/* Search button with a discoverable Cmd+K hint. The hint
+              is hidden on small screens to save space; on desktop it
+              advertises the shortcut so users learn it. */}
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={() => setSearchOpen(true)}
             aria-label="Search (Cmd+K)"
+            className="gap-2"
           >
-            <SearchIcon className="h-5 w-5" />
+            <SearchIcon className="h-4 w-4" />
+            <span className="hidden lg:inline text-xs text-muted-foreground">
+              Search
+            </span>
+            <kbd className="hidden lg:inline-flex h-5 items-center gap-0.5 rounded border border-border/60 bg-muted/40 px-1.5 font-mono text-[10px] text-muted-foreground">
+              <span className="text-[11px]">⌘</span>K
+            </kbd>
           </Button>
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
             {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
