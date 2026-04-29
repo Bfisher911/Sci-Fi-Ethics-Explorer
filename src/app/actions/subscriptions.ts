@@ -14,9 +14,17 @@ type ActionResult<T = void> =
   | { success: false; error: string };
 
 /**
- * Create a new subscription for a user.
- * In production this would be triggered by a payment webhook.
- * For now, it simulates successful payment.
+ * @deprecated DO NOT call from production UI — this bypasses payment.
+ *
+ * Originally a stub that simulated a successful subscription so the
+ * onboarding flow could be built before Stripe was wired up. The real
+ * production path is now `createCheckoutSession` in
+ * `src/app/actions/stripe.ts`, which redirects to Stripe-hosted
+ * checkout and lets the webhook (`/api/webhooks/stripe`) write the
+ * subscription doc on `checkout.session.completed`.
+ *
+ * Kept here only for tests, manual seeding, and local dev where Stripe
+ * keys aren't configured. Production code paths must NOT call this.
  */
 export async function createSubscription(
   userId: string,

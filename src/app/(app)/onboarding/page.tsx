@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useSubscription } from '@/hooks/use-subscription';
 import { MEMBER_PLAN } from '@/config/plans';
-import { createSubscription } from '@/app/actions/subscriptions';
+import { createCheckoutSession } from '@/app/actions/stripe';
 import { joinCommunityByCode } from '@/app/actions/communities';
 import type { BillingPeriod, BillingPeriodId } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -83,26 +83,25 @@ export default function OnboardingPage() {
     if (!period) return;
 
     setIsCreating(true);
-    const result = await createSubscription(
-      user.uid,
-      plan.id,
-      selectedPeriod,
-      period.months
-    );
+    // Real Stripe Checkout flow. Redirects to Stripe-hosted checkout;
+    // on success Stripe redirects back to /success?session_id=...
+    // where reconcileCheckoutSession flips the user to active.
+    const result = await createCheckoutSession({
+      uid: user.uid,
+      email: user.email,
+      period: selectedPeriod,
+    });
 
     if (result.success) {
-      toast({
-        title: 'Plan activated',
-        description: 'You now have full access. Welcome!',
-      });
-      router.push('/communities');
-    } else {
-      toast({
-        title: 'Something went wrong',
-        description: result.error,
-        variant: 'destructive',
-      });
+      window.location.href = result.data.url;
+      // No setIsCreating(false) — the page is navigating away.
+      return;
     }
+    toast({
+      title: 'Checkout unavailable',
+      description: result.error,
+      variant: 'destructive',
+    });
     setIsCreating(false);
   };
 

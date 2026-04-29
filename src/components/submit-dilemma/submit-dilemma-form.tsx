@@ -101,25 +101,43 @@ export function SubmitDilemmaForm() {
         ? communityId
         : undefined;
 
+    // The /api/submit-dilemma route now establishes identity via the
+    // verified Firebase ID token in the Authorization header — never
+    // from the request body. We still pass authorName as a *display*
+    // override (the server prefers the token's name when set), but
+    // authorId / authorEmail are no longer trusted from the client.
     const dilemmaData = {
       title,
       description,
       theme,
       authorName: authorName || 'Anonymous',
-      authorId: user?.uid,
-      authorEmail: user?.email ?? undefined,
       imageUrl,
       imageHint,
       communityId: selectedCommunityId,
       globalVisibility: publiclyVisible ? 'public' : 'private',
-      submittedAt: new Date().toISOString(), // Firestore will convert to Timestamp
-      status: 'pending',
     };
 
     try {
+      // Attach the user's Firebase ID token if signed in. When
+      // signed-out (rare — page is auth-gated) the request is sent
+      // anonymously; the server allows it only when its Admin SDK
+      // isn't configured (dev/preview), and rejects with 401 otherwise.
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      try {
+        const idToken = user ? await user.getIdToken() : null;
+        if (idToken) headers.Authorization = `Bearer ${idToken}`;
+      } catch (tokenErr) {
+        // Token retrieval shouldn't crash the submit; the server will
+        // 401 if it can't verify, and the user can retry.
+        // eslint-disable-next-line no-console
+        console.warn('[submit-dilemma] getIdToken failed:', tokenErr);
+      }
+
       const response = await fetch('/api/submit-dilemma', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(dilemmaData),
       });
 

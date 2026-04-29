@@ -2,9 +2,12 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { Toaster } from '@/components/ui/toaster';
+import { SiteFooter } from '@/components/layout/site-footer';
 import { cn } from '@/lib/utils';
+import { SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'Sci-Fi Ethics Explorer | Navigate the Moral Maze of the Future',
     template: '%s | Sci-Fi Ethics Explorer'
@@ -15,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://sci-fi-ethics-explorer-rlmgn.web.app',
+    url: SITE_URL,
     siteName: 'Sci-Fi Ethics Explorer',
     title: 'Sci-Fi Ethics Explorer | Navigate the Moral Maze of the Future',
     description: 'Explore the intersection of technology and morality through the lens of science fiction.',
@@ -51,6 +54,14 @@ export default function RootLayout({
       <body className={cn('font-body antialiased min-h-screen bg-background text-foreground flex flex-col')} suppressHydrationWarning={true}>
         <AuthProvider>
           {children}
+          {/* Site-wide footer. The (app) shell's SidebarProvider fills
+              the viewport with `min-h-svh`, so this footer sits below
+              the fold for signed-in users (who already have all
+              navigation in the sidebar). Marketing / legal pages
+              outside the (app) shell get the footer immediately under
+              their content — that's the primary surface for legal /
+              changelog discoverability. */}
+          <SiteFooter />
           <Toaster />
         </AuthProvider>
       </body>

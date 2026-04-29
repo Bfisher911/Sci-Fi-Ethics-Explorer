@@ -48,6 +48,8 @@ import {
   assignSeat,
   revokeSeat,
 } from '@/app/actions/licenses';
+import { createPortalSession } from '@/app/actions/stripe';
+import { useToast } from '@/hooks/use-toast';
 import {
   CreditCard,
   Users,
@@ -66,11 +68,37 @@ import Link from 'next/link';
 export default function BillingPage() {
   const { user } = useAuth();
   const { activeLicenseId } = useSubscription();
+  const { toast } = useToast();
 
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [license, setLicense] = useState<License | null>(null);
   const [seats, setSeats] = useState<SeatAssignment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  /**
+   * Open the Stripe-hosted Customer Portal so the user can update
+   * their card, view invoices, or cancel — without us having to
+   * build any of those UIs ourselves.
+   */
+  async function openCustomerPortal() {
+    if (!user) return;
+    setPortalLoading(true);
+    try {
+      const res = await createPortalSession(user.uid);
+      if (res.success) {
+        window.location.href = res.data.url;
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Could not open billing portal',
+          description: res.error,
+        });
+      }
+    } finally {
+      setPortalLoading(false);
+    }
+  }
 
   // Assign seat dialog
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
@@ -363,27 +391,37 @@ export default function BillingPage() {
         </Card>
       )}
 
-      {/* Billing History Placeholder */}
-      <Card className="bg-card/80 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Billing History
-          </CardTitle>
-          <CardDescription>
-            Your past invoices and payment history will appear here.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <CreditCard className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>No billing history yet.</p>
-            <p className="text-sm">
-              Payment processing is coming soon. Plans are currently simulated.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Billing portal — Stripe-hosted page for managing payment
+          method, viewing invoices, and cancelling. Only visible to
+          users who have an active Stripe subscription (i.e. the portal
+          actually has something to show). */}
+      {subscription?.stripeCustomerId && (
+        <Card className="bg-card/80 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Manage payment & invoices
+            </CardTitle>
+            <CardDescription>
+              Update your card, download invoices, or cancel your
+              subscription on Stripe&apos;s secure billing portal.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              onClick={openCustomerPortal}
+              disabled={portalLoading || !user}
+            >
+              {portalLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard className="mr-2 h-4 w-4" />
+              )}
+              Open billing portal
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Change Plan Link */}
       <div className="text-center">

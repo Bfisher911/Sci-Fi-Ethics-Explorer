@@ -50,12 +50,12 @@ export default function HomePage() {
             A serious look at the ethics of technology, read through the science fiction that has been rehearsing these problems since Frankenstein.
           </p>
           <div className="flex flex-wrap justify-center gap-6 mb-24">
-            <Button size="xl" asChild className="px-10 h-16 text-lg bg-primary hover:bg-primary/90 rounded-none transform skew-x-[-12deg]">
+            <Button size="lg" asChild className="px-10 h-16 text-lg bg-primary hover:bg-primary/90 rounded-none transform skew-x-[-12deg]">
               <Link href="/stories" className="skew-x-[12deg] flex items-center gap-3">
                 START EXPLORING <ArrowRight className="h-6 w-6" />
               </Link>
             </Button>
-            <Button size="xl" asChild variant="outline" className="px-10 h-16 text-lg border-white/20 hover:bg-white/10 rounded-none bg-white/5 backdrop-blur-sm transform skew-x-[-12deg]">
+            <Button size="lg" asChild variant="outline" className="px-10 h-16 text-lg border-white/20 hover:bg-white/10 rounded-none bg-white/5 backdrop-blur-sm transform skew-x-[-12deg]">
               <Link href="/about" className="skew-x-[12deg]">
                 LEARN MORE
               </Link>

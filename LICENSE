@@ -1,0 +1,53 @@
+PROPRIETARY LICENSE — All Rights Reserved
+
+Copyright © 2026 Blaine Fisher. All rights reserved.
+
+This repository contains the proprietary source code, content, and
+assets for the Sci-Fi Ethics Explorer learning platform, including the
+textbook "The Ethics of Technology Through Science Fiction" by
+Dr. Blaine Fisher and all derived materials (chapter quizzes,
+certificates, original site stories, philosopher / theory / author /
+media reference entries, design system, and product copy).
+
+The textbook itself is separately copyrighted:
+
+    Copyright © 2025 Blaine Fisher.
+
+PERMITTED USES (without separate written permission):
+
+  - Viewing this repository for the purpose of evaluating, contributing
+    to, or auditing the Sci-Fi Ethics Explorer platform, subject to any
+    additional terms in CONTRIBUTING.md.
+  - Personal, non-commercial study of the source code by individual
+    learners.
+  - Educational fair use of small excerpts (≤ 250 words) of the
+    textbook prose, with attribution.
+
+PROHIBITED USES (without prior written permission):
+
+  - Redistribution, republication, or hosting of any part of this
+    repository on a third-party site or product.
+  - Use of any portion of this repository (including the textbook and
+    derived materials) to train, fine-tune, distill, retrieve-augment,
+    or otherwise inform a machine-learning model.
+  - Commercial use of the source code, content, or assets in any
+    product or service.
+  - Creation of derivative works, translations, adaptations, or
+    audio/video productions of the textbook.
+  - Removal or alteration of copyright notices, attribution, or this
+    license.
+
+NO WARRANTY:
+
+  This software is provided "as is", without warranty of any kind,
+  express or implied, including but not limited to the warranties of
+  merchantability, fitness for a particular purpose, and
+  non-infringement. In no event shall the copyright holder be liable
+  for any claim, damages, or other liability, whether in an action of
+  contract, tort, or otherwise, arising from, out of, or in connection
+  with the software or the use or other dealings in the software.
+
+For licensing inquiries — including requests for educational
+institutional use, derivative works, or any use not explicitly
+permitted above — contact the copyright holder via the Help page at
+https://www.scifiethicsexplorer.com/help.
