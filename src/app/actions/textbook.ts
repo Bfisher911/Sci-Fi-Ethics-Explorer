@@ -250,6 +250,77 @@ export async function getChapterReflections(
 }
 
 /**
+ * Fetch every free-text reflection a user has saved across all
+ * chapters. Used by the /me/reflections archive page. Filters out the
+ * Promise vs. Reality scoring docs (which use a special suffix on the
+ * doc ID) since those aren't free-text and have their own UI.
+ *
+ * Returns newest-first by `updatedAt`. Capped at 200 docs to keep the
+ * payload bounded — beyond that, the user really wants pagination,
+ * not a wall of text.
+ */
+export interface ReflectionEntry {
+  slug: string;
+  promptId: string;
+  response: string;
+  updatedAt?: Date;
+}
+export async function getAllUserReflections(
+  userId: string,
+  opts?: { limit?: number },
+): Promise<ActionResult<ReflectionEntry[]>> {
+  try {
+    if (!userId) return { success: true, data: [] };
+    const cap = Math.max(1, Math.min(opts?.limit ?? 200, 500));
+    const q = query(
+      collection(db, REFLECTIONS_COLLECTION),
+      where('userId', '==', userId),
+    );
+    const snap = await getDocs(q);
+    const out: ReflectionEntry[] = [];
+    snap.forEach((d) => {
+      const data = d.data() as {
+        slug?: string;
+        promptId?: string;
+        response?: string;
+        updatedAt?: unknown;
+      };
+      // Skip the promise-reality scoring doc — not a free-text
+      // reflection. Its doc ID always ends in `_promise-reality` and
+      // it doesn't carry a `promptId`.
+      if (!data.promptId) return;
+      if (data.promptId === 'promise-reality') return;
+      // Skip empty saves (autosave occasionally writes a blank during
+      // the user's first keystroke).
+      const response = (data.response || '').trim();
+      if (!response) return;
+      out.push({
+        slug: String(data.slug || ''),
+        promptId: data.promptId,
+        response,
+        // timestampToDate is typed for known timestamp shapes; cast through
+        // the helper's accepted union to placate the compiler — an unknown
+        // value here is by definition something the helper will hand back
+        // as undefined anyway.
+        updatedAt:
+          timestampToDate(
+            data.updatedAt as Parameters<typeof timestampToDate>[0],
+          ) ?? undefined,
+      });
+    });
+    out.sort((a, b) => {
+      const at = a.updatedAt?.getTime() ?? 0;
+      const bt = b.updatedAt?.getTime() ?? 0;
+      return bt - at;
+    });
+    return { success: true, data: out.slice(0, cap) };
+  } catch (error) {
+    console.error('[textbook] getAllUserReflections error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
  * Persist a user's "Promise vs. Reality" 0-5 scoring for a chapter.
  * Stored as a single doc keyed by (user, chapter).
  */

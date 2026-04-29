@@ -377,6 +377,25 @@ export async function assignSeat(data: {
       updatedAt: serverTimestamp(),
     });
 
+    // Notify the recipient if they have an account already. We only
+    // notify when there's a real uid; without a uid the seat is just
+    // a reservation and they'll see it the moment they sign in.
+    if (resolvedUid) {
+      try {
+        const { createNotification } = await import('@/app/actions/notifications');
+        await createNotification({
+          userId: resolvedUid,
+          type: 'seat_assigned',
+          title: 'You were granted a seat',
+          body: `${license.organizationName || 'An organization'} added you to their license. You now have full platform access.`,
+          link: '/me',
+          metadata: { licenseId: data.licenseId },
+        });
+      } catch (notifyErr) {
+        console.warn('[licenses] seat-assigned notification failed:', notifyErr);
+      }
+    }
+
     // Only update the recipient's profile if we resolved a real uid.
     // Otherwise leave a clean trail for the recipient to pick up at
     // sign-in (see claimPendingSeats).

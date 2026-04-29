@@ -463,6 +463,11 @@ export type NotificationType =
   | 'dilemma_approved'
   | 'dilemma_rejected'
   | 'community_invite'
+  | 'debate_reply'
+  | 'certificate_earned'
+  | 'seat_assigned'
+  | 'classmate_milestone'
+  | 'platform_update'
   | 'generic';
 
 export interface AppNotification {
@@ -553,6 +558,18 @@ export interface UserProgress {
   debatesParticipated: string[];
   dilemmasSubmitted: string[];
   lastActivity: Date | any;
+  /** Most recent calendar day (YYYY-MM-DD UTC) the user did anything
+   *  meaningful. Used to compute the streak — if today is one day
+   *  past `lastStreakDay` we increment, if more than one we reset to 1. */
+  lastStreakDay?: string;
+  /** Consecutive-day streak. Bumped by recordDailyActivity. */
+  currentStreakDays?: number;
+  /** All-time best streak. */
+  longestStreakDays?: number;
+  /** ID of the most-recently in-flight (unfinished) story. Cleared when
+   *  the user completes that story. Drives the dashboard's "resume
+   *  story" surface. */
+  lastStoryInProgress?: string;
 }
 
 export type BadgeId =

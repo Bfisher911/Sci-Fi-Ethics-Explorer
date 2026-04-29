@@ -161,6 +161,77 @@ export async function recordStoryChoice(
 }
 
 /**
+ * Bumps the user's daily streak. Idempotent — calling twice in the
+ * same UTC day is a no-op. Call from the dashboard mount, the
+ * textbook chapter view, the studio, etc. — anywhere a returning
+ * user lands. Bumping the streak from many places is fine; the
+ * dedup-by-day below makes it cheap.
+ *
+ * Streak rules:
+ *   - same day  → no change
+ *   - +1 day    → currentStreakDays += 1
+ *   - +2+ days  → currentStreakDays = 1 (broken)
+ * Always tracks the all-time longest in `longestStreakDays`.
+ */
+export async function recordDailyActivity(
+  userId: string,
+): Promise<
+  ProgressActionResult<{ currentStreakDays: number; isNewDay: boolean }>
+> {
+  if (!userId || !db) {
+    return { success: false, error: 'User ID and Firestore are required.' };
+  }
+  try {
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
+    const docRef = doc(db, 'userProgress', userId);
+    const snap = await getDoc(docRef);
+    const data = snap.exists() ? snap.data() : {};
+    const lastDay: string | undefined = data.lastStreakDay;
+    const currentStreak: number = data.currentStreakDays ?? 0;
+    const longestStreak: number = data.longestStreakDays ?? 0;
+
+    if (lastDay === today) {
+      return {
+        success: true,
+        data: { currentStreakDays: currentStreak, isNewDay: false },
+      };
+    }
+    let nextStreak = 1;
+    if (lastDay) {
+      const last = new Date(lastDay + 'T00:00:00Z');
+      const now = new Date(today + 'T00:00:00Z');
+      const diffDays = Math.round(
+        (now.getTime() - last.getTime()) / (24 * 60 * 60 * 1000),
+      );
+      if (diffDays === 1) nextStreak = currentStreak + 1;
+      else if (diffDays < 0) nextStreak = currentStreak; // clock skew safety
+      // else (>1) reset to 1
+    }
+    const nextLongest = Math.max(longestStreak, nextStreak);
+
+    await setDoc(
+      docRef,
+      {
+        userId,
+        lastStreakDay: today,
+        currentStreakDays: nextStreak,
+        longestStreakDays: nextLongest,
+        lastActivity: serverTimestamp(),
+      },
+      { merge: true },
+    );
+    return {
+      success: true,
+      data: { currentStreakDays: nextStreak, isNewDay: true },
+    };
+  } catch (error) {
+    console.error('[SERVER ACTION] recordDailyActivity error:', error);
+    const msg = error instanceof Error ? error.message : String(error);
+    return { success: false, error: `Failed to record activity: ${msg}` };
+  }
+}
+
+/**
  * Returns the story the user was last reading but hasn't completed.
  * Cheap single-read: just the `lastStoryInProgress` field on userProgress
  * cross-referenced against `storiesCompleted`.

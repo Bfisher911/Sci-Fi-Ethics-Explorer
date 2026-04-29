@@ -109,7 +109,26 @@ export async function issueCertificate(input: {
     });
 
     const created = await getDoc(ref);
-    return { success: true, data: fromDoc(created.id, created.data() || {}) };
+    const cert = fromDoc(created.id, created.data() || {});
+
+    // Notify the recipient. Best-effort — never block cert issuance.
+    try {
+      const { createNotification } = await import('@/app/actions/notifications');
+      await createNotification({
+        userId: input.userId,
+        type: 'certificate_earned',
+        title: `Certificate earned`,
+        body: input.curriculumTitle,
+        link: verificationHash
+          ? `/textbook/certificate/${verificationHash}`
+          : '/certificates',
+        metadata: { certificateId: ref.id, curriculumId: input.curriculumId },
+      });
+    } catch (notifyErr) {
+      console.warn('[certificates] notify failed:', notifyErr);
+    }
+
+    return { success: true, data: cert };
   } catch (error) {
     console.error('[certificates] issueCertificate error:', error);
     return { success: false, error: String(error) };

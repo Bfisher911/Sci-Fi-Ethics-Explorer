@@ -62,7 +62,7 @@ import type {
   SavedPerspective,
   Story,
 } from '@/types';
-import type { TextbookProgress, ChapterReflection } from '@/types/textbook';
+import type { TextbookProgress } from '@/types/textbook';
 
 interface MyData {
   textbook: TextbookProgress | null;

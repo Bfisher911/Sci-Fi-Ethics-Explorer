@@ -40,6 +40,8 @@ import {
   BookmarkCheck,
   BookMarked,
   BookOpen,
+  Check,
+  Flame,
   GraduationCap,
   Loader2,
   Lock,
@@ -57,8 +59,11 @@ import { getUserBadges } from '@/app/actions/badges';
 import { getDebates } from '@/app/actions/debates';
 import { addBookmark } from '@/app/actions/bookmarks';
 import { getUserProfile } from '@/app/actions/user';
+import { recordDailyActivity } from '@/app/actions/progress';
 import { chapters as ALL_CHAPTERS } from '@/data/textbook';
 import { getQuoteOfTheDay, type TechEthicsQuote } from '@/data/quotes';
+import { getLatestChangelog } from '@/data/changelog';
+import { ReadingGoalCard } from '@/components/dashboard/reading-goal-card';
 // Lazy-load FirstRunCards — only first-ever visitors render it, but
 // it'd otherwise ship in every dashboard bundle. `dynamic` defers the
 // download until the gating effect actually decides to show the
@@ -80,8 +85,8 @@ const FirstRunCards = dynamic(
 // while it loads so the layout doesn't shift.
 import { splitForGradient } from '@/components/dashboard/cinematic-hero';
 import type {
-  DilemmaPayload as _DilemmaPayload,
-  ResumePayload as _ResumePayload,
+  DilemmaPayload,
+  ResumePayload,
 } from '@/components/dashboard/cinematic-hero';
 const CinematicHero = dynamic(
   () =>
@@ -240,6 +245,29 @@ export function Dashboard(): JSX.Element {
   const [openDebates, setOpenDebates] = useState<Debate[] | null>(null);
   const [bookmarkSaved, setBookmarkSaved] = useState(false);
   const [bookmarkSaving, setBookmarkSaving] = useState(false);
+  // Daily streak — bumped on the first dashboard visit each UTC day
+  // by the recordDailyActivity effect below. `null` means "we haven't
+  // checked yet" so we can render a skeleton instead of a misleading
+  // "0-day streak" badge before the round-trip resolves.
+  const [currentStreak, setCurrentStreak] = useState<number | null>(null);
+
+  // "What's New" chip — surfaces the latest changelog entry when the
+  // user hasn't seen it yet (gated by sfe.changelogLastSeen in
+  // localStorage, which the /whats-new page stamps forward on visit).
+  const [showWhatsNew, setShowWhatsNew] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const latest = getLatestChangelog();
+    if (!latest) return;
+    try {
+      const lastSeen = localStorage.getItem('sfe.changelogLastSeen');
+      if (!lastSeen || lastSeen < latest.date) {
+        setShowWhatsNew(true);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Compact-mode hero + first-run cards: both gated off the same
   // localStorage flag.
@@ -290,6 +318,23 @@ export function Dashboard(): JSX.Element {
     hasOwnedLicenses(user.uid).then((res) => {
       if (cancelled) return;
       setHasLicense(res.success ? res.data : false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  // Bump the user's daily streak on dashboard mount. Idempotent — same
+  // UTC day = no write. The dedup-by-day in recordDailyActivity makes
+  // it safe to call from anywhere a returning user lands; the dashboard
+  // is just the most reliable single trigger. Result is rendered as a
+  // flame chip in the greeting strip.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    recordDailyActivity(user.uid).then((res) => {
+      if (cancelled) return;
+      if (res.success) setCurrentStreak(res.data.currentStreakDays);
     });
     return () => {
       cancelled = true;
@@ -404,7 +449,7 @@ export function Dashboard(): JSX.Element {
   const heroStory: Story | null =
     dilemma ?? (featured && featured.length > 0 ? featured[0] : null);
   const heroLabel = dilemma ? 'Dilemma of the Day' : 'Latest Story';
-  const dilemmaPayload = heroStory
+  const dilemmaPayload: DilemmaPayload | null = heroStory
     ? {
         id: heroStory.id,
         eyebrow: heroLabel,
@@ -524,6 +569,35 @@ export function Dashboard(): JSX.Element {
         </div>
         <span className="flex-1" />
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          {showWhatsNew && (
+            <Link
+              href="/whats-new"
+              className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors hover:bg-primary/15"
+              style={{
+                borderColor: 'hsl(var(--primary) / 0.4)',
+                background: 'hsl(var(--primary) / 0.08)',
+                color: 'hsl(var(--primary))',
+              }}
+              title="See what's new on the platform"
+            >
+              <Sparkles className="h-3.5 w-3.5" aria-hidden />
+              What's new
+            </Link>
+          )}
+          {currentStreak !== null && currentStreak > 0 && (
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
+              style={{
+                borderColor: 'hsl(var(--accent) / 0.4)',
+                background: 'hsl(var(--accent) / 0.08)',
+                color: 'hsl(var(--accent))',
+              }}
+              title={`You've shown up ${currentStreak} day${currentStreak === 1 ? '' : 's'} in a row.`}
+            >
+              <Flame className="h-3.5 w-3.5" aria-hidden />
+              {currentStreak}-day streak
+            </span>
+          )}
           <span>
             {doneCount > 0
               ? `${doneCount} of ${ALL_CHAPTERS.length} chapters earned`
@@ -609,6 +683,16 @@ export function Dashboard(): JSX.Element {
           certs={badgeCount ?? 0}
         />
       </div>
+
+      {/* Weekly reading goal — small accent card. Only renders if the
+          user has signed in (otherwise their goal can't persist
+          meaningfully) and has at least started one chapter (otherwise
+          this competes with the "Start here" CTA above). */}
+      {user && doneCount > 0 && (
+        <div className="mt-5">
+          <ReadingGoalCard chaptersPassedAllTime={doneCount} />
+        </div>
+      )}
 
       {/* Master-certificate progress */}
       <div className="mt-5">

@@ -4,3 +4,19 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# ─── Weekly digest cron ────────────────────────────────────────────
+# The /api/cron/digest route handler sends the weekly digest emails.
+# To wire it to a real schedule:
+#   1. Set RESEND_API_KEY and CRON_SECRET in Netlify site env vars.
+#   2. Use Netlify Scheduled Functions (paid plan) OR an external
+#      scheduler (GitHub Actions cron, easycron, etc.) to issue:
+#        curl -H "Authorization: Bearer $CRON_SECRET" \
+#             https://<site>/api/cron/digest
+# Netlify scheduled functions example (uncomment + adjust path):
+# [functions]
+#   directory = "netlify/functions"
+# [[edge_functions]]
+#   path = "/api/cron/digest"
+#   function = "digest-cron"
+#   # schedule = "0 14 * * 1"  # Mondays at 14:00 UTC
