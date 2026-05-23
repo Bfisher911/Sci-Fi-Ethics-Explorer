@@ -22,6 +22,7 @@ import {
   Brain,
   Award,
   Newspaper,
+  Ticket,
 } from 'lucide-react';
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll';
 
@@ -135,6 +136,14 @@ export default function AdminDashboardPage() {
       icon: Award,
       href: '/admin/certificates',
       description: 'Review and revoke issued certificates',
+    },
+    {
+      title: 'Discount Codes',
+      count: null,
+      icon: Ticket,
+      href: '/admin/discount-codes',
+      description:
+        'Manage class/pilot/beta/comped access codes (no Stripe billing)',
     },
   ];
 

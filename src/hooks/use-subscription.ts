@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from './use-auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import type { AccountRole, SubscriptionStatus } from '@/types';
+import type { AccountRole, SubscriptionStatus, UserAccessGrant } from '@/types';
 import { hasActiveAccess, canAccess, type Feature } from '@/lib/permissions';
 import { isSuperAdminEmail } from '@/lib/super-admins';
 
@@ -13,6 +13,13 @@ interface SubscriptionState {
   accountRole?: AccountRole;
   subscriptionStatus: SubscriptionStatus;
   activeLicenseId?: string;
+  /**
+   * Snapshot of the user's discount-code access grant, if any. Treated
+   * as another access source by `hasActiveAccess`/`canAccess`. Expires
+   * lazily — once `accessExpiresAt` has passed, the grant is ignored
+   * and the user falls back to whatever other access they have (or none).
+   */
+  accessGrant?: UserAccessGrant | null;
   loading: boolean;
   isPaid: boolean;
   /**
@@ -49,6 +56,7 @@ export function useSubscription(): SubscriptionState {
   const [accountRole, setAccountRole] = useState<AccountRole | undefined>();
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus>('none');
   const [activeLicenseId, setActiveLicenseId] = useState<string | undefined>();
+  const [accessGrant, setAccessGrant] = useState<UserAccessGrant | null>(null);
   const [loading, setLoading] = useState(true);
 
   const isSuperAdmin = isSuperAdminEmail(user?.email);
@@ -60,13 +68,15 @@ export function useSubscription(): SubscriptionState {
       setAccountRole(undefined);
       setSubscriptionStatus('none');
       setActiveLicenseId(undefined);
+      setAccessGrant(null);
       setLoading(false);
       return;
     }
 
     setLoading(true);
     // Live subscription to the user doc. Picks up writes from
-    // claimPendingSeats, ensureSuperAdminLicense, profile edits, etc.
+    // claimPendingSeats, ensureSuperAdminLicense, profile edits, discount-
+    // code redemptions, etc.
     const unsub = onSnapshot(
       doc(db, 'users', user.uid),
       (snap) => {
@@ -75,12 +85,14 @@ export function useSubscription(): SubscriptionState {
           setAccountRole(data.accountRole as AccountRole | undefined);
           setSubscriptionStatus((data.subscriptionStatus as SubscriptionStatus) || 'none');
           setActiveLicenseId(data.activeLicenseId);
+          setAccessGrant((data.activeAccessGrant as UserAccessGrant | undefined) ?? null);
         } else {
           // Doc may not be created yet (race during sign-up). Default
           // to "none" without crashing — the listener will fire again
           // once createUserProfile / claimPendingSeats writes the doc.
           setSubscriptionStatus('none');
           setActiveLicenseId(undefined);
+          setAccessGrant(null);
           setAccountRole(undefined);
         }
         setLoading(false);
@@ -95,18 +107,19 @@ export function useSubscription(): SubscriptionState {
   }, [user, authLoading]);
 
   const isPaid =
-    isSuperAdmin || hasActiveAccess(subscriptionStatus, activeLicenseId);
+    isSuperAdmin || hasActiveAccess(subscriptionStatus, activeLicenseId, accessGrant);
 
   return {
     accountRole,
     subscriptionStatus,
     activeLicenseId,
+    accessGrant,
     loading,
     isPaid,
     isSuperAdmin,
     canAccess: (feature: Feature) =>
       isSuperAdmin
         ? true
-        : canAccess(feature, accountRole, subscriptionStatus, activeLicenseId),
+        : canAccess(feature, accountRole, subscriptionStatus, activeLicenseId, accessGrant),
   };
 }

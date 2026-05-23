@@ -245,6 +245,22 @@
         { "fieldPath": "participantIds", "arrayConfig": "CONTAINS" },
         { "fieldPath": "lastMessageAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "discountCodeRedemptions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "discountCodeId", "order": "ASCENDING" },
+        { "fieldPath": "redeemedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "discountCodeRedemptions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "discountCodeId", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

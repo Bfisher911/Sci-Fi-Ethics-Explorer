@@ -36,6 +36,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { SubscriptionStatus } from '@/components/billing/subscription-status';
+import { DiscountCodeRedeem } from '@/components/billing/discount-code-redeem';
 import { useAuth } from '@/hooks/use-auth';
 import { useSubscription } from '@/hooks/use-subscription';
 import {
@@ -57,6 +58,7 @@ import {
   Trash2,
   Loader2,
   Clock,
+  Ticket,
 } from 'lucide-react';
 import type { Subscription, License, SeatAssignment } from '@/types';
 import Link from 'next/link';
@@ -67,7 +69,7 @@ import Link from 'next/link';
  */
 export default function BillingPage() {
   const { user } = useAuth();
-  const { activeLicenseId } = useSubscription();
+  const { activeLicenseId, accessGrant } = useSubscription();
   const { toast } = useToast();
 
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -213,6 +215,72 @@ export default function BillingPage() {
         license={license}
         onCancelSubscription={handleCancelSubscription}
       />
+
+      {/* Discount-code grant — visible only when the user has redeemed
+          one. Reassures the user every time they look at billing that no
+          charge is coming when access expires. */}
+      {accessGrant && (
+        <Card className="bg-card/80 backdrop-blur-sm border-primary/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Clock className="h-5 w-5 text-primary" />
+              Active discount-code access
+            </CardTitle>
+            <CardDescription>
+              You have free access through this discount code. Your card
+              will not be charged when this period ends.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <p>
+              <span className="text-muted-foreground">Code:</span>{' '}
+              <span className="font-mono font-semibold">{accessGrant.code}</span>
+            </p>
+            {accessGrant.courseName && (
+              <p>
+                <span className="text-muted-foreground">Course:</span>{' '}
+                {accessGrant.courseName}
+              </p>
+            )}
+            {accessGrant.platformName && (
+              <p>
+                <span className="text-muted-foreground">Platform:</span>{' '}
+                {accessGrant.platformName}
+              </p>
+            )}
+            <p>
+              <span className="text-muted-foreground">Access expires:</span>{' '}
+              {formatDate(accessGrant.accessExpiresAt)}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Discount code panel — anyone can redeem here, regardless of
+          whether they currently have a subscription. The same panel is
+          rendered during onboarding. */}
+      {user && (
+        <Card className="bg-card/80 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Ticket className="h-5 w-5 text-primary" />
+              Have a discount code?
+            </CardTitle>
+            <CardDescription>
+              Class access, pilot programs, beta testers, institutional
+              trials, and promotional codes all redeem here. No credit card
+              required for free-access codes.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DiscountCodeRedeem
+              uid={user.uid}
+              email={user.email}
+              variant="inline"
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Seat Management (license holders only) */}
       {license && (

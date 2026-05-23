@@ -17,12 +17,13 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase/config';
 import { createUserProfile } from '@/app/actions/user';
+import { redeemDiscountCode } from '@/app/actions/discount-codes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { AlertCircle, Mail, Lock, User as UserIcon, ChromeIcon } from 'lucide-react';
+import { AlertCircle, Mail, Lock, User as UserIcon, ChromeIcon, Ticket } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface AuthPageFormProps {
@@ -44,6 +45,14 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState(''); // Only for signup
+  /**
+   * Optional discount code captured during signup. If the user provides
+   * one, we attempt to redeem it the moment the account is created so
+   * they land on the dashboard with access already active and never see
+   * the paywall. Leaving this field empty keeps the existing paid flow
+   * intact — no behavior change for paying customers.
+   */
+  const [discountCode, setDiscountCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [errorTitle, setErrorTitle] = useState<string>('Error');
   const [errorAction, setErrorAction] = useState<ErrorAction | null>(null);
@@ -120,7 +129,35 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
         // Don't show error to user for this client-side attempt as CF will handle it
       }
 
-      toast({ title: "Account Created", description: "Welcome to Sci-Fi Ethics Explorer!" });
+      // Optional: if the user typed a discount code, redeem it right
+      // now so they never see the paywall. A failed redemption is
+      // non-fatal — the account is created and they can retry on the
+      // onboarding/billing pages.
+      if (discountCode.trim()) {
+        const redeem = await redeemDiscountCode({
+          uid: user.uid,
+          email: user.email,
+          code: discountCode.trim(),
+        });
+        if (redeem.success) {
+          toast({
+            title: 'Discount code applied',
+            description: redeem.data.successMessage,
+            duration: 8000,
+          });
+        } else {
+          toast({
+            title: 'Discount code not applied',
+            description:
+              redeem.error +
+              ' You can try entering the code again on the onboarding page.',
+            variant: 'destructive',
+            duration: 8000,
+          });
+        }
+      } else {
+        toast({ title: 'Account Created', description: 'Welcome to Sci-Fi Ethics Explorer!' });
+      }
       router.push(postAuthDestination());
     } catch (err: any) {
       showError(err);
@@ -473,6 +510,30 @@ export function AuthPageForm({ mode }: AuthPageFormProps) {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input id="confirm-password" type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="pl-10" />
               </div>
+            </div>
+          )}
+          {!isLoginPage && (
+            <div className="space-y-2">
+              <Label htmlFor="discount-code">
+                Discount Code{' '}
+                <span className="font-normal text-muted-foreground">(optional)</span>
+              </Label>
+              <div className="relative">
+                <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="discount-code"
+                  type="text"
+                  autoComplete="off"
+                  placeholder="Class, pilot, beta, or promo code"
+                  value={discountCode}
+                  onChange={(e) => setDiscountCode(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Have a code? Apply it now to skip the paid plan. No credit card
+                required.
+              </p>
             </div>
           )}
           <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading}>

@@ -366,6 +366,35 @@ service cloud.firestore {
       allow create, update, delete: if true;
     }
 
+    // ─── Discount codes ─────────────────────────────────────────
+    // Generic discount-code system (class access, pilot, beta,
+    // institutional, comped, promotional). Free-access codes grant
+    // an internal access window without creating any Stripe object —
+    // no Stripe customer, no subscription, nothing to bill.
+    //
+    // Reads are open because the validator runs from a Next.js server
+    // action without a Firebase Auth session (same pattern as users /
+    // licenses). Writes are also open at the rule layer because
+    // validation runs in `src/app/actions/discount-codes.ts`:
+    //   - createDiscountCode enforces requireAdmin
+    //   - redeemDiscountCode runs inside a transaction that validates
+    //     activity, expiration, max redemptions, and per-user uniqueness
+    //   - setDiscountCodeActive enforces requireAdmin
+    // Matches the rest of this file's "server-action-enforced" pattern.
+    match /discountCodes/{codeId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // ─── Discount-code redemptions ─────────────────────────────
+    // One document per (user, redemption). Authoritative record of
+    // who redeemed what and when. The user doc carries a snapshot
+    // (`activeAccessGrant`) for fast read-side entitlement checks.
+    match /discountCodeRedemptions/{redemptionId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
     // ─── Default deny ───────────────────────────────────────────
     // Catches any collection we haven't explicitly listed above.
     // Without this, Firestore's default is also deny — but being

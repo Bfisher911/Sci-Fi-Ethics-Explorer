@@ -53,8 +53,150 @@ export interface UserProfile {
    * user completes the quiz.
    */
   dominantFramework?: string;
+  /**
+   * Snapshot of the user's most recently redeemed discount-code access grant.
+   * Lives on the user doc (rather than requiring a join against the
+   * `discountCodeRedemptions` collection on every access check) so the
+   * existing `hasActiveAccess` helper stays a single Firestore read.
+   *
+   * `accessExpiresAt` is authoritative: when it has passed, the grant is
+   * inert. We do NOT charge or auto-renew; the field is simply ignored
+   * once expired. See `src/lib/discount-codes.ts` for the grant logic.
+   */
+  activeAccessGrant?: UserAccessGrant;
   createdAt?: Date | any;
   lastUpdated?: Date | any;
+}
+
+/**
+ * Snapshot of an active discount-code grant on a user profile. Mirrors the
+ * authoritative record in `discountCodeRedemptions/{id}` for fast read
+ * access during entitlement checks.
+ */
+export interface UserAccessGrant {
+  /** Reference back to the source redemption record. */
+  redemptionId: string;
+  /** Reference to the originating discount code (for audit/UX). */
+  discountCodeId: string;
+  /** Human-readable code, uppercased. Shown in the UI. */
+  code: string;
+  /** What scope of access this grant provides. */
+  accessScope: DiscountCodeAccessScope;
+  /** Optional course name when accessScope === 'course'. */
+  courseName?: string;
+  /** Optional platform name when accessScope === 'platform' or 'platform_course'. */
+  platformName?: string;
+  /** ISO timestamp when access began. */
+  accessStartsAt: Date | any;
+  /** ISO timestamp when access expires. After this the grant is inert. */
+  accessExpiresAt: Date | any;
+}
+
+// ─── Discount Codes ─────────────────────────────────────────────────
+
+/**
+ * Generic discount-code system. Backs free class access, pilot programs,
+ * beta testers, promotional discounts, institutional trials, comped
+ * accounts, and any future free-access use case.
+ *
+ * IMPORTANT: a discount code with discountType === 'free_access' grants
+ * access *inside the app*. It does NOT create a Stripe customer or
+ * subscription, so there is no Stripe billing object that could later
+ * charge the user. See `docs/DISCOUNT_CODES.md`.
+ */
+export type DiscountCodeType =
+  | 'free_access'           // 100% free internal grant for accessDurationMonths
+  | 'percent_off'           // % off a Stripe checkout (uses stripePromotionCodeId)
+  | 'amount_off'            // fixed-amount off a Stripe checkout
+  | 'comped'                // open-ended free access until manually revoked
+  | 'pilot'                 // free access during a pilot window
+  | 'beta'                  // free access for beta testers
+  | 'institution'           // free access tied to an institution
+  | 'promotional';          // generic promotional free access (alias of free_access with metadata)
+
+/**
+ * Scope of what the discount code unlocks. `platform` grants full app
+ * access; `course` and `platform_course` carry a courseName for display.
+ */
+export type DiscountCodeAccessScope =
+  | 'platform'         // full platform access
+  | 'course'           // course-specific access (carries courseName)
+  | 'platform_course'; // both — used for class codes like the Ethics of Tech class
+
+export interface DiscountCode {
+  id: string;
+  /** Unique, case-insensitive. Stored uppercased. */
+  code: string;
+  /** Short admin-facing name. */
+  name: string;
+  /** Optional admin-facing description. */
+  description?: string;
+  discountType: DiscountCodeType;
+  accessScope: DiscountCodeAccessScope;
+  /** Course display name (e.g., "The Ethics of Technology through Science Fiction"). */
+  courseName?: string;
+  /** Platform display name (e.g., "Off World Clause"). */
+  platformName?: string;
+  /** Length of free access in months. Either this OR accessDurationDays must be set
+   *  for free_access / pilot / beta / institution / promotional / comped (if bounded). */
+  accessDurationMonths?: number;
+  /** Length of free access in days. Used for short-window pilots and beta tests. */
+  accessDurationDays?: number;
+  /** For percent_off Stripe codes. 0–100. */
+  percentOff?: number;
+  /** For amount_off Stripe codes, in currency minor units (cents). */
+  amountOff?: number;
+  /** ISO 4217 currency code for amount_off (default 'usd'). */
+  currency?: string;
+  /** Max times this code can be redeemed across all users. null = unlimited. */
+  maxRedemptions?: number | null;
+  /** How many times the code has been redeemed. Maintained server-side. */
+  redemptionCount: number;
+  /** When true, a single user may redeem only once. Default true. */
+  oneUsePerUser: boolean;
+  /** When true, the discount must flow through Stripe (uses stripePromotionCodeId).
+   *  For free_access codes this is false — Stripe is not touched. */
+  requiresStripe: boolean;
+  /** Stripe coupon ID, when requiresStripe is true. */
+  stripeCouponId?: string;
+  /** Stripe promotion code ID, when requiresStripe is true. */
+  stripePromotionCodeId?: string;
+  /** Optional start date — code is invalid before this. */
+  startsAt?: Date | any;
+  /** Optional expiration date — code is invalid after this. Independent of
+   *  the per-redemption access window. */
+  expiresAt?: Date | any;
+  /** When false, the code cannot be redeemed regardless of dates. */
+  isActive: boolean;
+  /** UID of the admin who created the code. */
+  createdBy?: string;
+  createdAt: Date | any;
+  updatedAt?: Date | any;
+}
+
+export interface DiscountCodeRedemption {
+  id: string;
+  discountCodeId: string;
+  /** Snapshot of the redeemed code text for audit (codes can be renamed/deactivated). */
+  code: string;
+  userId: string;
+  /** Snapshot of user email at redemption for audit. */
+  userEmail?: string;
+  redeemedAt: Date | any;
+  accessStartsAt: Date | any;
+  accessExpiresAt: Date | any;
+  /** What this redemption granted. */
+  accessScope: DiscountCodeAccessScope;
+  accessType: DiscountCodeType;
+  courseName?: string;
+  platformName?: string;
+  /** Optional Stripe linkage for percent_off / amount_off codes that
+   *  flowed through Checkout. Absent for free internal grants. */
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  /** Free-form metadata for downstream analytics. */
+  metadata?: Record<string, unknown>;
+  createdAt: Date | any;
 }
 
 // ─── Stories ────────────────────────────────────────────────────────

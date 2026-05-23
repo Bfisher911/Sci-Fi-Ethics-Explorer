@@ -22,6 +22,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, Crown, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { DiscountCodeRedeem } from '@/components/billing/discount-code-redeem';
 
 /**
  * Post-signup onboarding page where users select a billing period and
@@ -132,9 +133,16 @@ export default function OnboardingPage() {
         <Crown className="mx-auto h-10 w-10 text-primary" />
         <h1 className="text-3xl font-bold">Welcome, {displayName}!</h1>
         <p className="text-muted-foreground">
-          Choose a billing period to unlock the full {plan.name} experience.
+          Choose a billing period to unlock the full {plan.name} experience —
+          or enter a discount code below.
         </p>
       </div>
+
+      {/* Discount code — students, beta testers, comped accounts, etc.
+          On success, useSubscription picks up the new grant via the
+          live snapshot, isPaid flips true, and the useEffect at the top
+          of this page redirects to /stories. */}
+      <DiscountCodeRedeem uid={user.uid} email={user.email} />
 
       {/* Plan details */}
       <Card className="bg-card/80 backdrop-blur-sm">
