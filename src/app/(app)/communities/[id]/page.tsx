@@ -34,7 +34,23 @@ import {
   Save,
   GraduationCap,
   FileCheck,
+  Trash2,
+  CopyPlus,
+  Plus,
+  X,
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useSubscription } from '@/hooks/use-subscription';
 import { useToast } from '@/hooks/use-toast';
@@ -43,6 +59,8 @@ import {
   getCommunityMembers,
   removeCommunityMember,
   updateCommunity,
+  deleteCommunity,
+  duplicateCommunity,
 } from '@/app/actions/communities';
 import { getCurricula } from '@/app/actions/curriculum';
 import dynamic from 'next/dynamic';
@@ -102,8 +120,20 @@ export default function CommunityDetailPage() {
   // Settings state
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
-  const [editCurriculumId, setEditCurriculumId] = useState('');
+  /**
+   * Multi-curriculum: communities may now have more than one learning
+   * path. The settings UI lets the owner add/remove paths from this
+   * array; the server stores both `curriculumPathIds` and the legacy
+   * `curriculumPathId` (mirrored to the first id) for back-compat.
+   */
+  const [editCurriculumIds, setEditCurriculumIds] = useState<string[]>([]);
+  const [pendingCurriculumId, setPendingCurriculumId] = useState<string>('');
   const [saving, setSaving] = useState(false);
+
+  // Lifecycle state — delete and duplicate are owner-only actions.
+  const [deleting, setDeleting] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
+  const router = useRouter();
 
   const isInstructor =
     !!user && !!community?.instructorIds?.includes(user.uid);
@@ -140,7 +170,7 @@ export default function CommunityDetailPage() {
       setCommunity(communityResult.data);
       setEditName(communityResult.data.name);
       setEditDescription(communityResult.data.description || '');
-      setEditCurriculumId(communityResult.data.curriculumPathId || '');
+      setEditCurriculumIds(communityResult.data.curriculumPathIds ?? []);
     }
 
     if (membersResult.success) {
@@ -154,14 +184,15 @@ export default function CommunityDetailPage() {
     loadData();
   }, [loadData]);
 
-  // Load curricula for settings (instructor only)
+  // Load curricula. Instructors use this list to pick paths to assign;
+  // members use it to render learning-path titles instead of bare ids in
+  // the "Assigned Learning Paths" card. Either way the call is cheap and
+  // the data is shared across views.
   useEffect(() => {
-    if (isInstructor) {
-      getCurricula().then((result) => {
-        if (result.success) setCurricula(result.data);
-      });
-    }
-  }, [isInstructor]);
+    getCurricula().then((result) => {
+      if (result.success) setCurricula(result.data);
+    });
+  }, []);
 
   function handleCopy(): void {
     if (community) {
@@ -194,7 +225,7 @@ export default function CommunityDetailPage() {
     const result = await updateCommunity(community.id, user.uid, {
       name: editName.trim(),
       description: editDescription.trim(),
-      curriculumPathId: editCurriculumId || undefined,
+      curriculumPathIds: editCurriculumIds,
     });
 
     setSaving(false);
@@ -207,7 +238,8 @@ export default function CommunityDetailPage() {
               ...prev,
               name: editName.trim(),
               description: editDescription.trim(),
-              curriculumPathId: editCurriculumId || undefined,
+              curriculumPathIds: editCurriculumIds,
+              curriculumPathId: editCurriculumIds[0],
             }
           : prev
       );
@@ -218,6 +250,64 @@ export default function CommunityDetailPage() {
         variant: 'destructive',
       });
     }
+  }
+
+  /** Owner-only: delete this community and cascade everything inside it. */
+  async function handleDeleteCommunity(): Promise<void> {
+    if (!user || !community) return;
+    setDeleting(true);
+    const result = await deleteCommunity(community.id, user.uid);
+    setDeleting(false);
+    if (result.success) {
+      toast({
+        title: 'Community deleted',
+        description: `Removed ${result.data.deletedDocs} record(s).`,
+      });
+      router.push('/communities');
+    } else {
+      toast({
+        title: 'Could not delete community',
+        description: result.error,
+        variant: 'destructive',
+      });
+    }
+  }
+
+  /** Owner-only: duplicate into a fresh shell for a new cohort. */
+  async function handleDuplicateCommunity(): Promise<void> {
+    if (!user || !community) return;
+    setDuplicating(true);
+    const result = await duplicateCommunity({
+      sourceCommunityId: community.id,
+      requesterId: user.uid,
+    });
+    setDuplicating(false);
+    if (result.success) {
+      toast({
+        title: 'Community duplicated',
+        description: `Created "${result.data.name}". You can rename it any time.`,
+      });
+      router.push(`/communities/${result.data.id}`);
+    } else {
+      toast({
+        title: 'Could not duplicate community',
+        description: result.error,
+        variant: 'destructive',
+      });
+    }
+  }
+
+  /** Add the pending picker value to the curriculum list (if not already present). */
+  function addCurriculumId(): void {
+    const id = pendingCurriculumId.trim();
+    if (!id || editCurriculumIds.includes(id)) return;
+    setEditCurriculumIds((prev) => [...prev, id]);
+    setPendingCurriculumId('');
+  }
+
+  /** Remove one curriculum from the picked list. */
+  function removeCurriculumId(idToRemove: string): void {
+    setEditCurriculumIds((prev) => prev.filter((id) => id !== idToRemove));
   }
 
   if (loading) {
@@ -290,20 +380,29 @@ export default function CommunityDetailPage() {
           </Card>
         )}
 
-        {community.curriculumPathId && (
+        {(community.curriculumPathIds?.length ?? 0) > 0 && (
           <Card className="mb-6 bg-card/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <GraduationCap className="h-4 w-4" />
-                Assigned Curriculum
+                Assigned Learning Paths
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <Button asChild variant="outline">
-                <Link href={`/curriculum/${community.curriculumPathId}`}>
-                  View Learning Path
-                </Link>
-              </Button>
+            <CardContent className="space-y-2">
+              {community.curriculumPathIds!.map((cid) => {
+                // Look up the title from `curricula` if we have it loaded;
+                // otherwise fall back to the id so the link still works.
+                const title =
+                  curricula.find((c) => c.id === cid)?.title || cid;
+                return (
+                  <div key={cid} className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-medium truncate">{title}</span>
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/curriculum/${cid}`}>View</Link>
+                    </Button>
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
         )}
@@ -444,20 +543,32 @@ export default function CommunityDetailPage() {
               </CardContent>
             </Card>
 
-            {community.curriculumPathId && (
+            {(community.curriculumPathIds?.length ?? 0) > 0 && (
               <Card className="bg-card/80 backdrop-blur-sm md:col-span-2">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <GraduationCap className="h-4 w-4" />
-                    Assigned Curriculum
+                    Assigned Learning Paths
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <Button asChild variant="outline">
-                    <Link href={`/curriculum/${community.curriculumPathId}`}>
-                      View Learning Path
-                    </Link>
-                  </Button>
+                <CardContent className="space-y-2">
+                  {community.curriculumPathIds!.map((cid) => {
+                    const title =
+                      curricula.find((c) => c.id === cid)?.title || cid;
+                    return (
+                      <div
+                        key={cid}
+                        className="flex items-center justify-between gap-3"
+                      >
+                        <span className="text-sm font-medium truncate">
+                          {title}
+                        </span>
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={`/curriculum/${cid}`}>View</Link>
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </CardContent>
               </Card>
             )}
@@ -561,23 +672,69 @@ export default function CommunityDetailPage() {
                 />
               </div>
               <div>
-                <Label>Assigned Curriculum</Label>
-                <Select
-                  value={editCurriculumId || '__none__'}
-                  onValueChange={(v) => setEditCurriculumId(v === '__none__' ? '' : v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a curriculum..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">None</SelectItem>
-                    {curricula.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Assigned Learning Paths</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  A community can have more than one learning path. Members
+                  see all of them and can switch between paths.
+                </p>
+                {editCurriculumIds.length > 0 ? (
+                  <ul className="mb-3 space-y-1.5">
+                    {editCurriculumIds.map((cid) => {
+                      const title =
+                        curricula.find((c) => c.id === cid)?.title || cid;
+                      return (
+                        <li
+                          key={cid}
+                          className="flex items-center justify-between gap-3 rounded-md border border-border/60 px-3 py-2"
+                        >
+                          <span className="text-sm truncate">{title}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeCurriculumId(cid)}
+                            aria-label={`Remove ${title}`}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="mb-3 text-xs italic text-muted-foreground">
+                    No learning paths assigned yet.
+                  </p>
+                )}
+                <div className="flex gap-2">
+                  <Select
+                    value={pendingCurriculumId || '__none__'}
+                    onValueChange={(v) =>
+                      setPendingCurriculumId(v === '__none__' ? '' : v)
+                    }
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Pick a learning path..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">—</SelectItem>
+                      {curricula
+                        .filter((c) => !editCurriculumIds.includes(c.id))
+                        .map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.title}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    onClick={addCurriculumId}
+                    disabled={!pendingCurriculumId}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add
+                  </Button>
+                </div>
               </div>
               <Button
                 onClick={handleSaveSettings}
@@ -592,6 +749,87 @@ export default function CommunityDetailPage() {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Owner-only danger zone: duplicate (safe) + delete (irreversible).
+              These are hidden from co-instructors because they're irreversible
+              actions on the original community owner's property. */}
+          {!!user && community.ownerId === user.uid && (
+            <Card className="mt-6 bg-card/80 backdrop-blur-sm border-destructive/30">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Settings className="h-4 w-4 text-destructive" />
+                  Owner actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 max-w-lg">
+                <div className="rounded-md border border-border/60 p-4">
+                  <p className="text-sm font-medium mb-1">Duplicate community</p>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Create a fresh copy with the same learning paths, forum
+                    topics, and curated media. Members are not copied — the new
+                    community is a clean shell for a new cohort.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={handleDuplicateCommunity}
+                    disabled={duplicating}
+                  >
+                    {duplicating ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <CopyPlus className="h-4 w-4 mr-2" />
+                    )}
+                    Duplicate community
+                  </Button>
+                </div>
+
+                <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4">
+                  <p className="text-sm font-medium mb-1">Delete community</p>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Permanently removes this community along with all
+                    contributions, forum topics, media items, and pending
+                    invites. This cannot be undone.
+                  </p>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" disabled={deleting}>
+                        {deleting ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4 mr-2" />
+                        )}
+                        Delete community
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Delete "{community.name}" permanently?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will remove the community along with all
+                          contributions, forum topics, replies, curated media,
+                          and pending invites. Members lose access immediately.
+                          Submitted dilemmas authored by members survive — they
+                          will just no longer be tied to this community. This
+                          action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteCommunity}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete community
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>

@@ -60,8 +60,30 @@ export function HighlightToolbar({ chapterSlug }: Props): JSX.Element | null {
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /**
+   * Once the user has opened the note-input mode, the textarea
+   * autoFocuses and the original document selection on the article is
+   * cleared (focusing an input moves the active selection context into
+   * that input). The subsequent `selectionchange` event would then see
+   * an empty selection and hide the entire toolbar — including the
+   * note input the user is trying to type into.
+   *
+   * Mirror `showNote` into a ref so the (stable) selection handler can
+   * bail out early without re-binding the listener on every state
+   * change. The toolbar stays visible until the user explicitly clicks
+   * Save / Cancel / the X / presses Esc.
+   */
+  const showNoteRef = useRef(false);
+  useEffect(() => {
+    showNoteRef.current = showNote;
+  }, [showNote]);
 
   const handleSelection = useCallback(() => {
+    // The user is currently typing into the note input. The document
+    // selection in the article has been cleared as a side-effect of
+    // focusing the textarea; do not tear the toolbar down because of
+    // it.
+    if (showNoteRef.current) return;
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
       setPos(null);

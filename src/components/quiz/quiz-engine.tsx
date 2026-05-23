@@ -23,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { submitQuizAttempt } from '@/app/actions/quizzes';
 import type { Quiz, QuizAttempt } from '@/types';
 import { cn } from '@/lib/utils';
+import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
 
 interface QuizEngineProps {
   quiz: Quiz;
@@ -183,10 +184,33 @@ export function QuizEngine({ quiz, onComplete }: QuizEngineProps) {
                 </AlertDescription>
               </Alert>
             ) : null}
-            <div className="pt-2 flex justify-center gap-3">
+            <div className="pt-2 flex flex-wrap justify-center gap-3">
               <Button onClick={handleRetake} variant="outline">
                 Take again
               </Button>
+              {/* Share quiz result to a community. Available regardless of
+                  pass/fail — students may want to discuss a question they
+                  got wrong as much as celebrate a pass. */}
+              <ShareToCommunityDialog
+                type="quiz_result"
+                defaultTitle={`${quiz.title} — ${scorePercent}%`}
+                defaultSummary={
+                  passed
+                    ? `I passed "${quiz.title}" with ${scorePercent}%.`
+                    : `I scored ${scorePercent}% on "${quiz.title}" — looking for tips on the questions I missed.`
+                }
+                sourceCollection="quizAttempts"
+                sourceId={attempt.id}
+                content={{
+                  quizId: quiz.id,
+                  subjectId: quiz.subjectId,
+                  subjectName: quiz.subjectName,
+                  subjectType: quiz.subjectType,
+                  scorePercent,
+                  passed,
+                  totalQuestions: quiz.questions.length,
+                }}
+              />
             </div>
           </CardContent>
         </Card>

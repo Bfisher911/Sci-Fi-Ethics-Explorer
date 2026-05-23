@@ -174,8 +174,11 @@ export default function CurriculumDetailPage() {
             const existing = certRes.data.find((c) => c.curriculumId === id);
             if (existing) setIssuedCert(existing);
           }
-          // Find a community this learner is in whose curriculumPathId
-          // matches this curriculum — lets reflections share back.
+          // Find a community this learner is in that has *this* curriculum
+          // assigned (singular legacy field OR new multi-path array) — lets
+          // reflections share back. A user may be in multiple communities
+          // that use the same path; we pick the first match for the share
+          // UI, matching the prior single-community behavior.
           try {
             const { getUserCommunities } = await import(
               '@/app/actions/communities'
@@ -183,7 +186,10 @@ export default function CurriculumDetailPage() {
             const commsRes = await getUserCommunities(user.uid);
             if (commsRes.success) {
               const match = commsRes.data.find(
-                (c: any) => c.curriculumPathId === id
+                (c: any) =>
+                  c.curriculumPathId === id ||
+                  (Array.isArray(c.curriculumPathIds) &&
+                    c.curriculumPathIds.includes(id)),
               );
               if (match) {
                 setAttachedCommunityId(match.id);
@@ -659,13 +665,16 @@ function CurriculumReflection({
     setBusy(true);
     try {
       // Optionally share to the community feed so the instructor sees it.
+      // Use the dedicated `reflection` ContributionType — earlier code
+      // reused `analysis`, which mis-categorized learner reflections in
+      // the community feed.
       if (share && communityId) {
         const { createContribution } = await import(
           '@/app/actions/contributions'
         );
         await createContribution({
           communityId,
-          type: 'analysis',
+          type: 'reflection',
           contributorId: user.uid,
           contributorName: user.displayName || user.email || 'Anonymous Explorer',
           title: item.title || 'Learning-path reflection',

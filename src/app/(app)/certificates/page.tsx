@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { getUserCertificates } from '@/app/actions/certificates';
 import { getCurricula } from '@/app/actions/curriculum';
 import type { Certificate, CurriculumPath } from '@/types';
+import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
 
 function formatDate(d: any): string {
   if (!d) return '';
@@ -88,7 +89,7 @@ export default function CertificatesPage() {
                       Earned
                     </Badge>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Button asChild variant="outline" size="sm">
                       <Link href={`/verify/${cert.verificationHash}`}>
                         Verify
@@ -99,6 +100,24 @@ export default function CertificatesPage() {
                         View Path
                       </Link>
                     </Button>
+                    {/* Celebrate the milestone with your community. */}
+                    <ShareToCommunityDialog
+                      type="certificate"
+                      defaultTitle={`I earned the "${cert.curriculumTitle}" certificate`}
+                      defaultSummary={`Just finished the ${cert.curriculumTitle} learning path on ${formatDate(cert.issuedAt)}.`}
+                      sourceCollection="certificates"
+                      sourceId={cert.id}
+                      content={{
+                        certificateId: cert.id,
+                        curriculumId: cert.curriculumId,
+                        curriculumTitle: cert.curriculumTitle,
+                        verificationHash: cert.verificationHash,
+                        issuedAt: typeof cert.issuedAt === 'string'
+                          ? cert.issuedAt
+                          : undefined,
+                        tier: cert.tier,
+                      }}
+                    />
                   </div>
                   <p className="text-[10px] text-muted-foreground/60 font-mono">
                     ID: {cert.verificationHash}

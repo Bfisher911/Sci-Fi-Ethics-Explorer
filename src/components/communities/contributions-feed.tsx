@@ -25,6 +25,11 @@ const FILTERS: { value: FilterValue; label: string }[] = [
   { value: 'dilemma', label: 'Dilemmas' },
   { value: 'debate', label: 'Debates' },
   { value: 'story', label: 'Stories' },
+  { value: 'story_completion', label: 'Story completions' },
+  { value: 'reflection', label: 'Reflections' },
+  { value: 'highlight', label: 'Highlights' },
+  { value: 'certificate', label: 'Certificates' },
+  { value: 'workshop', label: 'Workshops' },
 ];
 
 /**

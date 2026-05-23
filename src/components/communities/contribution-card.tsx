@@ -12,6 +12,11 @@ import {
   Scale,
   BookOpen,
   MessageCircle,
+  Sparkles,
+  PenLine,
+  Highlighter,
+  Award,
+  Users,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import { cn } from '@/lib/utils';
@@ -33,7 +38,7 @@ type TypeMeta = {
 
 export const CONTRIBUTION_TYPE_META: Record<ContributionType, TypeMeta> = {
   analysis: { icon: FlaskConical, label: 'Scenario Analysis' },
-  quiz_result: { icon: Brain, label: 'Framework Quiz Result' },
+  quiz_result: { icon: Brain, label: 'Quiz Result' },
   perspective_comparison: {
     icon: GitCompare,
     label: 'Perspective Comparison',
@@ -41,6 +46,12 @@ export const CONTRIBUTION_TYPE_META: Record<ContributionType, TypeMeta> = {
   dilemma: { icon: FileText, label: 'Dilemma' },
   debate: { icon: Scale, label: 'Debate' },
   story: { icon: BookOpen, label: 'Story' },
+  // New: every other completable artifact gets its own card identity.
+  story_completion: { icon: Sparkles, label: 'Story Completion' },
+  reflection: { icon: PenLine, label: 'Reflection' },
+  highlight: { icon: Highlighter, label: 'Highlight' },
+  certificate: { icon: Award, label: 'Certificate Earned' },
+  workshop: { icon: Users, label: 'Workshop' },
 };
 
 function initials(name: string): string {

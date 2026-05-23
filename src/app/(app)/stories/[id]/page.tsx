@@ -28,6 +28,7 @@ import { LockedFeatureModal } from '@/components/gating/locked-feature-modal';
 import { recordStoryCompletion, recordStoryChoice } from '@/app/actions/progress';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
+import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
 import { classifyChoice, FRAMEWORK_INFO } from '@/lib/choice-frameworks';
 import { getMoodTheme } from '@/lib/story-atmosphere';
 import { useAmbientTone } from '@/hooks/use-ambient-tone';
@@ -650,19 +651,43 @@ export default function StoryDetailPage() {
         )}
       </Card>
 
-      {/* "What Happened Next?" Epilogue Section */}
+      {/* "What Happened Next?" Epilogue + Share-to-community on completion */}
       {isStoryEnd && userChoices.length > 0 && (
-        <div className="mt-6">
-          {!showEpilogue ? (
-            <Button
-              onClick={() => setShowEpilogue(true)}
-              variant="outline"
-              className="w-full sm:w-auto"
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              What Happened Next?
-            </Button>
-          ) : (
+        <div className="mt-6 space-y-3">
+          <div className="flex flex-wrap gap-3">
+            {!showEpilogue && (
+              <Button
+                onClick={() => setShowEpilogue(true)}
+                variant="outline"
+                className="w-full sm:w-auto"
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                What Happened Next?
+              </Button>
+            )}
+            {/* Share story completion to a community. Surfaces the
+                reader's choices + the AI reflection (when present) so
+                classmates can engage with the same dilemma. */}
+            <ShareToCommunityDialog
+              type="story_completion"
+              defaultTitle={`Finished "${story.title}"`}
+              defaultSummary={
+                reflection
+                  ? reflection.slice(0, 280)
+                  : `I just finished "${story.title}". My choices: ${userChoices.slice(0, 3).join(' → ')}${userChoices.length > 3 ? ' …' : ''}`
+              }
+              sourceCollection="stories"
+              sourceId={story.id}
+              content={{
+                storyId: story.id,
+                storyTitle: story.title,
+                userChoices,
+                reflection: reflection || undefined,
+                visitedSegmentCount: visitedSegments.length,
+              }}
+            />
+          </div>
+          {showEpilogue && (
             <Card className="bg-card/80 backdrop-blur-sm p-6">
               <EpilogueViewer
                 storyTitle={story.title}

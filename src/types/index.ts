@@ -555,13 +555,27 @@ export interface AuditLogEntry {
 
 // ─── Community Contributions (unified feed) ─────────────────────────
 
+/**
+ * Types of artifacts a user can share into a community feed. Adding a new
+ * type here is the *only* place a new completable artifact needs to be
+ * declared at the data level — the `ShareToCommunityDialog` accepts any
+ * `ContributionType` and the feed renderer falls back to a generic card
+ * if no per-type renderer exists yet.
+ *
+ * Naming convention: lowercase, snake_case, singular noun.
+ */
 export type ContributionType =
-  | 'analysis'
-  | 'quiz_result'
+  | 'analysis'              // analyzer scenario or curriculum-style analytical write-up
+  | 'quiz_result'           // any quiz: framework, philosopher, theory, scifi-author, scifi-media, textbook-chapter, book-final, master-exam
   | 'perspective_comparison'
   | 'dilemma'
-  | 'debate'
-  | 'story';
+  | 'debate'                // both at creation and when participating
+  | 'story'                 // both at authorship and at completion (with reader's reflection)
+  | 'story_completion'      // reader finished an interactive story; surfaces choices made
+  | 'reflection'            // freeform learner reflection (curriculum/textbook prompts)
+  | 'highlight'             // textbook quote with optional note
+  | 'certificate'           // earned a curriculum/textbook certificate
+  | 'workshop';             // participated in / hosted a workshop
 
 export interface CommunityContribution {
   id: string;
@@ -1114,7 +1128,20 @@ export interface Community {
   memberIds: string[];
   licenseId?: string;
   inviteCode: string;
+  /**
+   * Legacy single-curriculum field. Kept for back-compat with code paths
+   * that haven't migrated to the array. Always mirrors `curriculumPathIds[0]`
+   * on read; writes are kept in sync inside `updateCommunity`.
+   * @deprecated Prefer `curriculumPathIds`.
+   */
   curriculumPathId?: string;
+  /**
+   * Multi-curriculum support. A community can assign more than one
+   * learning path; members see all of them and can switch between paths.
+   * Server actions (`updateCommunity`, `duplicateCommunity`) write both
+   * this field and `curriculumPathId` so older readers continue to work.
+   */
+  curriculumPathIds?: string[];
   settings?: {
     maxMembers?: number;
     allowSelfJoin?: boolean;

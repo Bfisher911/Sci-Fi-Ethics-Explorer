@@ -3,8 +3,9 @@
 
 import { db } from '@/lib/firebase/config';
 import {
-  collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
+  collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, setDoc,
   query, where, orderBy, arrayUnion, arrayRemove, serverTimestamp,
+  writeBatch, limit as fbLimit,
 } from 'firebase/firestore';
 import type { Community, CommunityInvite, CommunityMemberInfo, CommunityMemberRole } from '@/types';
 import { timestampToDate } from '@/lib/firebase/firestore-helpers';
@@ -23,6 +24,18 @@ function generateInviteCode(): string {
 }
 
 function communityFromDoc(id: string, data: Record<string, any>): Community {
+  // Backwards-compat: legacy docs carry the singular `curriculumPathId`.
+  // New docs carry the array `curriculumPathIds`. Read both, normalize
+  // to the array on every read, and keep the legacy field populated so
+  // anything still consulting it (gradebook, curriculum reverse lookup)
+  // continues to work until those callers are migrated.
+  const legacySingle =
+    typeof data.curriculumPathId === 'string' && data.curriculumPathId
+      ? [data.curriculumPathId]
+      : [];
+  const ids: string[] = Array.isArray(data.curriculumPathIds)
+    ? data.curriculumPathIds.filter((s: unknown): s is string => typeof s === 'string')
+    : legacySingle;
   return {
     id,
     name: data.name || '',
@@ -33,7 +46,8 @@ function communityFromDoc(id: string, data: Record<string, any>): Community {
     memberIds: data.memberIds || [],
     licenseId: data.licenseId,
     inviteCode: data.inviteCode || '',
-    curriculumPathId: data.curriculumPathId,
+    curriculumPathId: ids[0],
+    curriculumPathIds: ids,
     settings: data.settings || {},
     createdAt: timestampToDate(data.createdAt),
     updatedAt: timestampToDate(data.updatedAt),
@@ -331,11 +345,24 @@ export async function removeCommunityMember(
 
 /**
  * Update community details.
+ *
+ * Curriculum assignments:
+ *   - Pass `curriculumPathIds: string[]` to set the full list.
+ *   - Pass `curriculumPathId: string | null` to set/clear the legacy single
+ *     value (still accepted so existing callers don't break).
+ * In both cases we write *both* fields so older code paths that read the
+ * singular `curriculumPathId` keep working until they're migrated. The
+ * array is the new source of truth — `curriculumPathId` mirrors `ids[0]`.
  */
 export async function updateCommunity(
   communityId: string,
   requesterId: string,
-  updates: Partial<Pick<Community, 'name' | 'description' | 'curriculumPathId' | 'settings'>>
+  updates: Partial<
+    Pick<
+      Community,
+      'name' | 'description' | 'curriculumPathId' | 'curriculumPathIds' | 'settings'
+    >
+  >
 ): Promise<ActionResult> {
   try {
     const snap = await getDoc(doc(db, 'communities', communityId));
@@ -346,14 +373,323 @@ export async function updateCommunity(
       return { success: false, error: 'Only instructors can update community settings.' };
     }
 
+    // Normalize curriculum changes so the singular + plural fields stay
+    // in sync regardless of which one the caller updated.
+    const payload: Record<string, unknown> = { ...updates };
+    if ('curriculumPathIds' in updates) {
+      const ids = (updates.curriculumPathIds ?? []).filter(
+        (s): s is string => typeof s === 'string' && s.length > 0,
+      );
+      payload.curriculumPathIds = ids;
+      payload.curriculumPathId = ids[0] ?? null;
+    } else if ('curriculumPathId' in updates) {
+      const single = updates.curriculumPathId;
+      payload.curriculumPathId = single ?? null;
+      payload.curriculumPathIds = single ? [single] : [];
+    }
+
     await updateDoc(doc(db, 'communities', communityId), {
-      ...updates,
+      ...payload,
       updatedAt: serverTimestamp(),
     });
 
     return { success: true, data: undefined };
   } catch (error) {
     console.error('[communities] updateCommunity error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Hard-delete a community and all its scoped data.
+ *
+ * Owner-only. Firestore does NOT cascade subcollection deletes when you
+ * delete the parent document, so we explicitly walk and remove:
+ *   - communityContributions (top-level, filtered by communityId) and
+ *     their nested `comments` subcollection
+ *   - communityInvites (top-level, filtered by communityId)
+ *   - communities/{cid}/forumTopics and each topic's `replies`
+ *     subcollection
+ *   - communities/{cid}/media (including any per-item discussion
+ *     thread subcollection)
+ *   - the community document itself
+ *
+ * Submitted dilemmas that reference this community via `communityId`
+ * are not deleted — they belong to their authors and can be re-shared
+ * elsewhere. We clear their `communityId` so they no longer point at
+ * a missing parent.
+ *
+ * The action returns success when every step completes. If any single
+ * batch fails the surrounding try/catch reports the error — the caller
+ * can re-run; intermediate progress is durable.
+ */
+export async function deleteCommunity(
+  communityId: string,
+  requesterId: string,
+): Promise<ActionResult<{ deletedDocs: number }>> {
+  try {
+    const cref = doc(db, 'communities', communityId);
+    const csnap = await getDoc(cref);
+    if (!csnap.exists()) {
+      return { success: false, error: 'Community not found.' };
+    }
+    const cdata = csnap.data();
+    if (cdata.ownerId !== requesterId) {
+      return {
+        success: false,
+        error: 'Only the community owner can delete this community.',
+      };
+    }
+
+    let deletedDocs = 0;
+
+    // Helper: delete every doc returned by a query in chunks of <=400
+    // (Firestore batch limit is 500; leaving headroom for nested
+    // subcollection cleanup added inside the loop).
+    async function deleteQuery(q: ReturnType<typeof query>): Promise<void> {
+      // Firestore client SDK doesn't support cursored deletes natively;
+      // re-query until empty.
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const snap = await getDocs(q);
+        if (snap.empty) return;
+        const batch = writeBatch(db);
+        for (const d of snap.docs) {
+          batch.delete(d.ref);
+        }
+        await batch.commit();
+        deletedDocs += snap.docs.length;
+        if (snap.docs.length < 400) return;
+      }
+    }
+
+    // 1. Contributions (top-level) and their `comments` subcollection.
+    const contribSnap = await getDocs(
+      query(collection(db, 'communityContributions'), where('communityId', '==', communityId)),
+    );
+    for (const c of contribSnap.docs) {
+      // Each contribution may have a `comments` subcollection — walk it.
+      const commentsSnap = await getDocs(collection(c.ref, 'comments'));
+      if (!commentsSnap.empty) {
+        const batch = writeBatch(db);
+        for (const cm of commentsSnap.docs) batch.delete(cm.ref);
+        await batch.commit();
+        deletedDocs += commentsSnap.docs.length;
+      }
+    }
+    if (contribSnap.docs.length > 0) {
+      const batch = writeBatch(db);
+      for (const c of contribSnap.docs) batch.delete(c.ref);
+      await batch.commit();
+      deletedDocs += contribSnap.docs.length;
+    }
+
+    // 2. Invites.
+    await deleteQuery(
+      query(collection(db, 'communityInvites'), where('communityId', '==', communityId)),
+    );
+
+    // 3. Forum topics (subcollection) and their `replies` subsubcollection.
+    const topicsSnap = await getDocs(collection(cref, 'forumTopics'));
+    for (const t of topicsSnap.docs) {
+      const repliesSnap = await getDocs(collection(t.ref, 'replies'));
+      if (!repliesSnap.empty) {
+        const batch = writeBatch(db);
+        for (const r of repliesSnap.docs) batch.delete(r.ref);
+        await batch.commit();
+        deletedDocs += repliesSnap.docs.length;
+      }
+    }
+    if (topicsSnap.docs.length > 0) {
+      const batch = writeBatch(db);
+      for (const t of topicsSnap.docs) batch.delete(t.ref);
+      await batch.commit();
+      deletedDocs += topicsSnap.docs.length;
+    }
+
+    // 4. Media items.
+    const mediaSnap = await getDocs(collection(cref, 'media'));
+    if (!mediaSnap.empty) {
+      // Each media item may have its own discussion thread subcollection.
+      // Best-effort walk: `mediaDiscussions` lives as a sibling collection
+      // in some installs and inline subcollections in others. Try both.
+      for (const m of mediaSnap.docs) {
+        try {
+          const threadsSnap = await getDocs(collection(m.ref, 'threads'));
+          if (!threadsSnap.empty) {
+            const batch = writeBatch(db);
+            for (const th of threadsSnap.docs) batch.delete(th.ref);
+            await batch.commit();
+            deletedDocs += threadsSnap.docs.length;
+          }
+        } catch {
+          // No such subcollection — fine.
+        }
+      }
+      const batch = writeBatch(db);
+      for (const m of mediaSnap.docs) batch.delete(m.ref);
+      await batch.commit();
+      deletedDocs += mediaSnap.docs.length;
+    }
+
+    // 5. Detach submitted dilemmas — they belong to their authors and
+    // should survive. Just clear the now-stale community pointer.
+    const dilemmasSnap = await getDocs(
+      query(collection(db, 'submittedDilemmas'), where('communityId', '==', communityId)),
+    );
+    if (!dilemmasSnap.empty) {
+      const batch = writeBatch(db);
+      for (const d of dilemmasSnap.docs) {
+        batch.update(d.ref, { communityId: null, communityName: null });
+      }
+      await batch.commit();
+    }
+
+    // 6. The community doc itself.
+    await deleteDoc(cref);
+    deletedDocs += 1;
+
+    return { success: true, data: { deletedDocs } };
+  } catch (error) {
+    console.error('[communities] deleteCommunity error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Duplicate a community into a fresh shell for a new cohort.
+ *
+ * Owner-only. Copies:
+ *   - name (+ " (Copy)" suffix unless caller supplies a name),
+ *     description, settings, curriculum assignments
+ *   - forum topics (cloned, with their replies and `lastReplyAt` copied)
+ *   - media items
+ *
+ * Does NOT copy:
+ *   - members (the duplicate is for a new cohort)
+ *   - contributions (those belong to the original cohort)
+ *   - invites (a fresh invite code is generated)
+ *
+ * The duplicate is owned by the requester and gets the same owner
+ * identity. A new invite code is generated.
+ */
+export async function duplicateCommunity(input: {
+  sourceCommunityId: string;
+  requesterId: string;
+  /** Optional new name. Defaults to `"<original> (Copy)"`. */
+  name?: string;
+  /** When true, also clone forum topics + replies. Default true. */
+  copyForum?: boolean;
+  /** When true, also clone curated media list. Default true. */
+  copyMedia?: boolean;
+}): Promise<ActionResult<Community>> {
+  try {
+    const sref = doc(db, 'communities', input.sourceCommunityId);
+    const ssnap = await getDoc(sref);
+    if (!ssnap.exists()) {
+      return { success: false, error: 'Source community not found.' };
+    }
+    const src = ssnap.data();
+    if (src.ownerId !== input.requesterId) {
+      return {
+        success: false,
+        error: 'Only the community owner can duplicate this community.',
+      };
+    }
+
+    const copyForum = input.copyForum !== false;
+    const copyMedia = input.copyMedia !== false;
+    const newName = (input.name ?? `${src.name || 'Community'} (Copy)`).trim();
+    const newInviteCode = generateInviteCode();
+
+    // Build the new community doc. Curriculum stays attached; member
+    // lists do not.
+    const legacySingle =
+      typeof src.curriculumPathId === 'string' && src.curriculumPathId
+        ? [src.curriculumPathId]
+        : [];
+    const curriculumIds: string[] = Array.isArray(src.curriculumPathIds)
+      ? src.curriculumPathIds.filter(
+          (s: unknown): s is string => typeof s === 'string' && s.length > 0,
+        )
+      : legacySingle;
+    const newRef = await addDoc(collection(db, 'communities'), {
+      name: newName,
+      description: src.description || '',
+      ownerId: src.ownerId,
+      ownerName: src.ownerName || '',
+      instructorIds: [src.ownerId],
+      memberIds: [],
+      licenseId: src.licenseId || null,
+      inviteCode: newInviteCode,
+      curriculumPathIds: curriculumIds,
+      curriculumPathId: curriculumIds[0] ?? null,
+      settings: src.settings || { maxMembers: 200, allowSelfJoin: false },
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    // Clone forum topics + their replies.
+    if (copyForum) {
+      const topicsSnap = await getDocs(collection(sref, 'forumTopics'));
+      for (const t of topicsSnap.docs) {
+        const td = t.data();
+        const newTopicRef = doc(collection(newRef, 'forumTopics'));
+        await setDoc(newTopicRef, {
+          ...td,
+          communityId: newRef.id,
+          // Reset counters/replies on the topic itself; we'll re-create
+          // replies right after so the count stays accurate.
+          replyCount: 0,
+          lastReplyAt: null,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        const repliesSnap = await getDocs(collection(t.ref, 'replies'));
+        let replyCount = 0;
+        let lastReplyAt: unknown = null;
+        for (const r of repliesSnap.docs) {
+          const rd = r.data();
+          const newReplyRef = doc(collection(newTopicRef, 'replies'));
+          await setDoc(newReplyRef, {
+            ...rd,
+            communityId: newRef.id,
+            topicId: newTopicRef.id,
+            createdAt: serverTimestamp(),
+          });
+          replyCount += 1;
+          lastReplyAt = serverTimestamp();
+        }
+        if (replyCount > 0) {
+          await updateDoc(newTopicRef, {
+            replyCount,
+            lastReplyAt,
+          });
+        }
+      }
+    }
+
+    // Clone media items.
+    if (copyMedia) {
+      const mediaSnap = await getDocs(collection(sref, 'media'));
+      for (const m of mediaSnap.docs) {
+        const md = m.data();
+        const newMediaRef = doc(collection(newRef, 'media'));
+        await setDoc(newMediaRef, {
+          ...md,
+          communityId: newRef.id,
+          createdAt: serverTimestamp(),
+        });
+      }
+    }
+
+    const created = await getDoc(newRef);
+    return {
+      success: true,
+      data: communityFromDoc(newRef.id, created.data() || {}),
+    };
+  } catch (error) {
+    console.error('[communities] duplicateCommunity error:', error);
     return { success: false, error: String(error) };
   }
 }
