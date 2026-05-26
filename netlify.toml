@@ -20,3 +20,16 @@
 #   path = "/api/cron/digest"
 #   function = "digest-cron"
 #   # schedule = "0 14 * * 1"  # Mondays at 14:00 UTC
+
+# Weekly factual ethics dilemma generation:
+#   Route: /api/cron/weekly-dilemma
+#   Default intent: Tuesdays at 8:00 AM America/Chicago.
+#   Suggested env:
+#     GENERATE_WEEKLY_FACTUAL_DILEMMA=true
+#     FACTUAL_DILEMMA_AUTO_PUBLISH=false
+#     WEEKLY_DILEMMA_RESPONSE_REQUIRED_TO_VIEW_PEERS=true
+#     WEEKLY_DILEMMA_MIN_PEER_REPLIES=0
+#     WEEKLY_DILEMMA_PROFILE_SCORING=true
+#   Use a scheduler that supports America/Chicago time, or call:
+#     curl -H "Authorization: Bearer $CRON_SECRET" \
+#          https://<site>/api/cron/weekly-dilemma

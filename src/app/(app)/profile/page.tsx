@@ -3,6 +3,7 @@ import { PrivacySettingsCard } from '@/components/profile/privacy-settings-card'
 import { EmailPreferencesCard } from '@/components/profile/email-preferences-card';
 import { VisualSettingsCard } from '@/components/profile/visual-settings-card';
 import { ProgressDashboard } from '@/components/profile/progress-dashboard';
+import { UnifiedEthicalProfile } from '@/components/profile/unified-ethical-profile';
 import { AchievementsSection } from '@/components/profile/achievements-section';
 import { LicenseStatusCard } from '@/components/profile/license-status-card';
 import { TextbookProgressCard } from '@/components/textbook/textbook-progress-card';
@@ -48,6 +49,9 @@ export default async function ProfilePage() {
       </div>
       <div className="mt-8">
         <ProgressDashboard />
+      </div>
+      <div className="mt-8">
+        <UnifiedEthicalProfile />
       </div>
       <div className="mt-8">
         <AchievementsSection />

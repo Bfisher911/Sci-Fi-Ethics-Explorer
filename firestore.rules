@@ -395,6 +395,56 @@ service cloud.firestore {
       allow create, update, delete: if true;
     }
 
+    match /ethicalJudgmentEvents/{eventId} {
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow create, update, delete: if true;
+    }
+
+    match /ethicalProfiles/{userId} {
+      allow read: if request.auth != null && (
+        userId == request.auth.uid || isAdmin()
+      );
+      allow create, update, delete: if true;
+    }
+
+    match /ethicalReports/{reportId} {
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow create, update, delete: if true;
+    }
+
+    match /scifiMediaScenarioResponses/{responseId} {
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      allow create, update, delete: if true;
+    }
+
+    match /weeklyDilemmas/{dilemmaId} {
+      allow read: if true;
+      allow create, update, delete: if false;
+    }
+
+    match /weeklyDilemmaResponses/{responseId} {
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        exists(/databases/$(database)/documents/weeklyDilemmaResponses/$(resource.data.dilemmaId + "_" + request.auth.uid)) ||
+        isAdmin()
+      );
+      allow create, update, delete: if false;
+    }
+
+    match /weeklyDilemmaReplies/{replyId} {
+      allow read: if request.auth != null && (
+        exists(/databases/$(database)/documents/weeklyDilemmaResponses/$(resource.data.dilemmaId + "_" + request.auth.uid)) ||
+        isAdmin()
+      );
+      allow create, update, delete: if false;
+    }
+
     // ─── Default deny ───────────────────────────────────────────
     // Catches any collection we haven't explicitly listed above.
     // Without this, Firestore's default is also deny — but being

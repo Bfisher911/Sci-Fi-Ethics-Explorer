@@ -25,10 +25,11 @@ import {
   type ServiceAccount,
 } from 'firebase-admin/app';
 import { getAuth, type Auth } from 'firebase-admin/auth';
+import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 
 const APP_NAME = 'sfe-admin';
 
-let cached: { app: App | null; auth: Auth | null } | null = null;
+let cached: { app: App | null; auth: Auth | null; db: Firestore | null } | null = null;
 
 function buildAdminApp(): App | null {
   // Already initialized? Reuse it. The default app might be in use
@@ -75,12 +76,13 @@ function buildAdminApp(): App | null {
   );
 }
 
-function ensureCached(): { app: App | null; auth: Auth | null } {
+function ensureCached(): { app: App | null; auth: Auth | null; db: Firestore | null } {
   if (cached) return cached;
   const app = buildAdminApp();
   cached = {
     app,
     auth: app ? getAuth(app) : null,
+    db: app ? getFirestore(app) : null,
   };
   return cached;
 }
@@ -91,6 +93,10 @@ function ensureCached(): { app: App | null; auth: Auth | null } {
  */
 export function getAdminAuth(): Auth | null {
   return ensureCached().auth;
+}
+
+export function getAdminDb(): Firestore | null {
+  return ensureCached().db;
 }
 
 export interface VerifiedUser {

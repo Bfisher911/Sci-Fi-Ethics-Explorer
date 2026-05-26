@@ -1,6 +1,7 @@
 
 'use client';
 
+import React from 'react';
 import { useEffect, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -149,28 +150,33 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <SidebarProvider defaultOpen={true}>
       {/* Hydrates the user's saved theme variant (default / low-stim /
           high-contrast) before the first paint. Renders nothing. */}
-      <ThemeVariantHydrator />
+      <ThemeVariantHydrator key="theme-variant-hydrator" />
       {/* Skip-to-content link — visually hidden until focused via Tab.
           First focusable element on every authenticated page. Required
           for keyboard + screen-reader users to bypass the sidebar +
           header on every navigation. */}
       <a
+        key="skip-to-content"
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
       >
         Skip to content
       </a>
-      <AppSidebar />
-      <SidebarInset className="flex flex-col">
-        <ImpersonationBanner />
-        <AppHeader />
+      <AppSidebar key="app-sidebar" />
+      <SidebarInset key="app-content" className="flex flex-col">
+        <ImpersonationBanner key="app-impersonation-banner" />
+        <AppHeader key="app-header" />
         <main
+          key="app-main-content"
           id="main-content"
           tabIndex={-1}
           className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8"
         >
           {showOnboardingBanner && (
-            <div className="mb-4 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+            <div
+              key="onboarding-banner"
+              className="mb-4 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm"
+            >
               <span>
                 Complete your setup to unlock all features.
               </span>
@@ -182,7 +188,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               </Link>
             </div>
           )}
-          {children}
+          <React.Fragment key="page-content">{children}</React.Fragment>
         </main>
       </SidebarInset>
     </SidebarProvider>

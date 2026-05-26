@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
 import { createPerspective } from '@/app/actions/perspectives';
+import { recordEthicalJudgmentEvent } from '@/app/actions/ethical-judgments';
 
 const FRAMEWORKS = [
   'Utilitarianism',
@@ -26,6 +27,19 @@ const FRAMEWORKS = [
   'Virtue Ethics',
   'Social Contract Theory',
 ] as const;
+
+const FRAMEWORK_ID_BY_NAME: Record<string, string> = {
+  Utilitarianism: 'utilitarianism',
+  Deontology: 'deontology',
+  'Virtue Ethics': 'virtue-ethics',
+  'Social Contract Theory': 'social-contract-theory',
+};
+
+function weightFromVerdict(strength: 'supports' | 'opposes' | 'neutral'): number {
+  if (strength === 'supports') return 85;
+  if (strength === 'neutral') return 40;
+  return 15;
+}
 
 interface PerspectiveComparisonProps {
   scenario?: string;
@@ -112,6 +126,35 @@ export function PerspectiveComparison({
         });
       } else {
         setResult(output);
+        if (user?.uid) {
+          const frameworkWeights = Object.fromEntries(
+            output.comparisons
+              .map((comparison) => [
+                FRAMEWORK_ID_BY_NAME[comparison.framework],
+                weightFromVerdict(comparison.strength),
+              ])
+              .filter(([frameworkId]) => Boolean(frameworkId))
+          );
+          recordEthicalJudgmentEvent({
+            userId: user.uid,
+            interactionType: 'perspective_comparison',
+            sourceContentType: 'analysis',
+            sourceContentId: 'perspective-comparison',
+            sourceTitle: 'Perspective Comparison',
+            promptText: scenario.trim(),
+            userChoice: userChoice.trim(),
+            responseText: output.synthesis,
+            frameworkWeights,
+            affectsProfile: true,
+            activityContext: 'practice',
+            rawResponse: {
+              selectedFrameworks,
+              comparisonCount: output.comparisons.length,
+            },
+          }).catch((err) => {
+            console.error('Failed to record perspective ethical event:', err);
+          });
+        }
       }
     } catch (error) {
       // The flow shouldn't throw (it returns errorCode instead), but

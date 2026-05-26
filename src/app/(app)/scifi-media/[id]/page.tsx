@@ -14,6 +14,7 @@ import { InfographicCta } from '@/components/infographic/infographic-cta';
 import { AdminActions } from '@/components/admin/admin-actions';
 import { adminDeleteArtifact } from '@/app/actions/admin';
 import { MediaCommunityDiscussion } from '@/components/forum/media-community-discussion';
+import { EthicalScenarioReflection } from '@/components/scifi-media/ethical-scenario-reflection';
 import type { SciFiMedia } from '@/types';
 
 export default function SciFiMediaDetailPage() {
@@ -89,6 +90,14 @@ export default function SciFiMediaDetailPage() {
           subjectType="scifi-media"
           subjectId={media.id}
           href={`/scifi-media/${media.id}/quiz`}
+        />
+      </div>
+
+      <div className="mt-8">
+        <EthicalScenarioReflection
+          mediaId={media.id}
+          mediaTitle={media.title}
+          reflection={media.ethicalScenarioReflection}
         />
       </div>
 

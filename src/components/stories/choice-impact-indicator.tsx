@@ -25,8 +25,8 @@ export function ChoiceImpactIndicator({
       utilitarianism: 0,
       deontology: 0,
       'virtue-ethics': 0,
-      'social-contract': 0,
-      'care-ethics': 0,
+      'social-contract-theory': 0,
+      'ethics-of-care': 0,
       unaligned: 0,
     };
     for (const text of pickedChoiceTexts) {

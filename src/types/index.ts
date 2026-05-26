@@ -205,6 +205,8 @@ export interface StoryChoice {
   text: string;
   nextSegmentId?: string;
   reflectionTrigger?: boolean;
+  /** Optional full-framework scoring hint for new story content. */
+  frameworkWeights?: Record<string, number>;
 }
 
 export interface PollData {
@@ -300,11 +302,152 @@ export interface EthicalTheory {
   id: string;
   name: string;
   description: string;
+  shortDescription?: string;
+  keyQuestion?: string;
+  strengths?: string[];
+  blindSpots?: string[];
+  exampleApplication?: string;
+  tags?: string[];
+  activeInScoring?: boolean;
+  color?: string;
+  icon?: string;
   proponents?: string[];
   keyConcepts?: string[];
   exampleScenario?: string;
   imageUrl?: string;
   imageHint?: string;
+}
+
+export type EthicalJudgmentInteractionType =
+  | 'story_choice'
+  | 'framework_explorer'
+  | 'framework_quiz'
+  | 'debate_stance'
+  | 'debate_reply'
+  | 'media_scenario_reflection'
+  | 'weekly_dilemma_response'
+  | 'weekly_dilemma_reply'
+  | 'perspective_comparison'
+  | 'textbook_reflection'
+  | 'promise_reality_score'
+  | 'knowledge_quiz'
+  | 'other';
+
+export type EthicalJudgmentSourceType =
+  | 'story'
+  | 'framework_explorer'
+  | 'quiz'
+  | 'debate'
+  | 'scifi_media'
+  | 'weekly_dilemma'
+  | 'textbook'
+  | 'analysis'
+  | 'profile'
+  | 'other';
+
+export type EthicalJudgmentActivityContext =
+  | 'graded_course'
+  | 'practice'
+  | 'media'
+  | 'debate'
+  | 'story'
+  | 'weekly_dilemma'
+  | 'framework_explorer'
+  | 'textbook'
+  | 'profile'
+  | 'other';
+
+export interface EthicalFrameworkScore {
+  frameworkId: string;
+  score: number;
+  confidence?: number;
+  rationale?: string;
+}
+
+export interface EthicalFrameworkTension {
+  frameworks: string[];
+  description: string;
+}
+
+export interface EthicalJudgmentAnalysis {
+  frameworkScores: EthicalFrameworkScore[];
+  primaryFrameworks: string[];
+  secondaryFrameworks: string[];
+  tensions: EthicalFrameworkTension[];
+  confidence: number;
+  reasoningSummary: string;
+  evidenceFromResponse: string[];
+  blindSpots: string[];
+  challengeQuestion: string;
+  suggestedNextFrameworkToExplore?: string;
+  profileUpdateWeight: number;
+  aiExplanation?: string;
+}
+
+export interface EthicalJudgmentEvent {
+  id: string;
+  userId: string;
+  interactionType: EthicalJudgmentInteractionType | string;
+  sourceContentType: EthicalJudgmentSourceType | string;
+  sourceContentId: string;
+  sourceTitle: string;
+  promptText: string;
+  userChoice?: string;
+  responseText?: string;
+  selectedOptionId?: string;
+  explanation?: string;
+  analysis: EthicalJudgmentAnalysis;
+  affectsProfile: boolean;
+  activityContext: EthicalJudgmentActivityContext | string;
+  courseId?: string;
+  moduleId?: string;
+  modelUsed: string;
+  promptVersion: string;
+  rawResponse?: Record<string, unknown>;
+  createdAt: Date | any;
+}
+
+export interface EthicalProfileFrameworkSummary {
+  frameworkId: string;
+  score: number;
+  eventCount: number;
+}
+
+export interface EthicalProfileContentSummary {
+  eventCount: number;
+  frameworkScores: Record<string, number>;
+}
+
+export interface EthicalProfileTimePoint {
+  date: string;
+  frameworkScores: Record<string, number>;
+  eventCount: number;
+}
+
+export interface EthicalProfileAggregate {
+  userId: string;
+  eventCount: number;
+  overallFrameworkScores: Record<string, number>;
+  strongestFrameworks: EthicalProfileFrameworkSummary[];
+  leastUsedFrameworks: EthicalProfileFrameworkSummary[];
+  frameworkTensions: EthicalFrameworkTension[];
+  byContentType: Record<string, EthicalProfileContentSummary>;
+  overTime: EthicalProfileTimePoint[];
+  contentAreasIncluded: string[];
+  confidenceLevel: number;
+  recentEvents: EthicalJudgmentEvent[];
+  updatedAt: Date | any;
+}
+
+export interface EthicsLearningReport {
+  id: string;
+  userId: string;
+  title: string;
+  generatedAt: Date | any;
+  eventCount: number;
+  contentAreasIncluded: string[];
+  markdown: string;
+  profileSnapshot: EthicalProfileAggregate;
 }
 
 // ─── Submitted Dilemmas ─────────────────────────────────────────────
@@ -972,8 +1115,106 @@ export interface SciFiMedia {
   authorIds?: string[];
   /** Ethical framework IDs this work engages with. */
   relatedFrameworks: string[];
+  /** Scenario-style ethical reflection questions that update the learner profile. */
+  ethicalScenarioReflection?: EthicalScenarioReflection;
   /** Additional metadata (runtime, page count, network, etc.). */
   meta?: string;
+}
+
+export interface EthicalScenarioOption {
+  id: string;
+  label: string;
+  text: string;
+  frameworkWeights: Record<string, number>;
+  likelyFrameworkAlignments: string[];
+  possibleStrengths: string[];
+  possibleRisks: string[];
+  feedbackText: string;
+}
+
+export interface EthicalScenarioQuestion {
+  id: string;
+  title: string;
+  prompt: string;
+  options: EthicalScenarioOption[];
+  allowFreeResponse: boolean;
+  scoringPrompt: string;
+  feedbackPrompt: string;
+  reflectionFollowUp: string;
+  affectsEthicalProfile: boolean;
+  relatedFrameworkIds: string[];
+}
+
+export interface EthicalScenarioReflection {
+  mediaId: string;
+  title: string;
+  description: string;
+  questions: EthicalScenarioQuestion[];
+}
+
+export interface SciFiMediaScenarioResponse {
+  id: string;
+  userId: string;
+  mediaId: string;
+  questionId: string;
+  selectedOptionId?: string;
+  responseText?: string;
+  ethicalJudgmentEventId?: string;
+  createdAt: Date | any;
+}
+
+export interface WeeklyDilemmaChoice {
+  id: string;
+  label: string;
+  text: string;
+  frameworkWeights: Record<string, number>;
+}
+
+export interface WeeklyDilemma {
+  id: string;
+  title: string;
+  slug: string;
+  shortSetup: string;
+  backgroundContext: string;
+  mainEthicalQuestion: string;
+  choices: WeeklyDilemmaChoice[];
+  tags: string[];
+  relatedFrameworks: string[];
+  relatedTechnologies: string[];
+  aiScoringPrompt: string;
+  reflectionPrompt: string;
+  publishDate: Date | any;
+  closeDate?: Date | any;
+  visibilityStatus: 'draft' | 'published' | 'archived';
+  isoWeek: string;
+  imageUrl?: string;
+  imageHint?: string;
+  generatedAt?: Date | any;
+}
+
+export interface WeeklyDilemmaResponse {
+  id: string;
+  dilemmaId: string;
+  userId: string;
+  userName?: string;
+  selectedChoiceId?: string;
+  responseText: string;
+  ethicalJudgmentEventId?: string;
+  createdAt: Date | any;
+  updatedAt?: Date | any;
+}
+
+export interface WeeklyDilemmaReply {
+  id: string;
+  dilemmaId: string;
+  responseId: string;
+  parentReplyId?: string;
+  userId: string;
+  userName?: string;
+  replyText: string;
+  ethicalJudgmentEventId?: string;
+  moderationFlag?: string;
+  createdAt: Date | any;
 }
 
 // ─── Blog ───────────────────────────────────────────────────────────

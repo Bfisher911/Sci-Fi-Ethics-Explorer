@@ -1,4 +1,5 @@
 import { scifiMediaData } from '../data/scifi-media';
+import { getScenarioReflectionForMedia } from '../data/scifi-media-scenario-reflections';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -177,6 +178,13 @@ export function getStaticScifiMediaQuiz(mediaId: string): Quiz | null {
 
   fs.writeFileSync(OUT_FILE, fileContent, 'utf8');
   console.log(`Successfully wrote ${quizzes.length} quizzes to ${OUT_FILE}`);
+
+  const reflectionCount = scifiMediaData.filter(
+    (media) => getScenarioReflectionForMedia(media).questions.length >= 3,
+  ).length;
+  console.log(
+    `Validated Ethical Scenario Reflection coverage for ${reflectionCount} media items.`,
+  );
 }
 
 main().catch(console.error);

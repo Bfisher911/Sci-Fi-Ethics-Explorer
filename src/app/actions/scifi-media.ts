@@ -4,6 +4,7 @@ import { db } from '@/lib/firebase/config';
 import { collection, doc, getDoc, getDocs, query, orderBy } from 'firebase/firestore';
 import type { SciFiMedia, SciFiMediaCategory } from '@/types';
 import { scifiMediaData } from '@/data/scifi-media';
+import { getScenarioReflectionForMedia } from '@/data/scifi-media-scenario-reflections';
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -17,7 +18,7 @@ function isRealImageUrl(value: unknown): value is string {
 
 function mediaFromDoc(id: string, data: Record<string, any>): SciFiMedia {
   const fallback = scifiMediaData.find((item) => item.id === id);
-  return {
+  const media: SciFiMedia = {
     id,
     title: data.title || '',
     category: data.category || 'other',
@@ -30,6 +31,11 @@ function mediaFromDoc(id: string, data: Record<string, any>): SciFiMedia {
     meta: data.meta,
     imageUrl: isRealImageUrl(data.imageUrl) ? data.imageUrl : fallback?.imageUrl,
     imageHint: data.imageHint || fallback?.imageHint,
+    ethicalScenarioReflection: data.ethicalScenarioReflection,
+  };
+  return {
+    ...media,
+    ethicalScenarioReflection: media.ethicalScenarioReflection ?? getScenarioReflectionForMedia(media),
   };
 }
 
@@ -43,7 +49,10 @@ export async function getSciFiMedia(
     if (!snap.empty) {
       items = snap.docs.map((d) => mediaFromDoc(d.id, d.data()));
     } else {
-      items = scifiMediaData;
+      items = scifiMediaData.map((media) => ({
+        ...media,
+        ethicalScenarioReflection: getScenarioReflectionForMedia(media),
+      }));
     }
     if (category) {
       items = items.filter((m) => m.category === category);
@@ -51,7 +60,10 @@ export async function getSciFiMedia(
     return { success: true, data: items };
   } catch (error) {
     console.error('[scifi-media] getSciFiMedia error, falling back:', error);
-    let items = scifiMediaData;
+    let items = scifiMediaData.map((media) => ({
+      ...media,
+      ethicalScenarioReflection: getScenarioReflectionForMedia(media),
+    }));
     if (category) items = items.filter((m) => m.category === category);
     return { success: true, data: items };
   }
@@ -65,11 +77,23 @@ export async function getSciFiMediaById(
     if (snap.exists()) {
       return { success: true, data: mediaFromDoc(snap.id, snap.data()) };
     }
-    const fallback = scifiMediaData.find((m) => m.id === id) || null;
+    const fallbackMedia = scifiMediaData.find((m) => m.id === id) || null;
+    const fallback = fallbackMedia
+      ? {
+          ...fallbackMedia,
+          ethicalScenarioReflection: getScenarioReflectionForMedia(fallbackMedia),
+        }
+      : null;
     return { success: true, data: fallback };
   } catch (error) {
     console.error('[scifi-media] getSciFiMediaById error, falling back:', error);
-    const fallback = scifiMediaData.find((m) => m.id === id) || null;
+    const fallbackMedia = scifiMediaData.find((m) => m.id === id) || null;
+    const fallback = fallbackMedia
+      ? {
+          ...fallbackMedia,
+          ethicalScenarioReflection: getScenarioReflectionForMedia(fallbackMedia),
+        }
+      : null;
     return { success: true, data: fallback };
   }
 }
