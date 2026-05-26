@@ -26,10 +26,11 @@ import { useAuth } from '@/hooks/use-auth';
 import { useSubscription } from '@/hooks/use-subscription';
 import { LockedFeatureModal } from '@/components/gating/locked-feature-modal';
 import { recordStoryCompletion, recordStoryChoice } from '@/app/actions/progress';
+import { recordEthicalJudgmentEvent } from '@/app/actions/ethical-judgments';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
 import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
-import { classifyChoice, FRAMEWORK_INFO } from '@/lib/choice-frameworks';
+import { buildChoiceFrameworkWeights, classifyChoice, FRAMEWORK_INFO } from '@/lib/choice-frameworks';
 import { getMoodTheme } from '@/lib/story-atmosphere';
 import { useAmbientTone } from '@/hooks/use-ambient-tone';
 import { AdminActions } from '@/components/admin/admin-actions';
@@ -169,6 +170,23 @@ export default function StoryDetailPage() {
     if (user?.uid && storyId) {
       try {
         await recordStoryChoice(user.uid, storyId, choice.text);
+        await recordEthicalJudgmentEvent({
+          userId: user.uid,
+          interactionType: 'story_choice',
+          sourceContentType: 'story',
+          sourceContentId: storyId,
+          sourceTitle: story?.title ?? 'Interactive Story',
+          promptText: segmentText,
+          userChoice: choice.text,
+          frameworkWeights: choice.frameworkWeights ?? buildChoiceFrameworkWeights(choice.text),
+          affectsProfile: true,
+          activityContext: 'story',
+          rawResponse: {
+            storyId,
+            segmentId: currentSegment?.id,
+            nextSegmentId: choice.nextSegmentId ?? null,
+          },
+        });
       } catch (err) {
         console.error('Failed to record story choice:', err);
       }

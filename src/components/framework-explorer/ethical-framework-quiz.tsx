@@ -14,6 +14,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 import { ArrowRight, RotateCcw, Check, Lightbulb } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { recordQuizResult } from '@/app/actions/progress';
+import { recordEthicalJudgmentEvent } from '@/app/actions/ethical-judgments';
 import { updateUserProfile } from '@/app/actions/user';
 import type { QuizResult } from '@/types';
 import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
@@ -313,6 +314,35 @@ export function EthicalFrameworkQuiz() {
       };
       recordQuizResult(user.uid, quizResult).catch((err) => {
         console.error('Failed to record quiz result:', err);
+      });
+
+      const maxScore = Math.max(...Object.values(scores), 1);
+      const frameworkWeights = Object.fromEntries(
+        Object.entries(scores).map(([frameworkId, score]) => [
+          frameworkId,
+          Math.round((score / maxScore) * 100),
+        ])
+      );
+      recordEthicalJudgmentEvent({
+        userId: user.uid,
+        interactionType: 'framework_explorer',
+        sourceContentType: 'framework_explorer',
+        sourceContentId: 'framework-explorer',
+        sourceTitle: 'Ethical Framework Explorer',
+        promptText: 'Framework Explorer scenario self-assessment across technology ethics choices.',
+        userChoice: Object.values(answers)
+          .map((answer) => answer?.text)
+          .filter(Boolean)
+          .join('\n'),
+        frameworkWeights,
+        affectsProfile: true,
+        activityContext: 'framework_explorer',
+        rawResponse: {
+          selectedAnswerCount: Object.values(answers).filter(Boolean).length,
+          quizResultId: quizResult.id,
+        },
+      }).catch((err) => {
+        console.error('Failed to record ethical framework explorer event:', err);
       });
 
       // Cache the dominant framework on the user profile so the People Directory

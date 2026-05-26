@@ -12,8 +12,8 @@ export type FrameworkId =
   | 'utilitarianism'
   | 'deontology'
   | 'virtue-ethics'
-  | 'social-contract'
-  | 'care-ethics'
+  | 'social-contract-theory'
+  | 'ethics-of-care'
   | 'unaligned';
 
 export interface FrameworkInfo {
@@ -52,16 +52,16 @@ export const FRAMEWORK_INFO: Record<FrameworkId, FrameworkInfo> = {
     color: 'text-emerald-300',
     accent: 'border-emerald-300/40 bg-emerald-300/5',
   },
-  'social-contract': {
-    id: 'social-contract',
+  'social-contract-theory': {
+    id: 'social-contract-theory',
     label: 'Contractarian',
     shortLabel: 'Contract',
     hint: 'Honors what reasonable people could agree to from equal standing.',
     color: 'text-purple-300',
     accent: 'border-purple-300/40 bg-purple-300/5',
   },
-  'care-ethics': {
-    id: 'care-ethics',
+  'ethics-of-care': {
+    id: 'ethics-of-care',
     label: 'Care',
     shortLabel: 'Care',
     hint: 'Attends to the particular needs of those in your care.',
@@ -112,7 +112,7 @@ const MATCHERS: FrameworkMatcher[] = [
     ],
   },
   {
-    id: 'social-contract',
+    id: 'social-contract-theory',
     cues: [
       'agreement', 'consent', 'fair', 'fairness', 'protocol', 'treaty',
       'vote', 'democratic', 'institution', 'mandate', 'collective',
@@ -121,7 +121,7 @@ const MATCHERS: FrameworkMatcher[] = [
     ],
   },
   {
-    id: 'care-ethics',
+    id: 'ethics-of-care',
     cues: [
       'this person', 'their family', 'tend to', 'comfort', 'hold',
       'sit with', 'listen', 'be with', 'specific need', 'particular',
@@ -148,6 +148,12 @@ export function classifyChoice(choiceText: string): FrameworkId {
     }
   }
   return best;
+}
+
+export function buildChoiceFrameworkWeights(choiceText: string): Record<string, number> {
+  const frameworkId = classifyChoice(choiceText);
+  if (frameworkId === 'unaligned') return {};
+  return { [frameworkId]: 100 };
 }
 
 export function getFrameworkInfo(id: FrameworkId): FrameworkInfo {

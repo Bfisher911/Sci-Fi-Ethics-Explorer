@@ -16,6 +16,8 @@ import {
   increment,
 } from 'firebase/firestore';
 import type { Debate, DebateArgument, DebateVote } from '@/types';
+import { buildChoiceFrameworkWeights } from '@/lib/choice-frameworks';
+import { shouldScoreDebateReply } from '@/lib/ethical-judgment/aggregation';
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -172,6 +174,8 @@ export async function submitArgument(data: {
     // Increment participant count on the debate
     const debateRef = doc(db, 'debates', data.debateId);
     await updateDoc(debateRef, { participantCount: increment(1) });
+    const debateSnap = await getDoc(debateRef);
+    const debateData = debateSnap.exists() ? debateSnap.data() : null;
 
     // Record that this user participated in this debate on their
     // userProgress doc. The Master Exam prereq ("Participate in 5
@@ -188,6 +192,33 @@ export async function submitArgument(data: {
       console.warn('[debates] recordDebateParticipation import failed:', err);
     }
 
+    const shouldCreateEthicalEvent =
+      !data.parentArgumentId || shouldScoreDebateReply(data.content);
+    if (shouldCreateEthicalEvent) {
+      try {
+        const { recordEthicalJudgmentEvent } = await import('@/app/actions/ethical-judgments');
+        void recordEthicalJudgmentEvent({
+          userId: data.authorId,
+          interactionType: data.parentArgumentId ? 'debate_reply' : 'debate_stance',
+          sourceContentType: 'debate',
+          sourceContentId: data.debateId,
+          sourceTitle: debateData?.title ?? 'Debate',
+          promptText: debateData?.description ?? 'Debate position and reasoning.',
+          userChoice: data.position,
+          responseText: data.content,
+          frameworkWeights: buildChoiceFrameworkWeights(`${data.position} ${data.content}`),
+          affectsProfile: true,
+          activityContext: 'debate',
+          rawResponse: {
+            argumentId: docRef.id,
+            parentArgumentId: data.parentArgumentId ?? null,
+          },
+        }).catch((err) => console.warn('[debates] ethical judgment event failed:', err));
+      } catch (err) {
+        console.warn('[debates] ethical judgment import failed:', err);
+      }
+    }
+
     // Notify the parent argument's author that someone replied (only
     // when this is a reply, not a top-level argument). Best-effort —
     // notification failure never blocks the debate write.
@@ -199,7 +230,6 @@ export async function submitArgument(data: {
         const parent = parentSnap.exists() ? parentSnap.data() : null;
         if (parent && parent.authorId && parent.authorId !== data.authorId) {
           const { createNotification } = await import('@/app/actions/notifications');
-          const debateData = (await getDoc(debateRef)).data();
           await createNotification({
             userId: parent.authorId,
             type: 'debate_reply',

@@ -732,6 +732,9 @@ export function Dashboard(): JSX.Element {
           <GlassCard eyebrow="Companion" title="Professor Paradox">
             <CounselorMini chapterTitle={readingChapter?.title} />
           </GlassCard>
+          <GlassCard eyebrow="The Weekly Clause" title="This week's ethical question">
+            <WeeklyClauseMini />
+          </GlassCard>
           <GlassCard accent eyebrow="Debate Arena" title={debateCardTitle}>
             <DebateRail items={debatePayload} />
           </GlassCard>
@@ -762,6 +765,24 @@ const QUOTE_KIND_LABEL: Record<TechEthicsQuote['kind'], string> = {
   scientist: 'Scientist / Engineer',
   other: 'Voice',
 };
+
+function WeeklyClauseMini(): JSX.Element {
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        Submit your own response to a factual technology ethics dilemma before seeing
+        how other learners answered.
+      </p>
+      <Link
+        href="/weekly-clause"
+        className="inline-flex items-center gap-2 rounded-md border border-primary/35 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10"
+      >
+        Open Weekly Clause
+        <ArrowRight className="h-4 w-4" />
+      </Link>
+    </div>
+  );
+}
 
 function QuoteOfTheDayCard({ quote }: { quote: TechEthicsQuote }): JSX.Element {
   return (
