@@ -81,6 +81,7 @@ export function ModuleQuizRunner({
   const [loadingPrior, setLoadingPrior] = useState(true);
   const [saving, setSaving] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Preload any answers the user already gave for this module so a
   // resumed or reviewed module starts in the right place.
@@ -137,14 +138,16 @@ export function ModuleQuizRunner({
 
   const handleSelect = (optionId: string) => {
     setAnswers((prev) => ({ ...prev, [question.id]: optionId }));
+    if (error) setError(null);
   };
 
-  const persistCurrent = async (): Promise<void> => {
-    if (!user?.uid) return;
+  /** Returns true if the answer was saved (or there's no user to save for). */
+  const persistCurrent = async (): Promise<boolean> => {
+    if (!user?.uid) return true; // preview mode: nothing to persist
     const optionId = answers[question.id];
     const option = question.answerOptions.find((o) => o.id === optionId);
-    if (!option) return;
-    await recordFrameworkResponse({
+    if (!option) return false;
+    const res = await recordFrameworkResponse({
       userId: user.uid,
       questionId: question.id,
       moduleId: mod.id,
@@ -153,6 +156,10 @@ export function ModuleQuizRunner({
       frameworkWeights: option.frameworkWeights,
       technologyTopic: question.technologyTopic,
     });
+    if (!res.success) {
+      console.error('[framework-explorer] failed to record answer:', res.error);
+    }
+    return res.success;
   };
 
   const refreshDominantFramework = async (): Promise<void> => {
@@ -168,8 +175,15 @@ export function ModuleQuizRunner({
   const handleNext = async () => {
     if (!selectedOptionId) return;
     setSaving(true);
+    setError(null);
     try {
-      await persistCurrent();
+      const saved = await persistCurrent();
+      if (!saved) {
+        setError(
+          'We couldn’t save your answer. Check your connection and try again.',
+        );
+        return;
+      }
       if (isLast) {
         await refreshDominantFramework();
         setCompleted(true);
@@ -178,6 +192,7 @@ export function ModuleQuizRunner({
       }
     } catch (err) {
       console.error('[framework-explorer] failed to record answer:', err);
+      setError('Something went wrong saving your answer. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -236,6 +251,16 @@ export function ModuleQuizRunner({
   return (
     <Card className="bg-card/70 shadow-xl backdrop-blur-sm">
       <CardHeader>
+        <div className="mb-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+            onClick={onExit}
+          >
+            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Back to modules
+          </Button>
+        </div>
         <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
           <span className="font-semibold uppercase tracking-wider text-primary">
             Module {moduleNumber}: {mod.title}
@@ -275,17 +300,23 @@ export function ModuleQuizRunner({
             </Label>
           ))}
         </RadioGroup>
+        {error && (
+          <p role="alert" className="mt-4 text-sm font-medium text-destructive">
+            {error}
+          </p>
+        )}
       </CardContent>
       <CardFooter className="flex items-center justify-between gap-2">
-        <Button variant="ghost" onClick={index > 0 ? handleBack : onExit}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {index > 0 ? 'Previous' : 'Exit'}
-        </Button>
+        {index > 0 ? (
+          <Button variant="ghost" onClick={handleBack} disabled={saving}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+          </Button>
+        ) : (
+          <span />
+        )}
         <Button onClick={handleNext} disabled={!selectedOptionId || saving}>
-          {saving ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : null}
-          {isLast ? 'Finish module' : 'Next question'}
+          {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+          {saving ? 'Saving…' : isLast ? 'Finish module' : 'Next question'}
           {!saving && <ArrowRight className="ml-2 h-4 w-4" />}
         </Button>
       </CardFooter>
