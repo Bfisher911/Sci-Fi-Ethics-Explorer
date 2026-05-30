@@ -1,4 +1,4 @@
-import { EthicalFrameworkQuiz } from '@/components/framework-explorer/ethical-framework-quiz';
+import { FrameworkExplorerExperience } from '@/components/framework-explorer/framework-explorer-experience';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function FrameworkExplorerPage() {
@@ -8,12 +8,12 @@ export default function FrameworkExplorerPage() {
         <CardContent className="p-0">
             <h1 className="text-4xl font-bold mb-4 text-primary font-headline">Ethical Framework Explorer</h1>
             <p className="text-lg text-muted-foreground">
-                Discover which ethical theories resonate most with your decision-making style.
-                Answer a series of questions to see your alignment with different frameworks.
+                Work through twelve modules of technology-ethics dilemmas. Each choice maps onto
+                the canonical ethical frameworks and builds your unified ethics profile.
             </p>
         </CardContent>
       </Card>
-      <EthicalFrameworkQuiz />
+      <FrameworkExplorerExperience />
     </div>
   );
 }
