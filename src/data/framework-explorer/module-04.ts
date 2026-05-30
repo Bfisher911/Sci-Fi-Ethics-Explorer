@@ -37,7 +37,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Design and Attention',
     difficultyLevel: 2,
     options: [
-      { id: 'a', text: 'Prioritize accessibility; the capability to use the product at all outweighs marginal features for others.', frameworkWeights: { capabilities-approach: 2, 'justice-ethics': 1 } },
+      { id: 'a', text: 'Prioritize accessibility; the capability to use the product at all outweighs marginal features for others.', frameworkWeights: { 'capabilities-approach': 2, 'justice-ethics': 1 } },
       { id: 'b', text: 'Prioritize it; excluding disabled users from participation is a fairness failure, not a cost-benefit line.', frameworkWeights: { 'justice-ethics': 2, 'rights-based-ethics': 1 } },
       { id: 'c', text: 'Do the high-impact accessibility basics now and stage the rest pragmatically.', frameworkWeights: { 'pragmatist-ethics': 2 } },
       { id: 'd', text: 'Treat access for excluded people as a duty, not a feature to be out-prioritized.', frameworkWeights: { deontology: 2 } },
@@ -100,7 +100,7 @@ const seeds: QuestionSeed[] = [
       { id: 'a', text: 'Informed over slick; completions you got by keeping people in the dark are not worth having.', frameworkWeights: { autonomy: 2, deontology: 1 } },
       { id: 'b', text: 'A layered design — fast path with clear, inviting depth available — tested for real comprehension.', frameworkWeights: { 'pragmatist-ethics': 3 } },
       { id: 'c', text: 'Slick; most users prefer speed and the permissions are reasonable defaults anyway.', frameworkWeights: { consequentialism: 2 } },
-      { id: 'd', text: 'Whatever leaves users genuinely able to understand and control what they enabled.', frameworkWeights: { capabilities-approach: 2 } },
+      { id: 'd', text: 'Whatever leaves users genuinely able to understand and control what they enabled.', frameworkWeights: { 'capabilities-approach': 2 } },
     ],
   },
   {
@@ -133,7 +133,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Design and Attention',
     difficultyLevel: 2,
     options: [
-      { id: 'a', text: 'The inclusive plain version; a product people cannot run is no product for them at all.', frameworkWeights: { capabilities-approach: 2, 'justice-ethics': 1 } },
+      { id: 'a', text: 'The inclusive plain version; a product people cannot run is no product for them at all.', frameworkWeights: { 'capabilities-approach': 2, 'justice-ethics': 1 } },
       { id: 'b', text: 'The inclusive version; serving users the market overlooks is where responsibility points.', frameworkWeights: { cosmopolitanism: 1, 'justice-ethics': 2 } },
       { id: 'c', text: 'A baseline that runs everywhere first, polish for newer devices later.', frameworkWeights: { 'pragmatist-ethics': 2 } },
       { id: 'd', text: 'The premium version; delighting the core users best grows the product to help more later.', frameworkWeights: { consequentialism: 2 } },
@@ -146,7 +146,7 @@ const seeds: QuestionSeed[] = [
     difficultyLevel: 3,
     options: [
       { id: 'a', text: 'Design for stopping and parent control; children warrant protection from engagement-maximizing design.', frameworkWeights: { 'ethics-of-care': 2, 'rights-based-ethics': 1 } },
-      { id: 'b', text: 'Design for stopping; cultivating healthy attention habits is the point of anything calling itself educational.', frameworkWeights: { 'virtue-ethics': 2, capabilities-approach: 1 } },
+      { id: 'b', text: 'Design for stopping; cultivating healthy attention habits is the point of anything calling itself educational.', frameworkWeights: { 'virtue-ethics': 2, 'capabilities-approach': 1 } },
       { id: 'c', text: 'Keep some engagement hooks but bounded; learning needs motivation and total austerity loses kids.', frameworkWeights: { 'pragmatist-ethics': 2 } },
       { id: 'd', text: 'Give parents the controls and let families decide their own balance.', frameworkWeights: { autonomy: 2 } },
     ],
@@ -157,7 +157,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Design and Attention',
     difficultyLevel: 2,
     options: [
-      { id: 'a', text: 'Accessibility; no one should be locked out of essential information for a brand aesthetic.', frameworkWeights: { 'justice-ethics': 2, capabilities-approach: 1 } },
+      { id: 'a', text: 'Accessibility; no one should be locked out of essential information for a brand aesthetic.', frameworkWeights: { 'justice-ethics': 2, 'capabilities-approach': 1 } },
       { id: 'b', text: 'Accessibility; the duty not to exclude outranks visual preference.', frameworkWeights: { deontology: 2 } },
       { id: 'c', text: 'Find a design that satisfies both — usually possible with effort rather than a binary tradeoff.', frameworkWeights: { 'pragmatist-ethics': 2 } },
       { id: 'd', text: 'Accessibility; the brand is not served by a look that fails the people using it.', frameworkWeights: { 'ethics-of-care': 1, 'virtue-ethics': 1, 'justice-ethics': 1 } },
@@ -205,8 +205,8 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Design and Attention',
     difficultyLevel: 2,
     options: [
-      { id: 'a', text: 'Gentle design; a calm product that agitates people to use it contradicts its own purpose.', frameworkWeights: { 'virtue-ethics': 2, daoist-ethics: 1 } },
-      { id: 'b', text: 'Gentle design; let people come and go freely rather than engineering compulsion.', frameworkWeights: { autonomy: 1, daoist-ethics: 2 } },
+      { id: 'a', text: 'Gentle design; a calm product that agitates people to use it contradicts its own purpose.', frameworkWeights: { 'virtue-ethics': 2, 'daoist-ethics': 1 } },
+      { id: 'b', text: 'Gentle design; let people come and go freely rather than engineering compulsion.', frameworkWeights: { autonomy: 1, 'daoist-ethics': 2 } },
       { id: 'c', text: 'Gentle nudges only — supportive reminders without pressure, tested for genuine wellbeing.', frameworkWeights: { 'ethics-of-care': 2, 'pragmatist-ethics': 1 } },
       { id: 'd', text: 'Some habit pressure; the benefit of an established practice can justify a firmer hand.', frameworkWeights: { consequentialism: 2 } },
     ],
@@ -218,7 +218,7 @@ const seeds: QuestionSeed[] = [
     difficultyLevel: 2,
     options: [
       { id: 'a', text: 'Design progressive disclosure so each group gets what it needs without harming the other.', frameworkWeights: { 'pragmatist-ethics': 3 } },
-      { id: 'b', text: 'Favor newcomers; not excluding the less-expert is the more important fairness.', frameworkWeights: { 'justice-ethics': 1, capabilities-approach: 2 } },
+      { id: 'b', text: 'Favor newcomers; not excluding the less-expert is the more important fairness.', frameworkWeights: { 'justice-ethics': 1, 'capabilities-approach': 2 } },
       { id: 'c', text: 'Favor whichever serves the larger or higher-need group on the evidence.', frameworkWeights: { utilitarianism: 2 } },
       { id: 'd', text: 'Ask both groups and let their stated needs guide the call.', frameworkWeights: { 'discourse-ethics': 2 } },
     ],

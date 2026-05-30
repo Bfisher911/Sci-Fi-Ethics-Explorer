@@ -38,7 +38,7 @@ const seeds: QuestionSeed[] = [
     difficultyLevel: 3,
     options: [
       { id: 'a', text: 'Correct it; reproducing past exclusion under a veneer of objectivity is the deeper injustice.', frameworkWeights: { 'justice-ethics': 3 } },
-      { id: 'b', text: 'Correct it; widening who can actually compete for the role is what fairness demands.', frameworkWeights: { capabilities-approach: 2, 'justice-ethics': 1 } },
+      { id: 'b', text: 'Correct it; widening who can actually compete for the role is what fairness demands.', frameworkWeights: { 'capabilities-approach': 2, 'justice-ethics': 1 } },
       { id: 'c', text: 'Keep some signal but cap its influence, balancing predictive value against equity.', frameworkWeights: { 'pragmatist-ethics': 2, consequentialism: 1 } },
       { id: 'd', text: 'Stop using the model for screening; a tool that launders bias should not gate people\'s livelihoods.', frameworkWeights: { 'rights-based-ethics': 2, deontology: 1 } },
     ],
@@ -97,7 +97,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'AI and Automation',
     difficultyLevel: 3,
     options: [
-      { id: 'a', text: 'Toward genuine learning even when uncomfortable; what the student can come to do matters more than comfort.', frameworkWeights: { capabilities-approach: 2, 'virtue-ethics': 1 } },
+      { id: 'a', text: 'Toward genuine learning even when uncomfortable; what the student can come to do matters more than comfort.', frameworkWeights: { 'capabilities-approach': 2, 'virtue-ethics': 1 } },
       { id: 'b', text: 'Toward measured outcomes; an engaging tutor that doesn\'t teach is failing its purpose.', frameworkWeights: { consequentialism: 2 } },
       { id: 'c', text: 'Toward what the learner chooses, with transparency about the tradeoff between ease and growth.', frameworkWeights: { autonomy: 2 } },
       { id: 'd', text: 'Toward a humane balance — challenge paced with support, the way a caring teacher would.', frameworkWeights: { 'ethics-of-care': 2 } },
@@ -148,7 +148,7 @@ const seeds: QuestionSeed[] = [
       { id: 'a', text: 'Partly; keep humans on the hard cases where discretion protects people from rigid error.', frameworkWeights: { 'ethics-of-care': 2, 'pragmatist-ethics': 1 } },
       { id: 'b', text: 'Fully; relieving people of damaging work and scaling consistency is a clear net good.', frameworkWeights: { utilitarianism: 2, consequentialism: 1 } },
       { id: 'c', text: 'Partly; affected workers should help decide how their work is automated, not have it done to them.', frameworkWeights: { 'discourse-ethics': 2, autonomy: 1 } },
-      { id: 'd', text: 'Not yet; removing human judgment from decisions about people is a line to cross slowly.', frameworkWeights: { deontology: 1, stoicism: 1, daoist-ethics: 1 } },
+      { id: 'd', text: 'Not yet; removing human judgment from decisions about people is a line to cross slowly.', frameworkWeights: { deontology: 1, stoicism: 1, 'daoist-ethics': 1 } },
     ],
   },
   {

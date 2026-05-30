@@ -146,7 +146,7 @@ const seeds: QuestionSeed[] = [
     difficultyLevel: 3,
     options: [
       { id: 'a', text: 'Invest in retraining; loyalty given over years creates obligations a company should honor.', frameworkWeights: { 'ethics-of-care': 2, 'virtue-ethics': 1 } },
-      { id: 'b', text: 'Invest in their capability to adapt; people are worth developing, not just deploying.', frameworkWeights: { capabilities-approach: 2 } },
+      { id: 'b', text: 'Invest in their capability to adapt; people are worth developing, not just deploying.', frameworkWeights: { 'capabilities-approach': 2 } },
       { id: 'c', text: 'Make a genuine, time-bounded effort, then decide honestly if it isn\'t working.', frameworkWeights: { 'pragmatist-ethics': 2 } },
       { id: 'd', text: 'Weigh the cost and odds of retraining against the company\'s and team\'s needs.', frameworkWeights: { consequentialism: 2 } },
     ],
@@ -196,7 +196,7 @@ const seeds: QuestionSeed[] = [
       { id: 'a', text: 'Hold your standards and make the case that they are the company\'s real long-term moat.', frameworkWeights: { 'virtue-ethics': 2 } },
       { id: 'b', text: 'Compete hard within your principles; you do not have to become them to beat them.', frameworkWeights: { deontology: 1, 'pragmatist-ethics': 1 } },
       { id: 'c', text: 'Advocate for industry rules and transparency that make corner-cutting unprofitable for everyone.', frameworkWeights: { 'social-contract-theory': 1, 'justice-ethics': 1 } },
-      { id: 'd', text: 'Trust that durable success comes from what you build well, not from chasing a rival\'s shortcuts.', frameworkWeights: { stoicism: 1, daoist-ethics: 1 } },
+      { id: 'd', text: 'Trust that durable success comes from what you build well, not from chasing a rival\'s shortcuts.', frameworkWeights: { stoicism: 1, 'daoist-ethics': 1 } },
     ],
   },
   {

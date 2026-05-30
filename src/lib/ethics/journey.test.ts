@@ -2,8 +2,8 @@
 
 /**
  * Tests for the ethical-journey scoring engine. These pin the core
- * acceptance criteria: decisions accumulate weighted scores across the
- * 18 frameworks, dominant/secondary frameworks rank correctly, legacy
+ * acceptance criteria: decisions accumulate weighted scores across all
+ * canonical frameworks, dominant/secondary frameworks rank correctly, legacy
  * framework IDs still resolve, and tensions surface only when both
  * sides have comparable weight.
  */
@@ -39,9 +39,9 @@ function entry(
 }
 
 describe('emptyScores', () => {
-  it('has a zero entry for every one of the 18 frameworks', () => {
+  it('has a zero entry for every canonical framework', () => {
     const s = emptyScores();
-    expect(Object.keys(s).length).toBe(18);
+    expect(Object.keys(s).length).toBe(FRAMEWORK_IDS.length);
     expect(FRAMEWORK_IDS.every((id) => s[id] === 0)).toBe(true);
   });
 });
@@ -81,12 +81,12 @@ describe('computeFrameworkScores', () => {
 });
 
 describe('rankFrameworks', () => {
-  it('returns all 18 frameworks sorted by score descending', () => {
+  it('returns all canonical frameworks sorted by score descending', () => {
     const scores = emptyScores();
     scores.utilitarianism = 5;
     scores.deontology = 3;
     const ranked = rankFrameworks(scores);
-    expect(ranked.length).toBe(18);
+    expect(ranked.length).toBe(FRAMEWORK_IDS.length);
     expect(ranked[0].id).toBe('utilitarianism');
     expect(ranked[1].id).toBe('deontology');
     expect(ranked[0].share).toBeCloseTo(5 / 8);

@@ -85,7 +85,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Data and Consent',
     difficultyLevel: 2,
     options: [
-      { id: 'a', text: 'Stop; collect only what current features need. Restraint with data you do not yet use is the wiser posture.', frameworkWeights: { 'virtue-ethics': 2, daoist-ethics: 1 } },
+      { id: 'a', text: 'Stop; collect only what current features need. Restraint with data you do not yet use is the wiser posture.', frameworkWeights: { 'virtue-ethics': 2, 'daoist-ethics': 1 } },
       { id: 'b', text: 'Stop; hoarding data people did not consent to fuel future products oversteps the original agreement.', frameworkWeights: { autonomy: 2, deontology: 1 } },
       { id: 'c', text: 'Keep collecting; the option value of the data likely outweighs the manageable risk.', frameworkWeights: { consequentialism: 2 } },
       { id: 'd', text: 'Keep collecting only with explicit consent for that future use, stored separately and minimally.', frameworkWeights: { contractualism: 2, 'justice-ethics': 1 } },
@@ -100,7 +100,7 @@ const seeds: QuestionSeed[] = [
       { id: 'a', text: 'Build it; early support for struggling students is worth the risk if used well.', frameworkWeights: { utilitarianism: 2, 'ethics-of-care': 1 } },
       { id: 'b', text: 'Build it only with strict limits on who sees flags, how long they persist, and what they trigger.', frameworkWeights: { 'justice-ethics': 2, 'rights-based-ethics': 1 } },
       { id: 'c', text: 'Decline unless students and families have a voice in whether and how they are labeled.', frameworkWeights: { 'discourse-ethics': 2, autonomy: 1 } },
-      { id: 'd', text: 'Decline; reducing a child to a risk score can shape their future in ways no benefit repays.', frameworkWeights: { 'rights-based-ethics': 2, capabilities-approach: 1 } },
+      { id: 'd', text: 'Decline; reducing a child to a risk score can shape their future in ways no benefit repays.', frameworkWeights: { 'rights-based-ethics': 2, 'capabilities-approach': 1 } },
     ],
   },
   {
@@ -145,7 +145,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Data and Consent',
     difficultyLevel: 4,
     options: [
-      { id: 'a', text: 'Support it; the inclusion gains for people currently shut out of benefits are transformative.', frameworkWeights: { capabilities-approach: 2, utilitarianism: 1 } },
+      { id: 'a', text: 'Support it; the inclusion gains for people currently shut out of benefits are transformative.', frameworkWeights: { 'capabilities-approach': 2, utilitarianism: 1 } },
       { id: 'b', text: 'Oppose it; a centralized record of citizens\' lives is a standing danger no convenience justifies.', frameworkWeights: { 'rights-based-ethics': 2, deontology: 1 } },
       { id: 'c', text: 'Support it only with strong legal firewalls, decentralization, and citizen oversight built in.', frameworkWeights: { 'social-contract-theory': 2, 'justice-ethics': 1 } },
       { id: 'd', text: 'Insist the decision belongs to the affected public through real deliberation, not to technologists.', frameworkWeights: { 'discourse-ethics': 2, autonomy: 1 } },

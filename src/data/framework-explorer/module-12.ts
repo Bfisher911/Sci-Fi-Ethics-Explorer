@@ -85,9 +85,9 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Integrative',
     difficultyLevel: 5,
     options: [
-      { id: 'a', text: 'Accept it if it genuinely expands what the community can do, while fighting to limit the firm\'s grip.', frameworkWeights: { capabilities-approach: 1, 'pragmatist-ethics': 1 } },
+      { id: 'a', text: 'Accept it if it genuinely expands what the community can do, while fighting to limit the firm\'s grip.', frameworkWeights: { 'capabilities-approach': 1, 'pragmatist-ethics': 1 } },
       { id: 'b', text: 'Refuse; trading a community\'s autonomy to an exploiter is not a gift worth giving.', frameworkWeights: { autonomy: 1, 'justice-ethics': 1 } },
-      { id: 'c', text: 'Let the community itself decide whether the tradeoff is worth it — it is their future.', frameworkWeights: { 'discourse-ethics': 2, ubuntu-ethics: 1 } },
+      { id: 'c', text: 'Let the community itself decide whether the tradeoff is worth it — it is their future.', frameworkWeights: { 'discourse-ethics': 2, 'ubuntu-ethics': 1 } },
       { id: 'd', text: 'Weigh the real benefit to the community against the long-term cost of the firm\'s influence.', frameworkWeights: { consequentialism: 2 } },
     ],
   },
@@ -184,7 +184,7 @@ const seeds: QuestionSeed[] = [
       { id: 'a', text: 'Use it; a parent\'s duty to their own child is real and not erased by systemic concerns.', frameworkWeights: { 'ethics-of-care': 2, 'rights-based-ethics': 1 } },
       { id: 'b', text: 'Refrain or push for access for all; entrenching advantage you would deny others is unjust.', frameworkWeights: { 'justice-ethics': 2 } },
       { id: 'c', text: 'Refrain if you could not will a world where everyone in your position did the same.', frameworkWeights: { deontology: 1, contractualism: 1 } },
-      { id: 'd', text: 'Use it while working to widen access, holding the personal and systemic duties together.', frameworkWeights: { 'pragmatist-ethics': 2, ubuntu-ethics: 1 } },
+      { id: 'd', text: 'Use it while working to widen access, holding the personal and systemic duties together.', frameworkWeights: { 'pragmatist-ethics': 2, 'ubuntu-ethics': 1 } },
     ],
   },
   {

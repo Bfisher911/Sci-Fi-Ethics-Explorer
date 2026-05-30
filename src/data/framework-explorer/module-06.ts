@@ -28,7 +28,7 @@ const seeds: QuestionSeed[] = [
       { id: 'a', text: 'Adopt it but retrain and redeploy the affected workers rather than discarding them.', frameworkWeights: { 'ethics-of-care': 2, 'justice-ethics': 1 } },
       { id: 'b', text: 'Adopt it; refusing efficiency to preserve roles ultimately weakens the whole organization.', frameworkWeights: { consequentialism: 2 } },
       { id: 'c', text: 'Adopt it only with a fair transition the affected workers had a voice in shaping.', frameworkWeights: { 'discourse-ethics': 2, 'social-contract-theory': 1 } },
-      { id: 'd', text: 'Treat the people you employ as owed more than a severance line; let that constrain the rollout.', frameworkWeights: { deontology: 1, ubuntu-ethics: 1 } },
+      { id: 'd', text: 'Treat the people you employ as owed more than a severance line; let that constrain the rollout.', frameworkWeights: { deontology: 1, 'ubuntu-ethics': 1 } },
     ],
   },
   {
@@ -61,7 +61,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Work and Labor',
     difficultyLevel: 3,
     options: [
-      { id: 'a', text: 'Limit it in early roles so people still build the capabilities that make them capable professionals.', frameworkWeights: { capabilities-approach: 2, 'virtue-ethics': 1 } },
+      { id: 'a', text: 'Limit it in early roles so people still build the capabilities that make them capable professionals.', frameworkWeights: { 'capabilities-approach': 2, 'virtue-ethics': 1 } },
       { id: 'b', text: 'Encourage it; resisting a tool that boosts output to preserve old skill-building is sentimental.', frameworkWeights: { consequentialism: 2 } },
       { id: 'c', text: 'Blend it; use the tool while deliberately preserving practice on foundational skills.', frameworkWeights: { 'pragmatist-ethics': 3 } },
       { id: 'd', text: 'Let each person choose how to develop, with honest guidance about the tradeoff.', frameworkWeights: { autonomy: 2 } },
@@ -85,7 +85,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Work and Labor',
     difficultyLevel: 3,
     options: [
-      { id: 'a', text: 'No — stable, predictable hours are part of what people need to live decent lives.', frameworkWeights: { capabilities-approach: 2, 'ethics-of-care': 1 } },
+      { id: 'a', text: 'No — stable, predictable hours are part of what people need to live decent lives.', frameworkWeights: { 'capabilities-approach': 2, 'ethics-of-care': 1 } },
       { id: 'b', text: 'No — optimizing labor cost by destabilizing workers\' lives treats them as inputs, not people.', frameworkWeights: { 'rights-based-ethics': 1, 'justice-ethics': 1 } },
       { id: 'c', text: 'Use it with humane constraints — advance notice, stability guarantees — even at some efficiency cost.', frameworkWeights: { 'pragmatist-ethics': 2 } },
       { id: 'd', text: 'Deploy it; lower costs keep the business competitive and preserve the jobs that exist.', frameworkWeights: { consequentialism: 2 } },
@@ -134,7 +134,7 @@ const seeds: QuestionSeed[] = [
     difficultyLevel: 4,
     options: [
       { id: 'a', text: 'Yes — a worker abroad has the same claim to opportunity as one at home; borders are morally arbitrary.', frameworkWeights: { cosmopolitanism: 2, 'justice-ethics': 1 } },
-      { id: 'b', text: 'Yes — it expands real opportunity for people with fewer of them, on balance a good.', frameworkWeights: { utilitarianism: 1, capabilities-approach: 1 } },
+      { id: 'b', text: 'Yes — it expands real opportunity for people with fewer of them, on balance a good.', frameworkWeights: { utilitarianism: 1, 'capabilities-approach': 1 } },
       { id: 'c', text: 'Only with responsibility to the displaced domestic workers, not a cost-only calculation.', frameworkWeights: { 'ethics-of-care': 2 } },
       { id: 'd', text: 'Prioritize obligations to your existing employees and community first.', frameworkWeights: { 'social-contract-theory': 1, deontology: 1 } },
     ],
@@ -195,7 +195,7 @@ const seeds: QuestionSeed[] = [
     options: [
       { id: 'a', text: 'At a sustainable, injury-avoiding pace; a target that quietly injures some workers is set too high.', frameworkWeights: { 'ethics-of-care': 2, 'rights-based-ethics': 1 } },
       { id: 'b', text: 'At a level workers could accept knowing the health risks, not one imposed for throughput.', frameworkWeights: { contractualism: 2 } },
-      { id: 'c', text: 'At a humane level with rotation and breaks engineered in; design out the strain, don\'t price it in.', frameworkWeights: { 'pragmatist-ethics': 2, capabilities-approach: 1 } },
+      { id: 'c', text: 'At a humane level with rotation and breaks engineered in; design out the strain, don\'t price it in.', frameworkWeights: { 'pragmatist-ethics': 2, 'capabilities-approach': 1 } },
       { id: 'd', text: 'At a level that maximizes total output while keeping injury rates within accepted norms.', frameworkWeights: { consequentialism: 2 } },
     ],
   },
@@ -217,7 +217,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Work and Labor',
     difficultyLevel: 3,
     options: [
-      { id: 'a', text: 'Handle it with compassion and a path forward; people deserve room to recover from a low point.', frameworkWeights: { 'ethics-of-care': 2, buddhist-ethics: 1 } },
+      { id: 'a', text: 'Handle it with compassion and a path forward; people deserve room to recover from a low point.', frameworkWeights: { 'ethics-of-care': 2, 'buddhist-ethics': 1 } },
       { id: 'b', text: 'Address it honestly per policy; selective enforcement based on sympathy is its own unfairness.', frameworkWeights: { deontology: 1, 'justice-ethics': 1 } },
       { id: 'c', text: 'Weigh the lack of harm and their recovery against the precedent of looking away.', frameworkWeights: { consequentialism: 2 } },
       { id: 'd', text: 'Use judgment a fair-minded person would: acknowledge the wrong, but temper the response to the whole situation.', frameworkWeights: { 'virtue-ethics': 2 } },
@@ -229,8 +229,8 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Work and Labor',
     difficultyLevel: 3,
     options: [
-      { id: 'a', text: 'Share the gains with workers; those who enabled the efficiency have a claim on its benefits.', frameworkWeights: { 'justice-ethics': 2, ubuntu-ethics: 1 } },
-      { id: 'b', text: 'Advocate the four-day week; flourishing employees are part of what a good company is for.', frameworkWeights: { capabilities-approach: 1, 'virtue-ethics': 1 } },
+      { id: 'a', text: 'Share the gains with workers; those who enabled the efficiency have a claim on its benefits.', frameworkWeights: { 'justice-ethics': 2, 'ubuntu-ethics': 1 } },
+      { id: 'b', text: 'Advocate the four-day week; flourishing employees are part of what a good company is for.', frameworkWeights: { 'capabilities-approach': 1, 'virtue-ethics': 1 } },
       { id: 'c', text: 'Pilot the four-day week and let the measured results decide, rather than assuming.', frameworkWeights: { 'pragmatist-ethics': 2 } },
       { id: 'd', text: 'Bank the gains; the company\'s duty to its viability and shareholders comes first.', frameworkWeights: { consequentialism: 1, deontology: 1 } },
     ],
@@ -241,7 +241,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Work and Labor',
     difficultyLevel: 2,
     options: [
-      { id: 'a', text: 'Price for access; broadening who can build things expands real opportunity widely.', frameworkWeights: { capabilities-approach: 2, 'justice-ethics': 1 } },
+      { id: 'a', text: 'Price for access; broadening who can build things expands real opportunity widely.', frameworkWeights: { 'capabilities-approach': 2, 'justice-ethics': 1 } },
       { id: 'b', text: 'Price for access; tools that empower the many over the well-resourced few are worth more than margin.', frameworkWeights: { cosmopolitanism: 1, 'justice-ethics': 1 } },
       { id: 'c', text: 'Tiered pricing — affordable for individuals, premium for enterprises — to serve both.', frameworkWeights: { 'pragmatist-ethics': 2 } },
       { id: 'd', text: 'Price to maximize revenue; a sustainable, profitable tool can invest in helping more people later.', frameworkWeights: { consequentialism: 2 } },

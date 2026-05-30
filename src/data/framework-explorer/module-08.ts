@@ -73,7 +73,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Security and Safety',
     difficultyLevel: 4,
     options: [
-      { id: 'a', text: 'Distribute openly; defenders need these tools, and secrecy mostly disadvantages the good actors.', frameworkWeights: { 'justice-ethics': 1, pragmatist-ethics: 1 } },
+      { id: 'a', text: 'Distribute openly; defenders need these tools, and secrecy mostly disadvantages the good actors.', frameworkWeights: { 'justice-ethics': 1, 'pragmatist-ethics': 1 } },
       { id: 'b', text: 'Restrict to verified defenders; knowingly arming attackers is not justified by convenience.', frameworkWeights: { deontology: 1, 'rights-based-ethics': 1 } },
       { id: 'c', text: 'Distribute in whatever way the evidence shows reduces net real-world harm.', frameworkWeights: { consequentialism: 2 } },
       { id: 'd', text: 'Follow community norms for dual-use release rather than deciding unilaterally.', frameworkWeights: { 'social-contract-theory': 1, 'discourse-ethics': 1 } },
@@ -123,7 +123,7 @@ const seeds: QuestionSeed[] = [
     options: [
       { id: 'a', text: 'Hedge against catastrophe; even low-probability ruin warrants protecting people from the worst case.', frameworkWeights: { 'rights-based-ethics': 1, stoicism: 1 } },
       { id: 'b', text: 'Compute expected harm (probability × severity) and protect against the larger figure.', frameworkWeights: { consequentialism: 2 } },
-      { id: 'c', text: 'Address the frequent harms users actually suffer now rather than a speculative tail risk.', frameworkWeights: { 'ethics-of-care': 1, pragmatist-ethics: 1 } },
+      { id: 'c', text: 'Address the frequent harms users actually suffer now rather than a speculative tail risk.', frameworkWeights: { 'ethics-of-care': 1, 'pragmatist-ethics': 1 } },
       { id: 'd', text: 'Find the layered approach that reduces both meaningfully rather than betting on one.', frameworkWeights: { 'pragmatist-ethics': 2 } },
     ],
   },
@@ -232,7 +232,7 @@ const seeds: QuestionSeed[] = [
       { id: 'a', text: 'Stop immediately, document the exposure, and report it without examining further.', frameworkWeights: { deontology: 2, 'rights-based-ethics': 1 } },
       { id: 'b', text: 'Treat the data as you would want yours treated — look no further and disclose honestly.', frameworkWeights: { 'virtue-ethics': 2, 'ethics-of-care': 1 } },
       { id: 'c', text: 'Follow the engagement\'s rules of engagement to the letter for exactly this situation.', frameworkWeights: { 'social-contract-theory': 2 } },
-      { id: 'd', text: 'Report fully so the real exposure is fixed; the value is in closing the hole, not the peek.', frameworkWeights: { consequentialism: 1, pragmatist-ethics: 1 } },
+      { id: 'd', text: 'Report fully so the real exposure is fixed; the value is in closing the hole, not the peek.', frameworkWeights: { consequentialism: 1, 'pragmatist-ethics': 1 } },
     ],
   },
   {

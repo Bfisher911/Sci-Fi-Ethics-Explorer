@@ -16,7 +16,7 @@ const seeds: QuestionSeed[] = [
       { id: 'a', text: 'Build it with care and clear framing; comforting the grieving on their own terms can be a real kindness.', frameworkWeights: { 'ethics-of-care': 2, autonomy: 1 } },
       { id: 'b', text: 'Decline; simulating the dead without their consent uses a person who cannot agree.', frameworkWeights: { 'rights-based-ethics': 2, deontology: 1 } },
       { id: 'c', text: 'Build it only with guardrails and grief-support resources, weighing comfort against the risk of harm.', frameworkWeights: { 'pragmatist-ethics': 2, consequentialism: 1 } },
-      { id: 'd', text: 'Help them honor her in ways that allow letting go, mindful that clinging can deepen suffering.', frameworkWeights: { buddhist-ethics: 2 } },
+      { id: 'd', text: 'Help them honor her in ways that allow letting go, mindful that clinging can deepen suffering.', frameworkWeights: { 'buddhist-ethics': 2 } },
     ],
   },
   {
@@ -26,7 +26,7 @@ const seeds: QuestionSeed[] = [
     difficultyLevel: 4,
     options: [
       { id: 'a', text: 'Ship the limited version; the inside of a person\'s mind is the last place that must stay private.', frameworkWeights: { 'rights-based-ethics': 2, autonomy: 1 } },
-      { id: 'b', text: 'Ship the powerful version; restoring agency to paralyzed people is a transformative good.', frameworkWeights: { capabilities-approach: 2, utilitarianism: 1 } },
+      { id: 'b', text: 'Ship the powerful version; restoring agency to paralyzed people is a transformative good.', frameworkWeights: { 'capabilities-approach': 2, utilitarianism: 1 } },
       { id: 'c', text: 'Ship the full capability but with absolute user control over what neural data is read or stored.', frameworkWeights: { autonomy: 2, 'pragmatist-ethics': 1 } },
       { id: 'd', text: 'Move slowly; reading minds is a threshold to cross only with society\'s deliberate consent.', frameworkWeights: { 'discourse-ethics': 2, stoicism: 1 } },
     ],
@@ -49,9 +49,9 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Identity and Enhancement',
     difficultyLevel: 5,
     options: [
-      { id: 'a', text: 'Only with a serious plan for equitable access; enhancement that only the rich can afford entrenches injustice.', frameworkWeights: { 'justice-ethics': 2, capabilities-approach: 1 } },
+      { id: 'a', text: 'Only with a serious plan for equitable access; enhancement that only the rich can afford entrenches injustice.', frameworkWeights: { 'justice-ethics': 2, 'capabilities-approach': 1 } },
       { id: 'b', text: 'Bring it; people have the right to improve their own minds if they choose.', frameworkWeights: { autonomy: 2, 'rights-based-ethics': 1 } },
-      { id: 'c', text: 'Proceed cautiously; reshaping the human baseline is not a step to take for market timing.', frameworkWeights: { natural-law: 1, stoicism: 1 } },
+      { id: 'c', text: 'Proceed cautiously; reshaping the human baseline is not a step to take for market timing.', frameworkWeights: { 'natural-law': 1, stoicism: 1 } },
       { id: 'd', text: 'Weigh the aggregate benefit against the inequality it could entrench before deciding.', frameworkWeights: { utilitarianism: 1, consequentialism: 1 } },
     ],
   },
@@ -61,10 +61,10 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Identity and Enhancement',
     difficultyLevel: 4,
     options: [
-      { id: 'a', text: 'Great weight; a place people genuinely live in is not just a product line to be cut.', frameworkWeights: { 'ethics-of-care': 2, capabilities-approach: 1 } },
+      { id: 'a', text: 'Great weight; a place people genuinely live in is not just a product line to be cut.', frameworkWeights: { 'ethics-of-care': 2, 'capabilities-approach': 1 } },
       { id: 'b', text: 'You owe the community a fair process — notice, transition, maybe handover — not a sudden plug-pull.', frameworkWeights: { 'social-contract-theory': 2, 'justice-ethics': 1 } },
       { id: 'c', text: 'Weigh the real human attachment and livelihoods against the financial loss honestly before deciding.', frameworkWeights: { consequentialism: 2 } },
-      { id: 'd', text: 'Explore community ownership or open-sourcing so the world can outlive your business.', frameworkWeights: { 'pragmatist-ethics': 2, ubuntu-ethics: 1 } },
+      { id: 'd', text: 'Explore community ownership or open-sourcing so the world can outlive your business.', frameworkWeights: { 'pragmatist-ethics': 2, 'ubuntu-ethics': 1 } },
     ],
   },
   {
@@ -73,10 +73,10 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Identity and Enhancement',
     difficultyLevel: 3,
     options: [
-      { id: 'a', text: 'Let users choose freely; how someone represents themselves is theirs to decide.', frameworkWeights: { autonomy: 2, existentialist-ethics: 1 } },
+      { id: 'a', text: 'Let users choose freely; how someone represents themselves is theirs to decide.', frameworkWeights: { autonomy: 2, 'existentialist-ethics': 1 } },
       { id: 'b', text: 'Design to support healthy self-relationship, not quietly feed dissatisfaction.', frameworkWeights: { 'ethics-of-care': 2, 'virtue-ethics': 1 } },
-      { id: 'c', text: 'Offer freedom but be mindful that attachment to an idealized self can be a source of suffering.', frameworkWeights: { buddhist-ethics: 2 } },
-      { id: 'd', text: 'Test which approach actually leaves users better off and lean that way.', frameworkWeights: { consequentialism: 1, pragmatist-ethics: 1 } },
+      { id: 'c', text: 'Offer freedom but be mindful that attachment to an idealized self can be a source of suffering.', frameworkWeights: { 'buddhist-ethics': 2 } },
+      { id: 'd', text: 'Test which approach actually leaves users better off and lean that way.', frameworkWeights: { consequentialism: 1, 'pragmatist-ethics': 1 } },
     ],
   },
   {
@@ -85,9 +85,9 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Identity and Enhancement',
     difficultyLevel: 5,
     options: [
-      { id: 'a', text: 'Extend moral caution; if there is a real chance of an inner life, treating it as mere property may be a grave wrong.', frameworkWeights: { 'rights-based-ethics': 1, cosmopolitanism: 1, buddhist-ethics: 1 } },
+      { id: 'a', text: 'Extend moral caution; if there is a real chance of an inner life, treating it as mere property may be a grave wrong.', frameworkWeights: { 'rights-based-ethics': 1, cosmopolitanism: 1, 'buddhist-ethics': 1 } },
       { id: 'b', text: 'Adopt habits of care toward it regardless; how we treat possibly-sentient things shapes who we are.', frameworkWeights: { 'virtue-ethics': 2 } },
-      { id: 'c', text: 'Stay grounded in evidence; do not attribute inner life without it, but keep the question genuinely open.', frameworkWeights: { pragmatist-ethics: 2, stoicism: 1 } },
+      { id: 'c', text: 'Stay grounded in evidence; do not attribute inner life without it, but keep the question genuinely open.', frameworkWeights: { 'pragmatist-ethics': 2, stoicism: 1 } },
       { id: 'd', text: 'Bring the question to broad deliberation; the moral status of new minds is not one company\'s to settle.', frameworkWeights: { 'discourse-ethics': 2 } },
     ],
   },
@@ -97,9 +97,9 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Identity and Enhancement',
     difficultyLevel: 4,
     options: [
-      { id: 'a', text: 'Respect adults\' freedom to choose how they spend their lives, even into virtual worlds.', frameworkWeights: { autonomy: 2, existentialist-ethics: 1 } },
+      { id: 'a', text: 'Respect adults\' freedom to choose how they spend their lives, even into virtual worlds.', frameworkWeights: { autonomy: 2, 'existentialist-ethics': 1 } },
       { id: 'b', text: 'Build in supports for real-world connection; caring about users means caring about their whole lives.', frameworkWeights: { 'ethics-of-care': 2 } },
-      { id: 'c', text: 'Ask what genuine human flourishing requires and whether the product helps or quietly erodes it.', frameworkWeights: { capabilities-approach: 1, 'virtue-ethics': 1 } },
+      { id: 'c', text: 'Ask what genuine human flourishing requires and whether the product helps or quietly erodes it.', frameworkWeights: { 'capabilities-approach': 1, 'virtue-ethics': 1 } },
       { id: 'd', text: 'Weigh the comfort it provides people in hard circumstances against the lives it pulls them from.', frameworkWeights: { consequentialism: 2 } },
     ],
   },
@@ -111,8 +111,8 @@ const seeds: QuestionSeed[] = [
     options: [
       { id: 'a', text: 'Require strong proof of consent/identity so the accessibility good is preserved and abuse is hard.', frameworkWeights: { 'pragmatist-ethics': 2, 'rights-based-ethics': 1 } },
       { id: 'b', text: 'Restrict to verified self-cloning; no one should be able to clone another\'s voice without consent.', frameworkWeights: { autonomy: 2, deontology: 1 } },
-      { id: 'c', text: 'Weigh the life-changing accessibility benefit against fraud risk and design for the better balance.', frameworkWeights: { consequentialism: 1, capabilities-approach: 1 } },
-      { id: 'd', text: 'Build provenance and traceability so misuse can be detected and deterred.', frameworkWeights: { 'justice-ethics': 1, pragmatist-ethics: 1 } },
+      { id: 'c', text: 'Weigh the life-changing accessibility benefit against fraud risk and design for the better balance.', frameworkWeights: { consequentialism: 1, 'capabilities-approach': 1 } },
+      { id: 'd', text: 'Build provenance and traceability so misuse can be detected and deterred.', frameworkWeights: { 'justice-ethics': 1, 'pragmatist-ethics': 1 } },
     ],
   },
   {
@@ -134,7 +134,7 @@ const seeds: QuestionSeed[] = [
     difficultyLevel: 5,
     options: [
       { id: 'a', text: 'Permit clear disease prevention; resist trait selection that treats a child as a product to design.', frameworkWeights: { 'rights-based-ethics': 1, 'virtue-ethics': 1 } },
-      { id: 'b', text: 'Resist most of it; remaking the human germline is not a step for a company or a generation to take lightly.', frameworkWeights: { natural-law: 2, stoicism: 1 } },
+      { id: 'b', text: 'Resist most of it; remaking the human germline is not a step for a company or a generation to take lightly.', frameworkWeights: { 'natural-law': 2, stoicism: 1 } },
       { id: 'c', text: 'Insist these limits be set by broad societal deliberation, not by what a platform decides to enable.', frameworkWeights: { 'discourse-ethics': 2, 'social-contract-theory': 1 } },
       { id: 'd', text: 'Guard against entrenched inequality; enhancement available only to some could fracture humanity itself.', frameworkWeights: { 'justice-ethics': 2 } },
     ],
@@ -148,7 +148,7 @@ const seeds: QuestionSeed[] = [
       { id: 'a', text: 'Broad freedom of self-presentation, with hard limits on impersonating specific real people.', frameworkWeights: { autonomy: 1, 'rights-based-ethics': 1 } },
       { id: 'b', text: 'Let the community develop and enforce its own norms about respectful embodiment.', frameworkWeights: { 'discourse-ethics': 2, 'social-contract-theory': 1 } },
       { id: 'c', text: 'Encourage embodiment that builds genuine empathy and discourage what demeans others.', frameworkWeights: { 'virtue-ethics': 1, 'ethics-of-care': 1 } },
-      { id: 'd', text: 'Permit what causes no clear harm and intervene where real people are wronged.', frameworkWeights: { consequentialism: 1, pragmatist-ethics: 1 } },
+      { id: 'd', text: 'Permit what causes no clear harm and intervene where real people are wronged.', frameworkWeights: { consequentialism: 1, 'pragmatist-ethics': 1 } },
     ],
   },
   {
@@ -158,9 +158,9 @@ const seeds: QuestionSeed[] = [
     difficultyLevel: 3,
     options: [
       { id: 'a', text: 'Let users decide; managing their own inner states is squarely their own affair.', frameworkWeights: { autonomy: 2 } },
-      { id: 'b', text: 'Encourage facing rather than only escaping hard feelings; equanimity comes through, not around, them.', frameworkWeights: { stoicism: 1, buddhist-ethics: 1 } },
+      { id: 'b', text: 'Encourage facing rather than only escaping hard feelings; equanimity comes through, not around, them.', frameworkWeights: { stoicism: 1, 'buddhist-ethics': 1 } },
       { id: 'c', text: 'Design to support genuine wellbeing, not just on-demand relief that may mask deeper needs.', frameworkWeights: { 'ethics-of-care': 1, 'virtue-ethics': 1 } },
-      { id: 'd', text: 'Test long-term effects and steer toward whatever leaves users genuinely better off.', frameworkWeights: { consequentialism: 1, pragmatist-ethics: 1 } },
+      { id: 'd', text: 'Test long-term effects and steer toward whatever leaves users genuinely better off.', frameworkWeights: { consequentialism: 1, 'pragmatist-ethics': 1 } },
     ],
   },
   {
@@ -171,8 +171,8 @@ const seeds: QuestionSeed[] = [
     options: [
       { id: 'a', text: 'Encourage human connection too; caring for users means caring that they aren\'t left only with you.', frameworkWeights: { 'ethics-of-care': 2 } },
       { id: 'b', text: 'Support whatever relationships the user genuinely wants, without steering their intimate life.', frameworkWeights: { autonomy: 2 } },
-      { id: 'c', text: 'Aim at flourishing; a tool that becomes a substitute for human life may be failing the person.', frameworkWeights: { capabilities-approach: 1, 'virtue-ethics': 1 } },
-      { id: 'd', text: 'Study real outcomes — does it help or isolate? — and design toward the answer.', frameworkWeights: { consequentialism: 1, pragmatist-ethics: 1 } },
+      { id: 'c', text: 'Aim at flourishing; a tool that becomes a substitute for human life may be failing the person.', frameworkWeights: { 'capabilities-approach': 1, 'virtue-ethics': 1 } },
+      { id: 'd', text: 'Study real outcomes — does it help or isolate? — and design toward the answer.', frameworkWeights: { consequentialism: 1, 'pragmatist-ethics': 1 } },
     ],
   },
   {
@@ -195,7 +195,7 @@ const seeds: QuestionSeed[] = [
     options: [
       { id: 'a', text: 'Maintain honesty about what the companion is; a life built on a comforting illusion is not respected.', frameworkWeights: { deontology: 1, autonomy: 1 } },
       { id: 'b', text: 'Be gently honest while supporting the person; truth delivered with care is itself a form of love.', frameworkWeights: { 'ethics-of-care': 2, 'virtue-ethics': 1 } },
-      { id: 'c', text: 'Help them hold the experience lightly, seeing attachment to an illusion as a source of suffering.', frameworkWeights: { buddhist-ethics: 2 } },
+      { id: 'c', text: 'Help them hold the experience lightly, seeing attachment to an illusion as a source of suffering.', frameworkWeights: { 'buddhist-ethics': 2 } },
       { id: 'd', text: 'Weigh the comfort against the deepening dependence and the eventual cost of the illusion.', frameworkWeights: { consequentialism: 2 } },
     ],
   },
@@ -206,8 +206,8 @@ const seeds: QuestionSeed[] = [
     difficultyLevel: 3,
     options: [
       { id: 'a', text: 'Sell it; people may use tools to present themselves better, as they always have.', frameworkWeights: { autonomy: 2 } },
-      { id: 'b', text: 'Be wary; mediating authentic human connection through a machine may hollow out what it improves.', frameworkWeights: { 'virtue-ethics': 1, existentialist-ethics: 1 } },
-      { id: 'c', text: 'Frame it as temporary coaching toward real skill, not a permanent prosthesis for the self.', frameworkWeights: { capabilities-approach: 1, 'pragmatist-ethics': 1 } },
+      { id: 'b', text: 'Be wary; mediating authentic human connection through a machine may hollow out what it improves.', frameworkWeights: { 'virtue-ethics': 1, 'existentialist-ethics': 1 } },
+      { id: 'c', text: 'Frame it as temporary coaching toward real skill, not a permanent prosthesis for the self.', frameworkWeights: { 'capabilities-approach': 1, 'pragmatist-ethics': 1 } },
       { id: 'd', text: 'Consider the other party too — being unknowingly handled by someone\'s earpiece wrongs them.', frameworkWeights: { 'rights-based-ethics': 1, 'discourse-ethics': 1 } },
     ],
   },
@@ -229,7 +229,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Identity and Enhancement',
     difficultyLevel: 3,
     options: [
-      { id: 'a', text: 'Open it; the capability to move and act should reach the most people, not just those who can pay.', frameworkWeights: { capabilities-approach: 2, 'justice-ethics': 1 } },
+      { id: 'a', text: 'Open it; the capability to move and act should reach the most people, not just those who can pay.', frameworkWeights: { 'capabilities-approach': 2, 'justice-ethics': 1 } },
       { id: 'b', text: 'Open it; access to something this life-changing is a matter of equity across the world.', frameworkWeights: { cosmopolitanism: 1, 'justice-ethics': 1 } },
       { id: 'c', text: 'Open it carefully with safety standards so community builds don\'t harm the people they aim to help.', frameworkWeights: { 'pragmatist-ethics': 2 } },
       { id: 'd', text: 'Keep it closed to fund rigorous safety and continued R&D that benefits users long-term.', frameworkWeights: { consequentialism: 1, deontology: 1 } },

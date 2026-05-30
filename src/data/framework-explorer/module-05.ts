@@ -169,8 +169,8 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Platforms and Speech',
     difficultyLevel: 4,
     options: [
-      { id: 'a', text: 'Delist it; people deserve the capacity to move past an old, minor mistake and rebuild their lives.', frameworkWeights: { capabilities-approach: 2, 'ethics-of-care': 1 } },
-      { id: 'b', text: 'Delist it; mercy and the chance at redemption are part of treating a person well.', frameworkWeights: { 'virtue-ethics': 1, buddhist-ethics: 1 } },
+      { id: 'a', text: 'Delist it; people deserve the capacity to move past an old, minor mistake and rebuild their lives.', frameworkWeights: { 'capabilities-approach': 2, 'ethics-of-care': 1 } },
+      { id: 'b', text: 'Delist it; mercy and the chance at redemption are part of treating a person well.', frameworkWeights: { 'virtue-ethics': 1, 'buddhist-ethics': 1 } },
       { id: 'c', text: 'Keep it; accurate public records should not be quietly erased to suit individuals.', frameworkWeights: { 'rights-based-ethics': 1, deontology: 1 } },
       { id: 'd', text: 'Apply a clear, fair standard (severity, age, public role) consistently across all such requests.', frameworkWeights: { 'justice-ethics': 2, 'social-contract-theory': 1 } },
     ],
@@ -194,7 +194,7 @@ const seeds: QuestionSeed[] = [
     difficultyLevel: 2,
     options: [
       { id: 'a', text: 'Center the user\'s immediate relief; their wellbeing is not theirs to sacrifice for the system.', frameworkWeights: { autonomy: 1, 'ethics-of-care': 2 } },
-      { id: 'b', text: 'Encourage reporting; collective protection depends on people surfacing abuse.', frameworkWeights: { utilitarianism: 1, ubuntu-ethics: 1, 'social-contract-theory': 1 } },
+      { id: 'b', text: 'Encourage reporting; collective protection depends on people surfacing abuse.', frameworkWeights: { utilitarianism: 1, 'ubuntu-ethics': 1, 'social-contract-theory': 1 } },
       { id: 'c', text: 'Offer both seamlessly so the user can protect themselves and the community at once.', frameworkWeights: { 'pragmatist-ethics': 2 } },
       { id: 'd', text: 'Let the user decide what role they want to play, never pressuring them to relive abuse by reporting.', frameworkWeights: { autonomy: 2 } },
     ],
@@ -231,7 +231,7 @@ const seeds: QuestionSeed[] = [
     options: [
       { id: 'a', text: 'Invest in their wellbeing; the people absorbing this harm on everyone\'s behalf deserve real care.', frameworkWeights: { 'ethics-of-care': 2, 'justice-ethics': 1 } },
       { id: 'b', text: 'Invest; exploiting disposable labor for a traumatic job is not a defensible way to operate.', frameworkWeights: { 'rights-based-ethics': 1, 'virtue-ethics': 1 } },
-      { id: 'c', text: 'Invest and reduce exposure with better tooling; their flourishing is part of the product\'s real cost.', frameworkWeights: { capabilities-approach: 2 } },
+      { id: 'c', text: 'Invest and reduce exposure with better tooling; their flourishing is part of the product\'s real cost.', frameworkWeights: { 'capabilities-approach': 2 } },
       { id: 'd', text: 'Treat their protection as a duty owed for the harm the role imposes, not an optional perk.', frameworkWeights: { deontology: 2 } },
     ],
   },

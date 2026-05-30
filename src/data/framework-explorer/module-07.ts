@@ -25,7 +25,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Education and Creativity',
     difficultyLevel: 3,
     options: [
-      { id: 'a', text: 'Design for productive struggle; what students become able to do matters more than their satisfaction.', frameworkWeights: { capabilities-approach: 2, 'virtue-ethics': 1 } },
+      { id: 'a', text: 'Design for productive struggle; what students become able to do matters more than their satisfaction.', frameworkWeights: { 'capabilities-approach': 2, 'virtue-ethics': 1 } },
       { id: 'b', text: 'Scaffold hints toward the answer rather than giving or withholding it outright.', frameworkWeights: { 'pragmatist-ethics': 2, 'ethics-of-care': 1 } },
       { id: 'c', text: 'Let learners choose their mode, with honest framing of the learning tradeoff.', frameworkWeights: { autonomy: 2 } },
       { id: 'd', text: 'Optimize for measured learning gains even if ratings dip; the tool exists to teach.', frameworkWeights: { consequentialism: 2 } },
@@ -49,8 +49,8 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Education and Creativity',
     difficultyLevel: 3,
     options: [
-      { id: 'a', text: 'Allow it as a tool while keeping assignments that build the underlying craft and judgment.', frameworkWeights: { 'pragmatist-ethics': 2, capabilities-approach: 1 } },
-      { id: 'b', text: 'Allow it; expanding who can express themselves creatively is a genuine good.', frameworkWeights: { capabilities-approach: 1, 'justice-ethics': 1 } },
+      { id: 'a', text: 'Allow it as a tool while keeping assignments that build the underlying craft and judgment.', frameworkWeights: { 'pragmatist-ethics': 2, 'capabilities-approach': 1 } },
+      { id: 'b', text: 'Allow it; expanding who can express themselves creatively is a genuine good.', frameworkWeights: { 'capabilities-approach': 1, 'justice-ethics': 1 } },
       { id: 'c', text: 'Limit it early; the struggle of making something yourself is part of what education is for.', frameworkWeights: { 'virtue-ethics': 2 } },
       { id: 'd', text: 'Let students and teachers decide together what role it plays in their learning.', frameworkWeights: { 'discourse-ethics': 2, autonomy: 1 } },
     ],
@@ -62,7 +62,7 @@ const seeds: QuestionSeed[] = [
     difficultyLevel: 3,
     options: [
       { id: 'a', text: 'Use it for routine feedback but never as the final judge of a student\'s creative work.', frameworkWeights: { 'pragmatist-ethics': 2, 'ethics-of-care': 1 } },
-      { id: 'b', text: 'Avoid it for grading; reducing a student\'s thinking to what a rubric-bot can see fails them.', frameworkWeights: { capabilities-approach: 2, 'virtue-ethics': 1 } },
+      { id: 'b', text: 'Avoid it for grading; reducing a student\'s thinking to what a rubric-bot can see fails them.', frameworkWeights: { 'capabilities-approach': 2, 'virtue-ethics': 1 } },
       { id: 'c', text: 'Deploy it; consistent, instant feedback at scale helps far more students than the rare genius it misses.', frameworkWeights: { utilitarianism: 2 } },
       { id: 'd', text: 'Deploy only with a clear path for students to appeal to a human reader.', frameworkWeights: { 'justice-ethics': 1, autonomy: 1 } },
     ],
@@ -76,7 +76,7 @@ const seeds: QuestionSeed[] = [
       { id: 'a', text: 'No — appropriating a living creator\'s distinctive voice over their objection wrongs them.', frameworkWeights: { 'rights-based-ethics': 2, 'virtue-ethics': 1 } },
       { id: 'b', text: 'No — a fair system is one the author could accept; selling their voice without consent fails that test.', frameworkWeights: { contractualism: 2, 'justice-ethics': 1 } },
       { id: 'c', text: 'Only with the author\'s consent and a share of the revenue.', frameworkWeights: { 'justice-ethics': 1, autonomy: 1 } },
-      { id: 'd', text: 'Yes — style is not ownable, and imitation has always been part of how culture works.', frameworkWeights: { consequentialism: 1, pragmatist-ethics: 1 } },
+      { id: 'd', text: 'Yes — style is not ownable, and imitation has always been part of how culture works.', frameworkWeights: { consequentialism: 1, 'pragmatist-ethics': 1 } },
     ],
   },
   {
@@ -98,7 +98,7 @@ const seeds: QuestionSeed[] = [
     difficultyLevel: 4,
     options: [
       { id: 'a', text: 'Only with strict limits on retention and who can see it; a child\'s every struggle should not become a file.', frameworkWeights: { 'rights-based-ethics': 2, 'justice-ethics': 1 } },
-      { id: 'b', text: 'Build it; deep personalization could genuinely transform learning for many children.', frameworkWeights: { capabilities-approach: 2, utilitarianism: 1 } },
+      { id: 'b', text: 'Build it; deep personalization could genuinely transform learning for many children.', frameworkWeights: { 'capabilities-approach': 2, utilitarianism: 1 } },
       { id: 'c', text: 'Give students and families control over the memory — what is kept, seen, and forgotten.', frameworkWeights: { autonomy: 2, 'discourse-ethics': 1 } },
       { id: 'd', text: 'Be cautious; a permanent record of a child\'s weaknesses can shape their path in ways we cannot foresee.', frameworkWeights: { 'ethics-of-care': 1, stoicism: 1 } },
     ],
@@ -111,7 +111,7 @@ const seeds: QuestionSeed[] = [
     options: [
       { id: 'a', text: 'No — scholarship is about understanding, and gaming volume corrupts what research is for.', frameworkWeights: { 'virtue-ethics': 2 } },
       { id: 'b', text: 'Acceptable only with full disclosure of the method so the community can judge the work fairly.', frameworkWeights: { 'discourse-ethics': 2, deontology: 1 } },
-      { id: 'c', text: 'Acceptable if the resulting work is genuinely sound and adds knowledge, however it was drafted.', frameworkWeights: { consequentialism: 2, pragmatist-ethics: 1 } },
+      { id: 'c', text: 'Acceptable if the resulting work is genuinely sound and adds knowledge, however it was drafted.', frameworkWeights: { consequentialism: 2, 'pragmatist-ethics': 1 } },
       { id: 'd', text: 'No — flooding the literature degrades a shared resource everyone relies on.', frameworkWeights: { 'justice-ethics': 1, 'social-contract-theory': 1 } },
     ],
   },
@@ -121,7 +121,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Education and Creativity',
     difficultyLevel: 2,
     options: [
-      { id: 'a', text: 'Subsidized access; learning tools should reach the students who need them most, not just those who can pay.', frameworkWeights: { 'justice-ethics': 2, capabilities-approach: 1 } },
+      { id: 'a', text: 'Subsidized access; learning tools should reach the students who need them most, not just those who can pay.', frameworkWeights: { 'justice-ethics': 2, 'capabilities-approach': 1 } },
       { id: 'b', text: 'Subsidized; a child\'s opportunity should not hinge on their district\'s wealth.', frameworkWeights: { cosmopolitanism: 1, 'justice-ethics': 1 } },
       { id: 'c', text: 'Subsidized via a sustainable cross-subsidy model that keeps the company viable.', frameworkWeights: { 'pragmatist-ethics': 2 } },
       { id: 'd', text: 'Uniform pricing; simplicity and viability let you serve the most schools reliably over time.', frameworkWeights: { consequentialism: 2 } },
@@ -133,7 +133,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Education and Creativity',
     difficultyLevel: 3,
     options: [
-      { id: 'a', text: 'Permit assistance that restores fair access to learning, distinguishing accommodation from shortcut.', frameworkWeights: { 'justice-ethics': 2, capabilities-approach: 1 } },
+      { id: 'a', text: 'Permit assistance that restores fair access to learning, distinguishing accommodation from shortcut.', frameworkWeights: { 'justice-ethics': 2, 'capabilities-approach': 1 } },
       { id: 'b', text: 'Focus on each student\'s genuine needs rather than a blanket rule that fits no one well.', frameworkWeights: { 'ethics-of-care': 2 } },
       { id: 'c', text: 'Define clear, consistent norms for tool use the whole class understands and agrees to.', frameworkWeights: { 'social-contract-theory': 1, 'discourse-ethics': 1 } },
       { id: 'd', text: 'Redesign assessment so the tool helps everyone learn rather than gatekeeping who may use it.', frameworkWeights: { 'pragmatist-ethics': 2 } },
@@ -146,7 +146,7 @@ const seeds: QuestionSeed[] = [
     difficultyLevel: 3,
     options: [
       { id: 'a', text: 'Offer summaries as a study aid but design coursework that still requires real engagement with texts.', frameworkWeights: { 'pragmatist-ethics': 2 } },
-      { id: 'b', text: 'Be cautious; the slow work of reading shapes minds in ways a summary cannot replace.', frameworkWeights: { 'virtue-ethics': 2, capabilities-approach: 1 } },
+      { id: 'b', text: 'Be cautious; the slow work of reading shapes minds in ways a summary cannot replace.', frameworkWeights: { 'virtue-ethics': 2, 'capabilities-approach': 1 } },
       { id: 'c', text: 'Offer them; what matters is whether students learn, and summaries can support that.', frameworkWeights: { consequentialism: 2 } },
       { id: 'd', text: 'Let learners decide how to engage, with honesty about what deep reading offers.', frameworkWeights: { autonomy: 2 } },
     ],
@@ -157,7 +157,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Education and Creativity',
     difficultyLevel: 2,
     options: [
-      { id: 'a', text: 'Use real, attainable student work as models; AI "perfection" sets a discouraging false bar.', frameworkWeights: { 'ethics-of-care': 2, capabilities-approach: 1 } },
+      { id: 'a', text: 'Use real, attainable student work as models; AI "perfection" sets a discouraging false bar.', frameworkWeights: { 'ethics-of-care': 2, 'capabilities-approach': 1 } },
       { id: 'b', text: 'Post AI exemplars clearly labeled, so students learn from them without mistaking them for peer work.', frameworkWeights: { 'pragmatist-ethics': 2, autonomy: 1 } },
       { id: 'c', text: 'Avoid it; modeling growth honestly matters more than showcasing machine-made polish.', frameworkWeights: { 'virtue-ethics': 2 } },
       { id: 'd', text: 'Post them; clear models of quality help most students improve, on balance.', frameworkWeights: { consequentialism: 2 } },
@@ -169,7 +169,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Education and Creativity',
     difficultyLevel: 3,
     options: [
-      { id: 'a', text: 'Lenient and educational; healthy collaboration is so valuable that over-policing it harms learning.', frameworkWeights: { 'ethics-of-care': 1, capabilities-approach: 1 } },
+      { id: 'a', text: 'Lenient and educational; healthy collaboration is so valuable that over-policing it harms learning.', frameworkWeights: { 'ethics-of-care': 1, 'capabilities-approach': 1 } },
       { id: 'b', text: 'Clear shared norms about what counts as collaboration vs. cheating, set with students.', frameworkWeights: { 'discourse-ethics': 2, 'social-contract-theory': 1 } },
       { id: 'c', text: 'Redesign assignments so collaboration is either fully allowed or genuinely unnecessary.', frameworkWeights: { 'pragmatist-ethics': 2 } },
       { id: 'd', text: 'Consistent enforcement of the stated rule; fairness to honest students requires it.', frameworkWeights: { 'justice-ethics': 1, deontology: 1 } },
@@ -193,7 +193,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Education and Creativity',
     difficultyLevel: 3,
     options: [
-      { id: 'a', text: 'Genuine skill; graduating people who cannot do the work fails them and their future employers.', frameworkWeights: { capabilities-approach: 2, 'virtue-ethics': 1 } },
+      { id: 'a', text: 'Genuine skill; graduating people who cannot do the work fails them and their future employers.', frameworkWeights: { 'capabilities-approach': 2, 'virtue-ethics': 1 } },
       { id: 'b', text: 'Honesty about what graduates can actually do; inflated stats are a form of deception.', frameworkWeights: { deontology: 1, 'rights-based-ethics': 1 } },
       { id: 'c', text: 'Teach AI-augmented work realistically — the skill is now working well WITH these tools.', frameworkWeights: { 'pragmatist-ethics': 2 } },
       { id: 'd', text: 'Weigh placement outcomes against skill gaps and aim for what serves graduates long-term.', frameworkWeights: { consequentialism: 2 } },
@@ -206,7 +206,7 @@ const seeds: QuestionSeed[] = [
     difficultyLevel: 3,
     options: [
       { id: 'a', text: 'Open it; shared knowledge advances the whole field and others\' learning more than your edge is worth.', frameworkWeights: { cosmopolitanism: 1, utilitarianism: 1 } },
-      { id: 'b', text: 'Open it; contributing to the commons is part of what it means to be a good member of a field.', frameworkWeights: { 'virtue-ethics': 1, ubuntu-ethics: 1 } },
+      { id: 'b', text: 'Open it; contributing to the commons is part of what it means to be a good member of a field.', frameworkWeights: { 'virtue-ethics': 1, 'ubuntu-ethics': 1 } },
       { id: 'c', text: 'Embargo briefly to publish first, then open it — balancing fair credit with shared benefit.', frameworkWeights: { 'pragmatist-ethics': 2, 'justice-ethics': 1 } },
       { id: 'd', text: 'Keep your edge; the resources to build it earn you the right to its advantage.', frameworkWeights: { 'rights-based-ethics': 1, consequentialism: 1 } },
     ],
@@ -217,7 +217,7 @@ const seeds: QuestionSeed[] = [
     technologyTopic: 'Education and Creativity',
     difficultyLevel: 3,
     options: [
-      { id: 'a', text: 'Keep human-curated breadth; a curriculum that quietly narrows what students meet impoverishes them.', frameworkWeights: { capabilities-approach: 2 } },
+      { id: 'a', text: 'Keep human-curated breadth; a curriculum that quietly narrows what students meet impoverishes them.', frameworkWeights: { 'capabilities-approach': 2 } },
       { id: 'b', text: 'Blend them; use AI for volume and humans to guard breadth and surprise.', frameworkWeights: { 'pragmatist-ethics': 3 } },
       { id: 'c', text: 'Rely on it; personalized practice at scale helps most students more than curated breadth they skip.', frameworkWeights: { consequentialism: 2 } },
       { id: 'd', text: 'Let teachers and students shape the balance for their own goals.', frameworkWeights: { autonomy: 1, 'discourse-ethics': 1 } },
