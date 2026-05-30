@@ -6,6 +6,7 @@ import {
   normalizeAffectsProfile,
   recordEthicalJudgmentEvent,
 } from './recording';
+import { getActiveEthicalFrameworks } from '@/lib/ethical-framework-registry';
 
 describe('ethical judgment recording', () => {
   function collectUndefinedPaths(value: unknown, path = 'event'): string[] {
@@ -32,7 +33,7 @@ describe('ethical judgment recording', () => {
       confidence: 0.72,
     });
 
-    expect(analysis.frameworkScores).toHaveLength(18);
+    expect(analysis.frameworkScores).toHaveLength(getActiveEthicalFrameworks().length);
     expect(analysis.primaryFrameworks).toEqual(['utilitarianism']);
     expect(
       analysis.frameworkScores.find((score) => score.frameworkId === 'social-contract-theory')?.score,

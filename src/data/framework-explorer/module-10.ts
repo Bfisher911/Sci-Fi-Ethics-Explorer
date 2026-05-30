@@ -235,6 +235,18 @@ const seeds: QuestionSeed[] = [
       { id: 'd', text: 'Release it; durable goods are what people are actually owed, not engineered obsolescence.', frameworkWeights: { 'rights-based-ethics': 1, deontology: 1 } },
     ],
   },
+  {
+    questionText:
+      'Your company plans a large AI data center in a region with cheap power but chronic water scarcity; its cooling will draw heavily on water that nearby communities already ration. The jobs and tax revenue are real. Do you build there?',
+    technologyTopic: 'Environment and Global',
+    difficultyLevel: 4,
+    options: [
+      { id: 'a', text: 'No — imposing a thirstier future on people already rationing water is an injustice no tax revenue offsets.', frameworkWeights: { 'justice-ethics': 2, 'environmental-ethics': 1 } },
+      { id: 'b', text: 'Build only with closed-loop cooling and a binding cap that never lets the center compete with community water.', frameworkWeights: { 'pragmatist-ethics': 2, 'environmental-ethics': 1 } },
+      { id: 'c', text: 'Let the affected communities decide on real terms, with genuine power to say no.', frameworkWeights: { 'discourse-ethics': 2, autonomy: 1 } },
+      { id: 'd', text: 'Build it; the broad economic and computational benefits outweigh a manageable, localized cost.', frameworkWeights: { consequentialism: 2, utilitarianism: 1 } },
+    ],
+  },
 ];
 
 export const module10 = buildModule(

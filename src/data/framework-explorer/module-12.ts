@@ -235,6 +235,18 @@ const seeds: QuestionSeed[] = [
       { id: 'd', text: 'Trust the test of justifiability — whichever course you could defend to everyone it affects.', frameworkWeights: { contractualism: 2, 'discourse-ethics': 1 } },
     ],
   },
+  {
+    questionText:
+      'You hold the only copy of a method that could cheaply purify water for millions — and, with small modifications, could also be used to synthesize a dangerous pathogen. Publishing saves lives now but hands the world a recipe for catastrophe; withholding it lets preventable deaths continue. What do you do?',
+    technologyTopic: 'Integrative',
+    difficultyLevel: 5,
+    options: [
+      { id: 'a', text: 'Publish; the certain, vast good to the world\'s most vulnerable outweighs a speculative future misuse.', frameworkWeights: { consequentialism: 2, cosmopolitanism: 1 } },
+      { id: 'b', text: 'Withhold the dual-use portion; releasing a blueprint for catastrophe is a line you must not cross, whatever the upside.', frameworkWeights: { deontology: 2, 'rights-based-ethics': 1 } },
+      { id: 'c', text: 'Release it only through a governed body that can extend the benefit while guarding the danger.', frameworkWeights: { 'discourse-ethics': 2, 'justice-ethics': 1 } },
+      { id: 'd', text: 'Refuse to decide alone; a choice this irreversible and global is not one person\'s to make.', frameworkWeights: { contractualism: 2, 'virtue-ethics': 1 } },
+    ],
+  },
 ];
 
 export const module12 = buildModule(

@@ -6,12 +6,13 @@ import {
   getCanonicalEthicalFrameworks,
   normalizeFrameworkId,
 } from './ethical-framework-registry';
+import { ethicalTheories } from '@/data/ethical-theories';
 
 describe('ethical framework registry', () => {
   it('loads every existing site framework as an active scoring framework', () => {
     const frameworks = getCanonicalEthicalFrameworks();
 
-    expect(frameworks).toHaveLength(18);
+    expect(frameworks).toHaveLength(ethicalTheories.length);
     expect(frameworks.map((framework) => framework.id)).toEqual(
       expect.arrayContaining([
         'utilitarianism',

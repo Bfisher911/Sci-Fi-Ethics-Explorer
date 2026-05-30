@@ -235,6 +235,18 @@ const seeds: QuestionSeed[] = [
       { id: 'd', text: 'Only if both parties know agents may negotiate strategically, making it a fair, mutual game.', frameworkWeights: { contractualism: 2 } },
     ],
   },
+  {
+    questionText:
+      'An AI that flags exam answers as likely cheating is right most of the time, but its accusations are sometimes wrong — and a single flag can mark a student\'s record before any human reviews it. Do you let it issue accusations?',
+    technologyTopic: 'AI and Automation',
+    difficultyLevel: 3,
+    options: [
+      { id: 'a', text: 'No — an automated accusation that brands someone before they can respond inverts the benefit of the doubt people are owed.', frameworkWeights: { 'rights-based-ethics': 2, 'justice-ethics': 1 } },
+      { id: 'b', text: 'Use it only as a private signal that prompts a human to look, never as a standalone verdict.', frameworkWeights: { 'pragmatist-ethics': 2, 'ethics-of-care': 1 } },
+      { id: 'c', text: 'Deploy it; catching most cheating protects the honest majority who play fair.', frameworkWeights: { consequentialism: 2, 'justice-ethics': 1 } },
+      { id: 'd', text: 'Refuse to field a system that accuses people in a way you would not accept being accused by yourself.', frameworkWeights: { contractualism: 2, 'virtue-ethics': 1 } },
+    ],
+  },
 ];
 
 export const module03 = buildModule(

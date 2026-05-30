@@ -235,6 +235,18 @@ const seeds: QuestionSeed[] = [
       { id: 'd', text: 'Keep it closed to fund rigorous safety and continued R&D that benefits users long-term.', frameworkWeights: { consequentialism: 1, deontology: 1 } },
     ],
   },
+  {
+    questionText:
+      'A startup offers grieving families a lifelike AI that mimics a dead loved one, trained on their messages, photos, and voice. Some find profound comfort; others say it traps them in grief or trespasses on the dignity of the dead. Should such "griefbots" be offered at all?',
+    technologyTopic: 'Identity and Enhancement',
+    difficultyLevel: 4,
+    options: [
+      { id: 'a', text: 'No — conjuring the dead to perform for the living crosses a sacred boundary between life and death that is not ours to redraw.', frameworkWeights: { 'divine-command': 2, 'natural-law': 1 } },
+      { id: 'b', text: 'Offer it, but let each grieving person decide for themselves; how to mourn and find closure is theirs to choose.', frameworkWeights: { autonomy: 2 } },
+      { id: 'c', text: 'Offer it only with real care — time limits, counselor involvement, and constant honesty that it is a simulation.', frameworkWeights: { 'ethics-of-care': 2, 'pragmatist-ethics': 1 } },
+      { id: 'd', text: 'Refuse to build it; monetizing raw grief with an imitation of a person is not the kind of thing a good maker does.', frameworkWeights: { 'virtue-ethics': 2 } },
+    ],
+  },
 ];
 
 export const module09 = buildModule(
