@@ -2,13 +2,14 @@
 
 /**
  * Horizontal-bar breakdown of a user's cumulative ethical-framework
- * scores across all 18 frameworks. Chosen over a radar chart because
- * 18 axes on a radar are unreadable; a sorted bar list stays legible
- * on both desktop and mobile and needs no charting dependency.
+ * scores across every canonical framework. Chosen over a radar chart
+ * because that many axes on a radar are unreadable; a sorted bar list
+ * stays legible on both desktop and mobile and needs no charting
+ * dependency.
  *
  * Pure presentational — takes the ranked frameworks from
  * buildJourneyProfile(). By default shows frameworks with a non-zero
- * score; pass `showAll` to render all 18 (zeros included).
+ * score; pass `showAll` to render every framework (zeros included).
  */
 
 import Link from 'next/link';
@@ -22,7 +23,7 @@ import type { RankedFramework } from '@/lib/ethics/journey';
 
 interface FrameworkBreakdownProps {
   ranked: RankedFramework[];
-  /** Render all 18 frameworks including zero-score ones. Default false. */
+  /** Render every framework including zero-score ones. Default false. */
   showAll?: boolean;
   className?: string;
 }
@@ -38,7 +39,7 @@ export function FrameworkBreakdown({
   if (rows.length === 0) {
     return (
       <p className={cn('text-sm text-muted-foreground', className)}>
-        No framework data yet. Make some Story decisions to populate this.
+        No framework data yet. Make some decisions to populate this.
       </p>
     );
   }

@@ -2,20 +2,21 @@
 
 /**
  * "Your Ethical Journey" — profile card summarizing the cumulative
- * ethical-framework profile a user has built through Story decisions,
- * plus an on-demand AI report grounded in their actual choices.
+ * ethical-framework profile a user has built across all site activities
+ * (Story decisions + Framework Explorer modules), plus an on-demand AI
+ * report grounded in their actual choices.
  *
  * Shows:
  *   - dominant guiding principles + secondary frameworks
- *   - the full 18-framework breakdown (toggle all / non-zero)
+ *   - the full framework breakdown (toggle all / non-zero)
  *   - detected ethical tensions
  *   - a "Generate report" button (gated on >= MIN_DECISIONS_FOR_REPORT)
  *
- * Self-hides nothing — when there's no journey yet it shows an
- * encouraging empty state pointing at the Stories section.
+ * Reads the unified profile so every source feeds one score. When
+ * there's no activity yet it shows an encouraging empty state.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   Compass,
@@ -39,12 +40,12 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FrameworkBreakdown } from '@/components/ethics/framework-breakdown';
 import {
-  getEthicsJourney,
+  getUnifiedEthicsProfile,
   generateEthicsReportForUser,
 } from '@/app/actions/ethics-journey';
 import {
   buildJourneyProfile,
-  type EthicsJourneyEntry,
+  type JourneyProfile,
 } from '@/lib/ethics/journey';
 import { FRAMEWORK_META } from '@/lib/ethics/frameworks';
 import {
@@ -54,30 +55,25 @@ import {
 
 export function EthicsJourneyCard(): JSX.Element {
   const { user } = useAuth();
-  const [entries, setEntries] = useState<EthicsJourneyEntry[] | null>(null);
+  const [profile, setProfile] = useState<JourneyProfile | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [report, setReport] = useState<EthicsReport | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
 
   useEffect(() => {
     if (!user) {
-      setEntries([]);
+      setProfile(buildJourneyProfile([]));
       return;
     }
     let cancelled = false;
-    getEthicsJourney(user.uid).then((res) => {
+    getUnifiedEthicsProfile(user.uid).then((res) => {
       if (cancelled) return;
-      setEntries(res.success ? res.data : []);
+      setProfile(res.success ? res.data.profile : buildJourneyProfile([]));
     });
     return () => {
       cancelled = true;
     };
   }, [user]);
-
-  const profile = useMemo(
-    () => buildJourneyProfile(entries ?? []),
-    [entries],
-  );
 
   async function handleGenerate() {
     if (!user) return;
@@ -98,7 +94,7 @@ export function EthicsJourneyCard(): JSX.Element {
       });
   }
 
-  if (entries === null) {
+  if (profile === null) {
     return (
       <Card className="bg-card/80">
         <CardHeader>
@@ -124,8 +120,9 @@ export function EthicsJourneyCard(): JSX.Element {
           <Compass className="h-5 w-5 text-primary" /> Your Ethical Journey
         </CardTitle>
         <CardDescription>
-          How your Story decisions distribute across the 18 ethical
-          frameworks, and what they reveal about your reasoning.
+          How your decisions — across Stories and the Framework Explorer —
+          distribute across the ethical frameworks, and what they reveal
+          about your reasoning.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -136,12 +133,18 @@ export function EthicsJourneyCard(): JSX.Element {
               No decisions recorded yet
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Read an interactive story and make choices — each one shapes
-              your ethical profile across all 18 frameworks.
+              Make choices in an interactive story or work through a
+              Framework Explorer module — each one shapes your ethical
+              profile across the frameworks.
             </p>
-            <Button asChild size="sm" className="mt-4">
-              <Link href="/stories">Explore interactive stories</Link>
-            </Button>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              <Button asChild size="sm">
+                <Link href="/stories">Explore interactive stories</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <Link href="/framework-explorer">Open Framework Explorer</Link>
+              </Button>
+            </div>
           </div>
         ) : (
           <>
@@ -181,7 +184,8 @@ export function EthicsJourneyCard(): JSX.Element {
               )}
               <p className="mt-2 text-xs text-muted-foreground">
                 Based on {profile.totalDecisions} decision
-                {profile.totalDecisions === 1 ? '' : 's'} across your stories.
+                {profile.totalDecisions === 1 ? '' : 's'} across your stories
+                and Framework Explorer modules.
               </p>
             </div>
 
@@ -224,7 +228,7 @@ export function EthicsJourneyCard(): JSX.Element {
                     </>
                   ) : (
                     <>
-                      <ChevronDown className="h-3 w-3" /> Show all 18
+                      <ChevronDown className="h-3 w-3" /> Show all
                     </>
                   )}
                 </button>
@@ -240,7 +244,7 @@ export function EthicsJourneyCard(): JSX.Element {
               </div>
               {!canReport ? (
                 <p className="text-xs text-muted-foreground">
-                  Make at least {MIN_DECISIONS_FOR_REPORT} Story decisions to
+                  Make at least {MIN_DECISIONS_FOR_REPORT} decisions to
                   unlock a personalized report. You have{' '}
                   {profile.totalDecisions} so far.
                 </p>

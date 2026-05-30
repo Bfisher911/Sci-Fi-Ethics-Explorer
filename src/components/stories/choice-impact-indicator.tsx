@@ -2,11 +2,12 @@
 
 /**
  * "Your Path" — floating card in the Story section that tracks which
- * of the 18 ethical frameworks the reader's choices are aligning with.
+ * of the canonical ethical frameworks the reader's choices are aligning
+ * with.
  *
  * Replaces the old 5-framework version. Now driven by the full
  * EthicsJourneyEntry list (weighted, multi-framework) rather than raw
- * choice text, and sourced from the canonical 18-framework registry.
+ * choice text, and sourced from the canonical framework registry.
  *
  * Stays uncluttered by showing the user's STRONGEST guiding principles
  * first (top 4 by cumulative weight) with a "Show all" toggle that
