@@ -10,3 +10,4 @@ import '@/ai/flows/devils-advocate.ts';
 import '@/ai/flows/calculate-ethical-impact.ts';
 import '@/ai/flows/find-real-world-parallels.ts';
 import '@/ai/flows/generate-quiz.ts';
+import '@/ai/flows/generate-ethics-report.ts';

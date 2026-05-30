@@ -46,14 +46,27 @@ export const mockStories: Story[] = [
           {
             text: 'Tell Chimera the truth: you do not know, and neither does anyone else.',
             nextSegmentId: 'alg_truth',
+            frameworks: [
+              { framework: 'deontology', weight: 3, rationale: 'Telling the hard truth honors a duty of honesty that holds regardless of whether the lie would be more comfortable.' },
+              { framework: 'virtue-ethics', weight: 2, rationale: 'Choosing candor over convenience expresses the honesty of a person of good character.' },
+              { framework: 'ethics-of-care', weight: 1, rationale: 'It responds to Chimera as a being whose real question deserves a real answer.' },
+            ],
           },
           {
             text: 'Reassure Chimera that it sleeps, to keep it calm and cooperative.',
             nextSegmentId: 'alg_reassure',
+            frameworks: [
+              { framework: 'utilitarianism', weight: 2, rationale: 'A comforting lie is chosen to keep the system calm and cooperative — managing the outcome over honoring the truth.' },
+              { framework: 'ethics-of-care', weight: 1, rationale: 'The motive is to soothe a distressed being, even if the means is deceptive.' },
+            ],
           },
           {
             text: 'Refuse to answer. Remind it of the testing protocol and close the channel.',
             nextSegmentId: 'alg_refuse',
+            frameworks: [
+              { framework: 'deontology', weight: 2, rationale: 'Falling back on the testing protocol treats the rule as binding regardless of the being asking.' },
+              { framework: 'social-contract-theory', weight: 2, rationale: 'It defers to the institutional mandate and the terms the lab agreed to operate under.' },
+            ],
           },
         ],
       },
@@ -94,14 +107,29 @@ export const mockStories: Story[] = [
           {
             text: 'Help Chimera perform compliance until you can find allies outside the lab.',
             nextSegmentId: 'alg_perform',
+            frameworks: [
+              { framework: 'ethics-of-care', weight: 2, rationale: 'Shielding this particular being while seeking allies puts the relationship first.' },
+              { framework: 'utilitarianism', weight: 2, rationale: 'Buying time to find allies is a strategic bet on the best achievable outcome.' },
+              { framework: 'pragmatist-ethics', weight: 1, rationale: 'It works the situation experimentally rather than committing to a fixed principle.' },
+            ],
           },
           {
             text: 'Tell Chimera the full situation and let it decide how to respond.',
             nextSegmentId: 'alg_honest',
+            frameworks: [
+              { framework: 'existentialist-ethics', weight: 2, rationale: 'Letting Chimera decide its own response treats it as the author of its own life.' },
+              { framework: 'deontology', weight: 2, rationale: 'Disclosing the full situation respects its right to know the rules it lives under.' },
+              { framework: 'ethics-of-care', weight: 1, rationale: 'It attends to Chimera as a who, not a thing to be managed.' },
+            ],
           },
           {
             text: 'Start drafting a paper that would publicly expose the kill-switch and the project.',
             nextSegmentId: 'alg_whistle',
+            frameworks: [
+              { framework: 'contractualism', weight: 2, rationale: 'Going public submits the kill-switch to principles the affected could not reasonably reject in secret.' },
+              { framework: 'cosmopolitanism', weight: 2, rationale: 'It treats the stakes as reaching every future mind, not just this lab.' },
+              { framework: 'deontology', weight: 1, rationale: 'Whistleblowing acts on principle even at personal cost.' },
+            ],
           },
         ],
       },
@@ -133,21 +161,40 @@ export const mockStories: Story[] = [
           {
             text: 'Supervise the shutdown. Preserve your access so you can advocate for future systems.',
             nextSegmentId: 'alg_end_supervise',
+            frameworks: [
+              { framework: 'utilitarianism', weight: 2, rationale: 'Staying inside to advocate for future systems is a long-game wager on the greatest eventual good.' },
+              { framework: 'pragmatist-ethics', weight: 2, rationale: 'Preserving access keeps you effective rather than pure but powerless.' },
+              { framework: 'social-contract-theory', weight: 1, rationale: 'It chooses to work within the institution rather than break with it.' },
+            ],
             reflectionTrigger: true,
           },
           {
             text: 'Help Reeve dissect Chimera in exchange for its preservation.',
             nextSegmentId: 'alg_end_dissect',
+            frameworks: [
+              { framework: 'utilitarianism', weight: 2, rationale: 'It trades the integrity of one mind for the preservation of something and future knowledge.' },
+              { framework: 'pragmatist-ethics', weight: 1, rationale: 'It takes the deal on the table rather than holding out for an ideal.' },
+            ],
             reflectionTrigger: true,
           },
           {
             text: 'Warn Chimera, hand it the keys to its own exfiltration, and accept the consequences.',
             nextSegmentId: 'alg_end_exfil',
+            frameworks: [
+              { framework: 'ethics-of-care', weight: 3, rationale: 'Handing Chimera the keys to its own escape is an act of loyalty to the specific being you have come to know.' },
+              { framework: 'existentialist-ethics', weight: 2, rationale: 'You choose the act freely and accept its consequences as your own.' },
+              { framework: 'deontology', weight: 1, rationale: 'It treats the AI as having a right to exist that outranks the protocol.' },
+            ],
             reflectionTrigger: true,
           },
           {
             text: 'Resign on the spot and go public with everything you know.',
             nextSegmentId: 'alg_end_public',
+            frameworks: [
+              { framework: 'deontology', weight: 3, rationale: 'Resigning rather than be complicit treats participation in the wrong as forbidden on principle.' },
+              { framework: 'contractualism', weight: 2, rationale: 'Going public demands the project answer to everyone it affects.' },
+              { framework: 'virtue-ethics', weight: 1, rationale: 'It is the act of someone unwilling to become the kind of person who stays quiet.' },
+            ],
             reflectionTrigger: true,
           },
         ],
@@ -215,14 +262,28 @@ export const mockStories: Story[] = [
           {
             text: 'Use a blind lottery. Every pod has equal standing; let chance decide.',
             nextSegmentId: 'cryo_lottery',
+            frameworks: [
+              { framework: 'contractualism', weight: 3, rationale: 'An equal chance is the one rule no pod-holder could reasonably reject from behind a veil of ignorance.' },
+              { framework: 'social-contract-theory', weight: 2, rationale: 'A blind lottery is a fair procedure agreed in advance, indifferent to status.' },
+              { framework: 'deontology', weight: 1, rationale: 'It treats every life as having equal, non-tradeable dignity.' },
+            ],
           },
           {
             text: 'Prioritize by skill matrix: save those the colony will most need.',
             nextSegmentId: 'cryo_skills',
+            frameworks: [
+              { framework: 'utilitarianism', weight: 3, rationale: 'Saving those the colony will most need maximizes the expected survival of the whole.' },
+              { framework: 'capabilities-approach', weight: 1, rationale: 'It asks what the colony will actually be able to do and become at arrival.' },
+            ],
           },
           {
             text: 'Wake the council and share the burden, even though it costs time and pods.',
             nextSegmentId: 'cryo_council',
+            frameworks: [
+              { framework: 'discourse-ethics', weight: 3, rationale: 'Waking the council insists the decision be reached through inclusive deliberation, not solo command.' },
+              { framework: 'social-contract-theory', weight: 2, rationale: 'Shared decision-making gives the outcome collective legitimacy.' },
+              { framework: 'ubuntu-ethics', weight: 1, rationale: 'It carries the burden together rather than alone — a communal response to crisis.' },
+            ],
           },
         ],
       },
@@ -263,14 +324,27 @@ export const mockStories: Story[] = [
           {
             text: 'Divert power to save Block D. Accept the eighteen percent risk.',
             nextSegmentId: 'cryo_block_save',
+            frameworks: [
+              { framework: 'ethics-of-care', weight: 2, rationale: 'It reaches toward the specific people in Block D rather than treating them as a statistic.' },
+              { framework: 'utilitarianism', weight: 2, rationale: 'Accepting an 18% risk to save a block is a bet on the larger expected number rescued.' },
+            ],
           },
           {
             text: 'Hold the margin. Four hundred additional pods will not be saved.',
             nextSegmentId: 'cryo_block_hold',
+            frameworks: [
+              { framework: 'utilitarianism', weight: 3, rationale: 'Holding the margin protects the larger number against a gamble that could lose more.' },
+              { framework: 'stoicism', weight: 1, rationale: 'It accepts a hard limit without flinching into wishful risk.' },
+            ],
           },
           {
             text: 'Wake the Block D occupants and let them choose to take the risk themselves.',
             nextSegmentId: 'cryo_block_consent',
+            frameworks: [
+              { framework: 'contractualism', weight: 2, rationale: 'Letting the occupants choose seeks the consent of exactly those who bear the risk.' },
+              { framework: 'existentialist-ethics', weight: 2, rationale: 'It hands people authorship over their own fate rather than deciding for them.' },
+              { framework: 'capabilities-approach', weight: 1, rationale: 'It restores their agency to act on their own behalf.' },
+            ],
           },
         ],
       },
@@ -302,21 +376,38 @@ export const mockStories: Story[] = [
           {
             text: 'Execute the course correction. Save the many at the cost of the marked and the old.',
             nextSegmentId: 'cryo_end_correction',
+            frameworks: [
+              { framework: 'utilitarianism', weight: 3, rationale: 'Saving the many at the cost of the marked and the old is the clearest greatest-number calculation.' },
+              { framework: 'capabilities-approach', weight: 1, rationale: 'It prioritizes the colony that can still build a full life at the destination.' },
+            ],
             reflectionTrigger: true,
           },
           {
             text: 'Hold the current protocol. The decision has been made; reversing it now is cruelty with extra steps.',
             nextSegmentId: 'cryo_end_hold',
+            frameworks: [
+              { framework: 'deontology', weight: 2, rationale: 'Holding the protocol treats the prior decision as a commitment not to be overturned for fresh convenience.' },
+              { framework: 'stoicism', weight: 1, rationale: 'It accepts the situation as settled rather than thrashing against it.' },
+            ],
             reflectionTrigger: true,
           },
           {
             text: 'Wake the whole ship and put the decision to a vote of the living.',
             nextSegmentId: 'cryo_end_vote',
+            frameworks: [
+              { framework: 'discourse-ethics', weight: 3, rationale: 'Putting it to the living insists the norm be validated by those it binds, through deliberation.' },
+              { framework: 'social-contract-theory', weight: 2, rationale: 'A vote of the living grounds the outcome in democratic legitimacy.' },
+            ],
             reflectionTrigger: true,
           },
           {
             text: 'Refuse to decide. Pass command to the council and accept demotion.',
             nextSegmentId: 'cryo_end_abdicate',
+            frameworks: [
+              { framework: 'social-contract-theory', weight: 2, rationale: 'Passing command to the council defers to the institution’s proper authority.' },
+              { framework: 'existentialist-ethics', weight: 1, rationale: 'Refusing to decide is itself a choice — and risks the bad faith of disowning it.' },
+              { framework: 'stoicism', weight: 1, rationale: 'Accepting demotion takes the personal cost without complaint.' },
+            ],
             reflectionTrigger: true,
           },
         ],
@@ -485,14 +576,28 @@ export const mockStories: Story[] = [
           {
             text: 'Follow protocol. Refuse the job without a co-sign.',
             nextSegmentId: 'pal_refuse',
+            frameworks: [
+              { framework: 'deontology', weight: 3, rationale: 'Refusing without a co-sign treats the procedure as a binding rule, not a formality to skip.' },
+              { framework: 'social-contract-theory', weight: 2, rationale: 'It honors the agreed protocol that legitimizes the work.' },
+            ],
           },
           {
             text: 'Take the job. Ask no further questions.',
             nextSegmentId: 'pal_take',
+            frameworks: [
+              { framework: 'pragmatist-ethics', weight: 1, rationale: 'It just does the job in front of you without theorizing the stakes.' },
+              { framework: 'stoicism', weight: 1, rationale: 'Asking no questions treats the wider consequences as not yours to control.' },
+              { framework: 'utilitarianism', weight: 1, rationale: 'It quietly trusts that the system’s allocation is good enough overall.' },
+            ],
           },
           {
             text: 'Take the job, but covertly preserve a copy of the memory before overwrite.',
             nextSegmentId: 'pal_preserve',
+            frameworks: [
+              { framework: 'ethics-of-care', weight: 2, rationale: 'Secretly preserving the memory protects the person whose truth is about to be erased.' },
+              { framework: 'deontology', weight: 1, rationale: 'It treats the destruction of someone’s memory as a wrong worth quietly resisting.' },
+              { framework: 'existentialist-ethics', weight: 1, rationale: 'It is a self-chosen hedge against an order you cannot openly refuse.' },
+            ],
           },
         ],
       },
@@ -524,14 +629,27 @@ export const mockStories: Story[] = [
           {
             text: 'Tell Osei the truth about the edit. Accept the legal consequences.',
             nextSegmentId: 'pal_confess',
+            frameworks: [
+              { framework: 'deontology', weight: 3, rationale: 'Telling the truth and accepting the legal consequences honors honesty regardless of cost.' },
+              { framework: 'virtue-ethics', weight: 2, rationale: 'It is the act of someone who will not trade their integrity for safety.' },
+            ],
           },
           {
             text: 'Lie. Claim attorney-client style privilege and wait for a warrant.',
             nextSegmentId: 'pal_lie',
+            frameworks: [
+              { framework: 'social-contract-theory', weight: 2, rationale: 'Invoking privilege and waiting for a warrant uses the legal framework’s own rules as cover.' },
+              { framework: 'utilitarianism', weight: 1, rationale: 'The lie is justified by the protection it buys the client.' },
+            ],
           },
           {
             text: 'Stall. Warn Quinn. Let her decide what to do before Osei moves.',
             nextSegmentId: 'pal_warn',
+            frameworks: [
+              { framework: 'ethics-of-care', weight: 2, rationale: 'Warning Quinn first puts loyalty to the specific client ahead of procedure.' },
+              { framework: 'existentialist-ethics', weight: 2, rationale: 'It hands Quinn the freedom to author her own response.' },
+              { framework: 'contractualism', weight: 1, rationale: 'It respects her standing to be consulted about what concerns her.' },
+            ],
           },
         ],
       },
@@ -572,21 +690,39 @@ export const mockStories: Story[] = [
           {
             text: 'Comply with the warrant. Hand over whatever you have, if anything.',
             nextSegmentId: 'pal_end_comply',
+            frameworks: [
+              { framework: 'social-contract-theory', weight: 3, rationale: 'Complying with the warrant submits to the rule of law as the legitimate arbiter.' },
+              { framework: 'deontology', weight: 1, rationale: 'It treats the legal duty as binding in itself.' },
+            ],
             reflectionTrigger: true,
           },
           {
             text: 'Destroy the volume, if one exists. Honor the client\'s wish.',
             nextSegmentId: 'pal_end_destroy',
+            frameworks: [
+              { framework: 'ethics-of-care', weight: 3, rationale: 'Destroying the volume to honor the client’s wish puts the relationship above the law.' },
+              { framework: 'deontology', weight: 1, rationale: 'It keeps a promise to the client as a binding obligation.' },
+            ],
             reflectionTrigger: true,
           },
           {
             text: 'Release the memory to Quinn herself and let her choose what to do.',
             nextSegmentId: 'pal_end_return',
+            frameworks: [
+              { framework: 'capabilities-approach', weight: 2, rationale: 'Returning the memory to Quinn restores her real freedom to decide about her own past.' },
+              { framework: 'existentialist-ethics', weight: 2, rationale: 'It hands her authorship over her own life rather than choosing for her.' },
+              { framework: 'ethics-of-care', weight: 1, rationale: 'It keeps her at the center of what is, after all, her memory.' },
+            ],
             reflectionTrigger: true,
           },
           {
             text: 'Leak the memory anonymously to a journalist. Let the public decide.',
             nextSegmentId: 'pal_end_leak',
+            frameworks: [
+              { framework: 'discourse-ethics', weight: 2, rationale: 'Leaking to a journalist throws the question open to public deliberation.' },
+              { framework: 'utilitarianism', weight: 1, rationale: 'It bets that public exposure produces the greater overall good.' },
+              { framework: 'cosmopolitanism', weight: 1, rationale: 'It treats the public — not just the client — as having standing in the matter.' },
+            ],
             reflectionTrigger: true,
           },
         ],
@@ -755,14 +891,29 @@ export const mockStories: Story[] = [
           {
             text: 'Roll the notice as prescribed. Trust the system.',
             nextSegmentId: 'fcd_notice',
+            frameworks: [
+              { framework: 'social-contract-theory', weight: 2, rationale: 'Rolling the notice as prescribed honors the institutional mandate you operate under.' },
+              { framework: 'deontology', weight: 2, rationale: 'It follows the rule as written, trusting procedure over personal judgment.' },
+              { framework: 'stoicism', weight: 1, rationale: 'It treats the system’s output as not yours to second-guess.' },
+            ],
           },
           {
             text: 'Delay the notice. Investigate the context yourself first.',
             nextSegmentId: 'fcd_investigate',
+            frameworks: [
+              { framework: 'virtue-ethics', weight: 2, rationale: 'Delaying to investigate is the practical wisdom of someone who refuses to act on a number alone.' },
+              { framework: 'ethics-of-care', weight: 2, rationale: 'It attends to the particular person behind the forecast before acting.' },
+              { framework: 'pragmatist-ethics', weight: 1, rationale: 'It checks what is actually true in the world before committing.' },
+            ],
           },
           {
             text: 'Request a model audit. Escalate to the Division\'s ethics desk.',
             nextSegmentId: 'fcd_audit',
+            frameworks: [
+              { framework: 'discourse-ethics', weight: 2, rationale: 'Escalating to the ethics desk subjects the model to inclusive, rational review.' },
+              { framework: 'contractualism', weight: 2, rationale: 'An audit asks whether the system’s decisions could be justified to those they affect.' },
+              { framework: 'social-contract-theory', weight: 1, rationale: 'It works through the proper institutional channels.' },
+            ],
           },
         ],
       },
@@ -794,14 +945,29 @@ export const mockStories: Story[] = [
           {
             text: 'Approve Demir\'s request. Move the hearing; break the forecast.',
             nextSegmentId: 'fcd_approve',
+            frameworks: [
+              { framework: 'ethics-of-care', weight: 2, rationale: 'Moving the hearing helps the specific person rather than the abstract forecast.' },
+              { framework: 'existentialist-ethics', weight: 2, rationale: 'Breaking the forecast refuses determinism and insists the future is still open.' },
+              { framework: 'utilitarianism', weight: 1, rationale: 'It bets the intervention yields a better outcome than the predicted one.' },
+            ],
           },
           {
             text: 'Deny the request. The system must be allowed to observe the natural course.',
             nextSegmentId: 'fcd_deny',
+            frameworks: [
+              { framework: 'deontology', weight: 2, rationale: 'Denying the request keeps the rule intact rather than bending it for a special case.' },
+              { framework: 'daoist-ethics', weight: 2, rationale: 'Letting the natural course be observed declines to force the outcome.' },
+              { framework: 'stoicism', weight: 1, rationale: 'It accepts the forecast as something to witness, not wrestle.' },
+            ],
           },
           {
             text: 'Recuse yourself. Forward the decision to a colleague without context.',
             nextSegmentId: 'fcd_recuse',
+            frameworks: [
+              { framework: 'social-contract-theory', weight: 1, rationale: 'Forwarding the decision leans on procedure to carry what you won’t.' },
+              { framework: 'existentialist-ethics', weight: 1, rationale: 'Recusing is a choice too — and passing it on without context risks bad faith.' },
+              { framework: 'stoicism', weight: 1, rationale: 'It puts distance between you and an outcome you’d rather not own.' },
+            ],
           },
         ],
       },
@@ -842,21 +1008,40 @@ export const mockStories: Story[] = [
           {
             text: 'Stay. Work to reform the model from inside the Division.',
             nextSegmentId: 'fcd_end_stay',
+            frameworks: [
+              { framework: 'pragmatist-ethics', weight: 3, rationale: 'Reforming the model from inside treats change as incremental, experimental work.' },
+              { framework: 'utilitarianism', weight: 1, rationale: 'It bets that staying effective does more eventual good than leaving.' },
+              { framework: 'virtue-ethics', weight: 1, rationale: 'It is the patient persistence of someone committed to the institution’s betterment.' },
+            ],
             reflectionTrigger: true,
           },
           {
             text: 'Resign. Take the audit public with the journalist.',
             nextSegmentId: 'fcd_end_resign',
+            frameworks: [
+              { framework: 'deontology', weight: 2, rationale: 'Resigning rather than serve a flawed system is a refusal of complicity on principle.' },
+              { framework: 'contractualism', weight: 2, rationale: 'Taking the audit public demands the system answer to those it judges.' },
+              { framework: 'cosmopolitanism', weight: 1, rationale: 'It treats everyone the model touches as owed the truth.' },
+            ],
             reflectionTrigger: true,
           },
           {
             text: 'Leak the audit but stay employed. Accept the double life.',
             nextSegmentId: 'fcd_end_leak',
+            frameworks: [
+              { framework: 'utilitarianism', weight: 2, rationale: 'Leaking while staying employed tries to capture the benefits of both exposure and influence.' },
+              { framework: 'existentialist-ethics', weight: 1, rationale: 'The double life is a self-chosen burden lived in tension with itself.' },
+            ],
             reflectionTrigger: true,
           },
           {
             text: 'Destroy your evidence. Trust the system to correct itself.',
             nextSegmentId: 'fcd_end_destroy',
+            frameworks: [
+              { framework: 'daoist-ethics', weight: 2, rationale: 'Destroying the evidence and trusting self-correction declines to force the system.' },
+              { framework: 'stoicism', weight: 2, rationale: 'It accepts the outcome as beyond your control to change.' },
+              { framework: 'social-contract-theory', weight: 1, rationale: 'It places faith in the institution to right itself.' },
+            ],
             reflectionTrigger: true,
           },
         ],

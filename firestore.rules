@@ -345,6 +345,43 @@ service cloud.firestore {
       allow create, update, delete: if true;
     }
 
+    // ─── Ethics journey ────────────────────────────────────────
+    // One doc per (user, story, segment): the user's recorded Story
+    // decisions + framework impacts that power the "Your Path" card,
+    // the profile ethical-journey breakdown, and the AI report.
+    // Server actions (src/app/actions/ethics-journey.ts) enforce that
+    // userId matches; rules follow the file's server-action pattern.
+    match /ethicsJourney/{entryId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // ─── Framework Explorer ────────────────────────────────────
+    // Raw per-question responses (userId_questionId) and per-user
+    // module progress for the 12-module assessment. Server actions
+    // enforce ownership; rules follow the server-action pattern.
+    match /frameworkResponses/{responseId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+    match /frameworkExplorerProgress/{userId} {
+      allow read: if true;
+      allow create, update: if true;
+    }
+
+    // ─── Ethical profile reports ────────────────────────────────
+    // Generated profile / role-fit reports + their visibility and
+    // learning-community submissions. App code enforces ownership and
+    // the visibility model (private / public / community / instructor).
+    match /studentReports/{reportId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+    match /reportSubmissions/{submissionId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
     // ─── Blog posts ─────────────────────────────────────────────
     // Site blog content. Reads are public (the /blog index renders
     // for unsigned-in users). Writes go through server actions that

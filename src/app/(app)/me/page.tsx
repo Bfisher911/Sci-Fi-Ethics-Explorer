@@ -54,6 +54,7 @@ import { hasOwnedLicenses } from '@/app/actions/scope';
 import { getStoryById } from '@/app/actions/stories';
 import { chapters as ALL_CHAPTERS, getChapterBySlug } from '@/data/textbook';
 import { RoleBadge, pickHighestTier } from '@/components/identity/role-badge';
+import { EthicsJourneyCard } from '@/components/profile/ethics-journey-card';
 import { EmptyState } from '@/components/empty/empty-state';
 import { SkeletonList } from '@/components/loading/skeleton-list';
 import type {
@@ -438,6 +439,11 @@ export default function MePage(): JSX.Element {
             ))}
           </div>
         )}
+      </section>
+
+      {/* ─── Ethical journey ──────────────────────────────────────── */}
+      <section>
+        <EthicsJourneyCard />
       </section>
 
       {/* ─── Reflections archive (linked) ─────────────────────────── */}

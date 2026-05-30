@@ -201,12 +201,38 @@ export interface DiscountCodeRedemption {
 
 // ─── Stories ────────────────────────────────────────────────────────
 
+/**
+ * Weighted mapping of a single story choice onto one ethical framework.
+ * A choice may carry several of these when it reflects more than one
+ * framework, or when it sits in tension between frameworks.
+ *
+ * `framework` is a canonical FrameworkId (see src/lib/ethics/frameworks.ts);
+ * it is typed as string here only to avoid a types→lib import cycle, but
+ * authored values must be valid FrameworkIds and are validated at
+ * scoring time via normalizeFrameworkId.
+ */
+export interface ChoiceFrameworkImpact {
+  /** Canonical FrameworkId, e.g. 'utilitarianism'. */
+  framework: string;
+  /** Relative strength of the signal. Convention: 1 = leans, 2 = clearly, 3 = strongly. */
+  weight: number;
+  /** One sentence on WHY this choice reflects this framework. */
+  rationale: string;
+}
+
 export interface StoryChoice {
   text: string;
   nextSegmentId?: string;
   reflectionTrigger?: boolean;
   /** Optional full-framework scoring hint for new story content. */
   frameworkWeights?: Record<string, number>;
+  /**
+   * Ethical-framework metadata for this choice. When present, it is the
+   * authoritative source for ethical-journey scoring. When absent, the
+   * heuristic classifier in src/lib/ethics/classify.ts infers a weighted
+   * mapping from the choice text as a fallback.
+   */
+  frameworks?: ChoiceFrameworkImpact[];
 }
 
 export interface PollData {

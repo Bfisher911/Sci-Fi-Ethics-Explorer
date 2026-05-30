@@ -27,10 +27,20 @@ import { useSubscription } from '@/hooks/use-subscription';
 import { LockedFeatureModal } from '@/components/gating/locked-feature-modal';
 import { recordStoryCompletion, recordStoryChoice } from '@/app/actions/progress';
 import { recordEthicalJudgmentEvent } from '@/app/actions/ethical-judgments';
+import { recordEthicsDecision } from '@/app/actions/ethics-journey';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
 import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
-import { buildChoiceFrameworkWeights, classifyChoice, FRAMEWORK_INFO } from '@/lib/choice-frameworks';
+import { buildChoiceFrameworkWeights } from '@/lib/choice-frameworks';
+import { resolveChoiceImpacts } from '@/lib/ethics/classify';
+import {
+  interpretChoice,
+  type EthicsJourneyEntry,
+} from '@/lib/ethics/journey';
+import {
+  FRAMEWORK_META,
+  normalizeFrameworkId,
+} from '@/lib/ethics/frameworks';
 import { getMoodTheme } from '@/lib/story-atmosphere';
 import { useAmbientTone } from '@/hooks/use-ambient-tone';
 import { AdminActions } from '@/components/admin/admin-actions';
@@ -92,6 +102,10 @@ export default function StoryDetailPage() {
   const [currentSegment, setCurrentSegment] = useState<StorySegment | null>(null);
   const [userChoices, setUserChoices] = useState<string[]>([]);
   const [pickedChoiceTexts, setPickedChoiceTexts] = useState<string[]>([]);
+  // Full ethical-journey entries for THIS session (weighted, 18-framework).
+  // Drives the Your Path card; persisted in the background when signed in.
+  const [journeyEntries, setJourneyEntries] = useState<EthicsJourneyEntry[]>([]);
+  const [latestInterpretation, setLatestInterpretation] = useState<string | null>(null);
   const [visitedSegments, setVisitedSegments] = useState<string[]>([]);
   const [reflection, setReflection] = useState<string | null>(null);
   const [isLoadingReflection, setIsLoadingReflection] = useState(false);
@@ -160,10 +174,36 @@ export default function StoryDetailPage() {
     setUserChoices(newChoices);
     setPickedChoiceTexts((prev) => [...prev, choice.text]);
 
-    const frameworkId = classifyChoice(choice.text);
-    if (frameworkId !== 'unaligned') {
-      const label = FRAMEWORK_INFO[frameworkId].label;
-      setLastAlignedFramework(label);
+    // Resolve this choice's weighted framework impacts (authored metadata
+    // wins; heuristic fills gaps), build a journey entry, and update the
+    // Your Path card immediately from local state.
+    const impacts = resolveChoiceImpacts(choice);
+    const interpretation = interpretChoice(impacts);
+    const segmentId =
+      currentSegment?.id || `seg-${journeyEntries.length + 1}`;
+    const sequence = journeyEntries.length + 1;
+    const entry: EthicsJourneyEntry = {
+      id: `${storyId}:${segmentId}:${sequence}`,
+      storyId: storyId || '',
+      storyTitle: story?.title,
+      segmentId,
+      prompt: segmentText.slice(0, 300),
+      choiceText: choice.text,
+      impacts,
+      interpretation,
+      sequence,
+      recordedAt: new Date().toISOString(),
+    };
+    setJourneyEntries((prev) => [...prev, entry]);
+    setLatestInterpretation(interpretation);
+
+    // Surface the dominant framework as the brief on-screen toast.
+    const dominant = [...impacts].sort((a, b) => b.weight - a.weight)[0];
+    const dominantId = dominant
+      ? normalizeFrameworkId(dominant.framework)
+      : null;
+    if (dominantId) {
+      setLastAlignedFramework(FRAMEWORK_META[dominantId].label);
       setTimeout(() => setLastAlignedFramework(null), 2400);
     }
 
@@ -187,6 +227,20 @@ export default function StoryDetailPage() {
             nextSegmentId: choice.nextSegmentId ?? null,
           },
         });
+        // Persist the richer ethical-journey entry (best-effort).
+        void recordEthicsDecision({
+          userId: user.uid,
+          storyId,
+          storyTitle: story?.title,
+          segmentId,
+          prompt: entry.prompt,
+          choiceText: choice.text,
+          impacts,
+          interpretation,
+          sequence,
+        }).catch((err) =>
+          console.warn('Failed to record ethics decision:', err),
+        );
       } catch (err) {
         console.error('Failed to record story choice:', err);
       }
@@ -595,42 +649,53 @@ export default function StoryDetailPage() {
             <CardFooter className="flex flex-col items-start gap-3 pt-6 border-t">
               <h3 className="text-lg font-semibold text-accent">Your Decision:</h3>
               {currentSegment.choices.map((choice, index) => {
-                const frameworkId = classifyChoice(choice.text);
-                const info = FRAMEWORK_INFO[frameworkId];
-                const aligned = frameworkId !== 'unaligned';
+                // Resolve the choice's strongest framework for the hover hint
+                // (authored metadata wins; heuristic fills gaps).
+                const impacts = resolveChoiceImpacts(choice);
+                const primary = [...impacts].sort(
+                  (a, b) => b.weight - a.weight,
+                )[0];
+                const primaryId = primary
+                  ? normalizeFrameworkId(primary.framework)
+                  : null;
+                const meta = primaryId ? FRAMEWORK_META[primaryId] : null;
+                const aligned = Boolean(meta);
                 return (
                   <Button
                     key={index}
                     onClick={() => handleChoice(choice, currentSegment.text)}
                     variant="outline"
-                    title={aligned ? `${info.label}: ${info.hint}` : undefined}
+                    title={
+                      meta
+                        ? `${meta.label}: ${primary?.rationale || meta.hint}`
+                        : undefined
+                    }
                     className={cn(
                       'group relative w-full justify-start text-left h-auto min-h-14 py-3 md:py-4 px-4 whitespace-normal',
                       'transition-all duration-200 hover:bg-primary/10 hover:border-primary',
                       'hover:shadow-[0_0_24px_-4px_hsl(var(--primary)/0.5)]',
-                      aligned && info.accent
+                      aligned && meta!.accent,
                     )}
                   >
                     <CheckSquare className="mr-3 h-5 w-5 text-primary shrink-0" />
                     <span className="flex-1">{choice.text}</span>
-                    {aligned && (
+                    {meta && (
                       <span
                         className={cn(
                           'ml-3 hidden md:inline-block text-[10px] uppercase tracking-widest font-semibold opacity-0 group-hover:opacity-100 transition-opacity',
-                          info.color
+                          meta.color,
                         )}
                       >
-                        {info.shortLabel}
+                        {meta.shortLabel}
                       </span>
                     )}
                   </Button>
                 );
               })}
-              {currentSegment.choices.some((c) => classifyChoice(c.text) !== 'unaligned') && (
-                <p className="text-[11px] text-muted-foreground/70 italic pt-1">
-                  Hover a choice to see its ethical leaning.
-                </p>
-              )}
+              <p className="text-[11px] text-muted-foreground/70 italic pt-1">
+                Hover a choice to see its ethical leaning. Your decisions shape
+                the Your Path tracker.
+              </p>
             </CardFooter>
           )}
         </div>
@@ -719,7 +784,10 @@ export default function StoryDetailPage() {
 
       {/* Floating framework counts */}
       <div data-tour="story-impact">
-        <ChoiceImpactIndicator pickedChoiceTexts={pickedChoiceTexts} />
+        <ChoiceImpactIndicator
+          entries={journeyEntries}
+          latestInterpretation={latestInterpretation}
+        />
       </div>
 
       <LockedFeatureModal
