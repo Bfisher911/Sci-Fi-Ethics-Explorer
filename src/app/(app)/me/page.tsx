@@ -9,7 +9,7 @@
  * Sections:
  *   - Hero: greeting + tier badge + Master-Exam readiness %
  *   - Activity strip: chapters earned, stories read, debates joined,
- *     framework runs, perspectives saved, certs
+ *     Framework Explorer modules completed, perspectives saved, certs
  *   - In-progress: continue-where-you-left-off (textbook chapter +
  *     unfinished story, if any)
  *   - Certificates earned (with quick-link to /certificates for the
@@ -50,6 +50,7 @@ import { getUserCertificates } from '@/app/actions/certificates';
 import { getUserBadges } from '@/app/actions/badges';
 import { getBookmarks } from '@/app/actions/bookmarks';
 import { getMasterExamUnlockState } from '@/app/actions/master-exam';
+import { getFrameworkProgress } from '@/app/actions/framework-explorer';
 import { hasOwnedLicenses } from '@/app/actions/scope';
 import { getStoryById } from '@/app/actions/stories';
 import { chapters as ALL_CHAPTERS, getChapterBySlug } from '@/data/textbook';
@@ -104,6 +105,7 @@ export default function MePage(): JSX.Element {
         masterRes,
         inFlightRes,
         licenseRes,
+        frameworkProgressRes,
       ] = await Promise.all([
         getTextbookProgress(user.uid),
         getUserProgress(user.uid),
@@ -114,6 +116,7 @@ export default function MePage(): JSX.Element {
         getMasterExamUnlockState(user.uid),
         getInProgressStory(user.uid),
         hasOwnedLicenses(user.uid),
+        getFrameworkProgress(user.uid),
       ]);
 
       let inProgressStoryRow: Story | null = null;
@@ -131,8 +134,8 @@ export default function MePage(): JSX.Element {
         debatesParticipated: progressRes.success
           ? progressRes.data.debatesParticipated.length
           : 0,
-        frameworkRuns: progressRes.success
-          ? progressRes.data.quizResults.length
+        frameworkRuns: frameworkProgressRes.success
+          ? frameworkProgressRes.data.completedModules.length
           : 0,
         perspectivesCount: perspectivesRes.success ? perspectivesRes.data.length : 0,
         certs: certsRes.success ? certsRes.data : [],
@@ -265,7 +268,7 @@ export default function MePage(): JSX.Element {
         />
         <ActivityTile
           icon={Compass}
-          label="Framework runs"
+          label="Modules done"
           value={`${data.frameworkRuns}`}
           href="/framework-explorer"
         />
