@@ -937,6 +937,44 @@ export interface ChatSession {
 
 // ─── Debates ────────────────────────────────────────────────────────
 
+/** One stance in a structured debate, with the strongest case for it, the
+ *  strongest objections, and the ethical frameworks it draws on. */
+export interface DebatePosition {
+  id: string;
+  label: string;
+  /** One- or two-sentence framing of the stance. */
+  summary: string;
+  /** The strongest arguments a good-faith advocate would make. */
+  argumentsFor: string[];
+  /** The strongest objections the other side(s) would raise. */
+  counterarguments: string[];
+  /** Canonical FrameworkIds this position leans on. */
+  frameworks: string[];
+}
+
+/** An assignable role for role-based debate formats. */
+export interface DebateRoleCard {
+  role: string;
+  description: string;
+}
+
+/** Pre-authored scaffolding for a structured debate activity. Rendered above
+ *  the open pro/con argument threads. Optional on Debate so legacy
+ *  community-created debates (no brief) keep working unchanged. */
+export interface DebateBrief {
+  background: string;
+  centralQuestion: string;
+  positions: DebatePosition[];
+  /** Frameworks the debate as a whole engages. */
+  frameworks: string[];
+  openingPrompts: string[];
+  rebuttalPrompts: string[];
+  closingPrompt: string;
+  roleCards: DebateRoleCard[];
+  /** What students should produce (the suggested deliverable). */
+  deliverable: string;
+}
+
 export interface Debate {
   id: string;
   title: string;
@@ -950,6 +988,8 @@ export interface Debate {
   closesAt?: Date | any;
   participantCount: number;
   tags?: string[];
+  /** Structured scaffolding for first-party debate activities. */
+  brief?: DebateBrief;
 }
 
 export interface DebateArgument {

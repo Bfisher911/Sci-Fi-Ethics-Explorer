@@ -3,6 +3,7 @@ import {
   OFFICIAL_AUTHOR_NAME,
   OFFICIAL_AUTHOR_UID,
 } from '@/lib/official-author';
+import { EXTRA_STORIES } from './stories-extra';
 
 /**
  * Seeded site stories. All entries here are first-party platform content
@@ -1318,4 +1319,6 @@ export const mockStories: Story[] = [
       },
     ],
   },
+  // Six additional first-party interactive stories (modular file).
+  ...EXTRA_STORIES,
 ];

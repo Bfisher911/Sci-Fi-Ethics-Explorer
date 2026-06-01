@@ -252,6 +252,31 @@ export async function getCurrentWeeklyDilemma(userId?: string) {
   }
 }
 
+/**
+ * List every published dilemma, newest first. Powers the Ethical Dilemmas
+ * library (/dilemmas). Reuses the same (visibilityStatus + publishDate) index
+ * as getCurrentWeeklyDilemma. Degrades to an empty list (never throws) when
+ * admin credentials are unavailable.
+ */
+export async function getPublishedDilemmas(): Promise<ActionResult<WeeklyDilemma[]>> {
+  try {
+    const db = weeklyDb();
+    const snap = await db
+      .collection('weeklyDilemmas')
+      .where('visibilityStatus', '==', 'published')
+      .orderBy('publishDate', 'desc')
+      .get();
+    return { success: true, data: snap.docs.map((d) => dilemmaFromDoc(d.id, d.data())) };
+  } catch (error) {
+    if (isMissingWeeklyDilemmaAdminCredentialsError(error)) {
+      console.warn('[weekly-dilemmas] Firebase Admin credentials are missing; returning empty dilemma list.');
+      return { success: true, data: [] };
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    return { success: false, error: message };
+  }
+}
+
 export async function getWeeklyDilemmaBySlug(slug: string, userId?: string) {
   try {
     const db = weeklyDb();

@@ -88,6 +88,7 @@ export async function getDebates(): Promise<ActionResult<Debate[]>> {
         tags: d.tags ?? [],
         dilemmaId: d.dilemmaId,
         storyId: d.storyId,
+        brief: d.brief ?? undefined,
         createdAt: d.createdAt?.toDate?.() ?? new Date(),
         closesAt: d.closesAt?.toDate?.() ?? undefined,
       } as Debate;
@@ -127,6 +128,7 @@ export async function getDebateById(debateId: string): Promise<ActionResult<Deba
       tags: d.tags ?? [],
       dilemmaId: d.dilemmaId,
       storyId: d.storyId,
+      brief: d.brief ?? undefined,
       createdAt: d.createdAt?.toDate?.() ?? new Date(),
       closesAt: d.closesAt?.toDate?.() ?? undefined,
     };

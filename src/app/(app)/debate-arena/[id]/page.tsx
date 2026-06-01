@@ -28,6 +28,7 @@ import { displayAuthorName } from '@/lib/official-author';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
 import { ActivityEvidence } from '@/components/activity-reports/activity-evidence';
+import { DebateBrief } from '@/components/debate-arena/debate-brief';
 import { AdminActions } from '@/components/admin/admin-actions';
 import { adminDeleteArtifact } from '@/app/actions/admin';
 import { PageWalkthrough } from '@/components/walkthroughs/page-walkthrough';
@@ -299,6 +300,13 @@ export default function DebateDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Structured brief for first-party debates (above the live threads). */}
+      {debate.brief && (
+        <div className="mb-8">
+          <DebateBrief brief={debate.brief} />
+        </div>
+      )}
 
       {/* Closed Debate Results */}
       {debate.status === 'closed' && (

@@ -107,6 +107,7 @@ const SECTIONS: NavSection[] = [
     icon: Microscope,
     items: [
       { href: '/stories', label: 'Stories', icon: BookOpen },
+      { href: '/dilemmas', label: 'Ethical Dilemmas', icon: Scale },
       { href: '/framework-explorer', label: 'Framework Explorer', icon: Compass },
       { href: '/studio', label: 'Studio (AI tools)', icon: Sparkles },
     ],
