@@ -80,6 +80,8 @@ export function ActivityEvidence({
   const resolvedHeading = heading ?? badgeLabel(activityType);
 
   const [report, setReport] = useState<ActivityReport | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [retryNonce, setRetryNonce] = useState(0);
   const [communityId, setCommunityId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
@@ -89,10 +91,13 @@ export function ActivityEvidence({
 
   const contentKey = useMemo(() => JSON.stringify(content ?? null), [content]);
 
-  // Generate / update the report when the activity outcome is known.
+  // Generate / update the report when the activity outcome is known. Resolves
+  // to a clear error+retry state on failure so it can never hang on
+  // "Saving your evidence…".
   useEffect(() => {
     if (!user?.uid || !activityId) return;
     let cancelled = false;
+    setSaveError(null);
     generateActivityReport({
       userId: user.uid,
       userName: user.displayName || user.email?.split('@')[0] || 'A student',
@@ -104,14 +109,26 @@ export function ActivityEvidence({
       passingThreshold,
       passed,
       content,
-    }).then((res) => {
-      if (!cancelled && res.success) setReport(res.data);
-    });
+    })
+      .then((res) => {
+        if (cancelled) return;
+        if (res.success) {
+          setReport(res.data);
+        } else {
+          console.error('[ActivityEvidence] save failed:', res.error);
+          setSaveError(res.error || 'Could not save your evidence.');
+        }
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error('[ActivityEvidence] save threw:', err);
+        setSaveError(String(err));
+      });
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid, activityType, activityId, activityTitle, score, passed, contentKey]);
+  }, [user?.uid, activityType, activityId, activityTitle, score, passed, contentKey, retryNonce]);
 
   useEffect(() => {
     if (communities.length === 1) setCommunityId(communities[0].id);
@@ -172,7 +189,22 @@ export function ActivityEvidence({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!report ? (
+        {!report && saveError ? (
+          <div className="space-y-2">
+            <p className="flex items-start gap-2 text-sm text-destructive">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              We couldn&apos;t save your evidence. Your progress is still
+              recorded — try saving the badge again.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setRetryNonce((n) => n + 1)}
+            >
+              Retry
+            </Button>
+          </div>
+        ) : !report ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" /> Saving your evidence…
           </div>

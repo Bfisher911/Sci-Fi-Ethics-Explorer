@@ -11,6 +11,11 @@ interface EpilogueViewerProps {
   storyTitle: string;
   storyEnding: string;
   userChoices: string[];
+  /** Optional — the reader's ending reflection, threaded through for richer
+   *  epilogue continuity. */
+  reflection?: string;
+  /** Optional — the reader's dominant ethical framework / leaning. */
+  ethicalProfile?: string;
   /** Fires when an epilogue ("What Happens Next") is generated, so the parent
    *  can include it in the downloadable Story Completion Badge. */
   onEpilogue?: (epilogueText: string, timeframe: string) => void;
@@ -32,6 +37,8 @@ export function EpilogueViewer({
   storyTitle,
   storyEnding,
   userChoices,
+  reflection,
+  ethicalProfile,
   onEpilogue,
 }: EpilogueViewerProps): JSX.Element {
   const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe>('1 year');
@@ -56,17 +63,38 @@ export function EpilogueViewer({
           storyEnding,
           userChoices,
           timeframe,
+          reflection,
+          ethicalProfile,
         });
+
+        // The flow never throws — it returns a structured error instead.
+        // Surface a friendly message but log the real diagnostic.
+        if (result.error || !result.epilogueText) {
+          console.error(
+            '[EpilogueViewer] epilogue generation failed:',
+            result.errorCode,
+            result.error
+          );
+          setError(
+            result.errorCode === 'rate_limited'
+              ? 'The AI is busy right now — give it a moment and try again.'
+              : result.errorCode === 'missing_api_key'
+                ? "The epilogue engine isn't configured yet. Please try again later."
+                : 'We couldn’t project this future just yet. Please try again.'
+          );
+          return;
+        }
+
         setCache((prev) => ({ ...prev, [timeframe]: result }));
-        if (result?.epilogueText) onEpilogue?.(result.epilogueText, timeframe);
+        onEpilogue?.(result.epilogueText, timeframe);
       } catch (err) {
-        console.error('Error generating epilogue:', err);
-        setError('Failed to generate epilogue. Please try again.');
+        console.error('[EpilogueViewer] unexpected error generating epilogue:', err);
+        setError('We couldn’t project this future just yet. Please try again.');
       } finally {
         setIsLoading(false);
       }
     },
-    [cache, storyTitle, storyEnding, userChoices, onEpilogue]
+    [cache, storyTitle, storyEnding, userChoices, reflection, ethicalProfile, onEpilogue]
   );
 
   const getSentimentColor = (sentiment: 'positive' | 'negative' | 'mixed'): string => {

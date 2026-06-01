@@ -56,6 +56,7 @@ import { getStoryById } from '@/app/actions/stories';
 import { chapters as ALL_CHAPTERS, getChapterBySlug } from '@/data/textbook';
 import { RoleBadge, pickHighestTier } from '@/components/identity/role-badge';
 import { EthicsJourneyCard } from '@/components/profile/ethics-journey-card';
+import { ActivityEvidenceList } from '@/components/activity-reports/activity-evidence-list';
 import { EmptyState } from '@/components/empty/empty-state';
 import { SkeletonList } from '@/components/loading/skeleton-list';
 import type {
@@ -370,7 +371,7 @@ export default function MePage(): JSX.Element {
             {data.certs.slice(0, 6).map((c) => (
               <Link
                 key={c.id}
-                href={c.verificationHash ? `/textbook/certificate/${c.verificationHash}` : '/certificates'}
+                href={c.verificationHash ? `/certificates/${c.verificationHash}` : '/certificates'}
                 className="rounded-xl border border-border/60 bg-card/40 p-4 transition-colors hover:border-primary/40"
               >
                 <div className="flex items-start gap-2.5">
@@ -399,6 +400,15 @@ export default function MePage(): JSX.Element {
             ))}
           </div>
         )}
+      </section>
+
+      {/* ─── Badges & activity evidence ───────────────────────────── */}
+      {/* Earned badges/reports for individual activities (story badges,
+          chapter & Library quiz certificates, framework module certificates,
+          etc.) — each downloadable/re-downloadable, submittable, emailable.
+          The list only renders evidence the user has actually earned. */}
+      <section>
+        <ActivityEvidenceList />
       </section>
 
       {/* ─── Saved (bookmarks) ────────────────────────────────────── */}

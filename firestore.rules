@@ -232,6 +232,16 @@ service cloud.firestore {
       allow create, update: if true;
     }
 
+    // ─── Activity Evidence (badges / activity reports) ─────────
+    // Doc id: {userId}__{activityType}__{activityId}. Written by the
+    // activity-reports server action (client SDK), read by the student's
+    // "My Journey" + verify pages and instructor reporting. Membership /
+    // ownership / void permissions are enforced in the server action.
+    match /activityReports/{reportId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
     // ─── Curriculum Progress ───────────────────────────────────
     // Composite ID: {userId}_{curriculumId}
     match /curriculumProgress/{progressId} {

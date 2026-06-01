@@ -759,6 +759,8 @@ export default function StoryDetailPage() {
                 storyTitle={story.title}
                 storyEnding={storyEndingText}
                 userChoices={userChoices}
+                reflection={reflection || undefined}
+                ethicalProfile={latestInterpretation || undefined}
                 onEpilogue={(text) => setWhatHappensNext(text)}
               />
             </Card>
