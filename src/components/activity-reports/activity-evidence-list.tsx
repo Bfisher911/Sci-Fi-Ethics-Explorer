@@ -24,6 +24,7 @@ import {
   FileBadge,
   ArrowRight,
   CheckCircle2,
+  Eye,
   Loader2,
   Mail,
   Share2,
@@ -194,6 +195,11 @@ function EvidenceRow({
             <Badge variant="secondary" className="text-[10px]">
               {activityTypeLabel(String(report.activityType))}
             </Badge>
+            {typeof report.attemptNumber === 'number' && report.attemptNumber > 1 && (
+              <Badge variant="outline" className="text-[10px]">
+                Attempt {report.attemptNumber}
+              </Badge>
+            )}
             {typeof report.score === 'number' && (
               <Badge
                 variant="outline"
@@ -215,6 +221,11 @@ function EvidenceRow({
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          <Button asChild size="sm" variant="ghost" className="h-8 px-2 text-xs">
+            <Link href={`/verify/report/${report.verificationHash}`} title="View the full result — decisions, frameworks, reflection">
+              <Eye className="mr-1 h-3.5 w-3.5" /> View
+            </Link>
+          </Button>
           <DownloadReportButton report={report} size="sm" variant="outline" />
         </div>
       </div>

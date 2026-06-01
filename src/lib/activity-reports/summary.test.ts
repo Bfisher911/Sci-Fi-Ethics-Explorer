@@ -28,6 +28,24 @@ describe('buildReportSummary', () => {
     expect(s).toContain('autonomy');
   });
 
+  it('includes outcome + framework breakdown for a story when present', () => {
+    const s = buildReportSummary(
+      input({
+        activityType: 'story',
+        activityTitle: 'The Forecast Division',
+        content: {
+          choices: ['Delay the notice'],
+          outcome: 'I held the notice and investigated the context myself.',
+          frameworkBreakdown: ['Virtue Ethics (50%)', 'Ethics of Care (30%)'],
+          reflection: 'I refused to act on a number alone.',
+        },
+      })
+    );
+    expect(s).toContain('Outcome:');
+    expect(s).toContain('Ethical frameworks:');
+    expect(s).toContain('Virtue Ethics (50%)');
+  });
+
   it('summarizes a passed quiz with score + threshold', () => {
     const s = buildReportSummary(
       input({

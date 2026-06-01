@@ -11,7 +11,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildJourneyProfile,
+  buildFrameworkBreakdown,
   computeFrameworkScores,
+  interpretChoice,
   rankFrameworks,
   detectTensions,
   emptyScores,
@@ -37,6 +39,36 @@ function entry(
     recordedAt: new Date(2026, 0, sequence).toISOString(),
   };
 }
+
+describe('buildFrameworkBreakdown', () => {
+  it('ranks frameworks by weight with percentages and rationales', () => {
+    const entries = [
+      entry('e1', [{ framework: 'deontology', weight: 3, rationale: 'Duty first.' }], 1),
+      entry('e2', [{ framework: 'utilitarianism', weight: 1, rationale: 'Best outcome.' }], 2),
+    ];
+    const breakdown = buildFrameworkBreakdown(entries);
+    expect(breakdown[0].id).toBe('deontology');
+    expect(breakdown[0].percent).toBeGreaterThan(breakdown[1].percent);
+    expect(breakdown[0].rationales).toContain('Duty first.');
+    // Heuristic rationales are excluded.
+    const heuristic = buildFrameworkBreakdown([
+      entry('e3', [{ framework: 'stoicism', weight: 2, rationale: 'Inferred (heuristic).' }]),
+    ]);
+    expect(heuristic[0].rationales).toEqual([]);
+  });
+
+  it('returns an empty breakdown when no entries have impacts', () => {
+    expect(buildFrameworkBreakdown([])).toEqual([]);
+  });
+});
+
+describe('interpretChoice', () => {
+  it('never emits a "did not align" message for empty impacts', () => {
+    const msg = interpretChoice([]);
+    expect(msg.toLowerCase()).not.toContain('did not');
+    expect(msg.toLowerCase()).not.toContain('not clearly align');
+  });
+});
 
 describe('emptyScores', () => {
   it('has a zero entry for every canonical framework', () => {

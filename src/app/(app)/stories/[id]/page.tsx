@@ -19,7 +19,7 @@ import { ChoiceImpactIndicator } from '@/components/stories/choice-impact-indica
 import { EpilogueViewer } from '@/components/stories/epilogue-viewer';
 import { generateEndingReflection } from '@/ai/flows/generate-ending-reflection';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowLeft, CheckSquare, Loader2, MessageSquare, Map, Clock, Sparkles, Volume2, VolumeX, ArrowDown, Lock } from 'lucide-react';
+import { ArrowLeft, CheckSquare, MessageSquare, Map, Clock, Sparkles, Volume2, VolumeX, ArrowDown, Lock, Scale, RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/use-auth';
@@ -32,12 +32,17 @@ import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
 import { ActivityEvidence } from '@/components/activity-reports/activity-evidence';
 import { useCertificateCheck } from '@/components/certificates/use-certificate-check';
-import { buildChoiceFrameworkWeights } from '@/lib/choice-frameworks';
 import { resolveChoiceImpacts } from '@/lib/ethics/classify';
 import {
+  impactsToFrameworkWeights,
+  impactsToDeterministicAnalysis,
+} from '@/lib/ethics/impacts';
+import {
   interpretChoice,
+  buildFrameworkBreakdown,
   type EthicsJourneyEntry,
 } from '@/lib/ethics/journey';
+import { StoryThinking } from '@/components/stories/story-thinking';
 import {
   FRAMEWORK_META,
   normalizeFrameworkId,
@@ -114,6 +119,9 @@ export default function StoryDetailPage() {
   const [showStoryMap, setShowStoryMap] = useState(false);
   const [showEpilogue, setShowEpilogue] = useState(false);
   const [whatHappensNext, setWhatHappensNext] = useState<string | null>(null);
+  // Per-playthrough token so each completed run is its own evidence record.
+  // Resumes an in-progress attempt across refresh; rotates on a new playthrough.
+  const [attemptKey, setAttemptKey] = useState<string | null>(null);
   const [lastAlignedFramework, setLastAlignedFramework] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [atmosphereOn, setAtmosphereOn] = useState(false);
@@ -158,6 +166,69 @@ export default function StoryDetailPage() {
     loadStory();
   }, [storyId]);
 
+  // Establish the attempt key for this playthrough: resume an in-progress
+  // attempt after a refresh, or mint a fresh one (including after the previous
+  // attempt was completed → a new playthrough = a new evidence record).
+  useEffect(() => {
+    if (!storyId) return;
+    const ssKey = `story-attempt:${storyId}`;
+    let key: string | null = null;
+    try {
+      const raw = sessionStorage.getItem(ssKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.key && !parsed.completed) key = parsed.key;
+      }
+    } catch {
+      /* sessionStorage unavailable — fall through to mint */
+    }
+    if (!key) {
+      key = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      try {
+        sessionStorage.setItem(ssKey, JSON.stringify({ key, completed: false }));
+      } catch {
+        /* ignore */
+      }
+    }
+    setAttemptKey(key);
+  }, [storyId]);
+
+  function markAttemptCompleted(): void {
+    if (!storyId || !attemptKey) return;
+    try {
+      sessionStorage.setItem(
+        `story-attempt:${storyId}`,
+        JSON.stringify({ key: attemptKey, completed: true }),
+      );
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function startNewAttempt(): void {
+    if (!story) return;
+    const key = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    try {
+      sessionStorage.setItem(
+        `story-attempt:${storyId}`,
+        JSON.stringify({ key, completed: false }),
+      );
+    } catch {
+      /* ignore */
+    }
+    setAttemptKey(key);
+    setCurrentSegment(story.segments[0]);
+    setVisitedSegments([story.segments[0].id]);
+    setUserChoices([]);
+    setPickedChoiceTexts([]);
+    setJourneyEntries([]);
+    setLatestInterpretation(null);
+    setReflection(null);
+    setShowEpilogue(false);
+    setWhatHappensNext(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   const navigateToSegment = (segmentId: string): void => {
     if (!story) return;
     const segment = story.segments.find((s) => s.id === segmentId);
@@ -172,18 +243,21 @@ export default function StoryDetailPage() {
     }
   };
 
-  const handleChoice = async (choice: StoryChoice, segmentText: string) => {
-    const newChoices = [...userChoices, `${segmentText.substring(0, 50)}... -> Choice: ${choice.text}`];
+  const handleChoice = (choice: StoryChoice, segmentText: string) => {
+    const newChoices = [
+      ...userChoices,
+      `${segmentText.substring(0, 50)}... -> Choice: ${choice.text}`,
+    ];
     setUserChoices(newChoices);
     setPickedChoiceTexts((prev) => [...prev, choice.text]);
 
-    // Resolve this choice's weighted framework impacts (authored metadata
-    // wins; heuristic fills gaps), build a journey entry, and update the
-    // Your Path card immediately from local state.
+    // Resolve this choice's authored framework impacts SYNCHRONOUSLY — no AI,
+    // no network. Authored `choice.frameworks` wins; the heuristic only fills
+    // gaps for unannotated (e.g. user-generated) content.
     const impacts = resolveChoiceImpacts(choice);
+    const hasImpacts = impacts.length > 0;
     const interpretation = interpretChoice(impacts);
-    const segmentId =
-      currentSegment?.id || `seg-${journeyEntries.length + 1}`;
+    const segmentId = currentSegment?.id || `seg-${journeyEntries.length + 1}`;
     const sequence = journeyEntries.length + 1;
     const entry: EthicsJourneyEntry = {
       id: `${storyId}:${segmentId}:${sequence}`,
@@ -197,23 +271,59 @@ export default function StoryDetailPage() {
       sequence,
       recordedAt: new Date().toISOString(),
     };
-    setJourneyEntries((prev) => [...prev, entry]);
-    setLatestInterpretation(interpretation);
 
-    // Surface the dominant framework as the brief on-screen toast.
-    const dominant = [...impacts].sort((a, b) => b.weight - a.weight)[0];
-    const dominantId = dominant
-      ? normalizeFrameworkId(dominant.framework)
-      : null;
-    if (dominantId) {
-      setLastAlignedFramework(FRAMEWORK_META[dominantId].label);
-      setTimeout(() => setLastAlignedFramework(null), 2400);
+    // Only real (framework-mapped) decisions update the Your Path tracker and
+    // alignment pulse. Pure-navigation options never surface "did not align".
+    if (hasImpacts) {
+      setJourneyEntries((prev) => [...prev, entry]);
+      setLatestInterpretation(interpretation);
+      const dominant = [...impacts].sort((a, b) => b.weight - a.weight)[0];
+      const dominantId = dominant ? normalizeFrameworkId(dominant.framework) : null;
+      if (dominantId) {
+        setLastAlignedFramework(FRAMEWORK_META[dominantId].label);
+        setTimeout(() => setLastAlignedFramework(null), 2400);
+      }
     }
 
+    // Advance the UI IMMEDIATELY — the next segment is already in memory. A
+    // short opacity fade only; nothing is awaited on the click path, so the
+    // button never feels frozen.
+    setIsTransitioning(true);
+    setTimeout(() => {
+      if (choice.nextSegmentId) {
+        const nextSegment =
+          story?.segments.find((s) => s.id === choice.nextSegmentId) ?? null;
+        setCurrentSegment(nextSegment);
+        if (nextSegment) {
+          setVisitedSegments((prev) => [...prev, nextSegment.id]);
+          segmentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        setIsTransitioning(false);
+        if (nextSegment?.reflectionTrigger || choice.reflectionTrigger) {
+          void triggerReflection(story?.title, newChoices);
+        }
+      } else if (choice.reflectionTrigger) {
+        setIsTransitioning(false);
+        void triggerReflection(story?.title, newChoices);
+      } else {
+        setIsTransitioning(false);
+        if (story?.isInteractive) void triggerReflection(story?.title, newChoices);
+      }
+    }, 140);
+
+    // Persist in the BACKGROUND (never blocks advancing). Authored impacts →
+    // a deterministic analysis, so there is NO per-choice AI call (#9).
     if (user?.uid && storyId) {
-      try {
-        await recordStoryChoice(user.uid, storyId, choice.text);
-        await recordEthicalJudgmentEvent({
+      void recordStoryChoice(user.uid, storyId, choice.text).catch((err) =>
+        console.warn('Failed to record story choice:', err),
+      );
+      if (hasImpacts) {
+        const frameworkWeights = impactsToFrameworkWeights(impacts);
+        const analysis = impactsToDeterministicAnalysis(impacts, {
+          promptText: segmentText,
+          userText: choice.text,
+        });
+        void recordEthicalJudgmentEvent({
           userId: user.uid,
           interactionType: 'story_choice',
           sourceContentType: 'story',
@@ -221,7 +331,8 @@ export default function StoryDetailPage() {
           sourceTitle: story?.title ?? 'Interactive Story',
           promptText: segmentText,
           userChoice: choice.text,
-          frameworkWeights: choice.frameworkWeights ?? buildChoiceFrameworkWeights(choice.text),
+          frameworkWeights,
+          analysis,
           affectsProfile: true,
           activityContext: 'story',
           rawResponse: {
@@ -229,8 +340,7 @@ export default function StoryDetailPage() {
             segmentId: currentSegment?.id,
             nextSegmentId: choice.nextSegmentId ?? null,
           },
-        });
-        // Persist the richer ethical-journey entry (best-effort).
+        }).catch((err) => console.warn('Failed to record ethical judgment:', err));
         void recordEthicsDecision({
           userId: user.uid,
           storyId,
@@ -241,37 +351,7 @@ export default function StoryDetailPage() {
           impacts,
           interpretation,
           sequence,
-        }).catch((err) =>
-          console.warn('Failed to record ethics decision:', err),
-        );
-      } catch (err) {
-        console.error('Failed to record story choice:', err);
-      }
-    }
-
-    setIsTransitioning(true);
-    await new Promise((r) => setTimeout(r, 180));
-
-    if (choice.nextSegmentId) {
-      const nextSegment = story?.segments.find((s) => s.id === choice.nextSegmentId);
-      if (nextSegment) {
-        setCurrentSegment(nextSegment);
-        setVisitedSegments((prev) => [...prev, nextSegment.id]);
-        segmentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        setCurrentSegment(null);
-      }
-      setIsTransitioning(false);
-      if (nextSegment?.reflectionTrigger || choice.reflectionTrigger) {
-        await triggerReflection(story?.title, newChoices);
-      }
-    } else if (choice.reflectionTrigger) {
-      setIsTransitioning(false);
-      await triggerReflection(story?.title, newChoices);
-    } else {
-      setIsTransitioning(false);
-      if (story?.isInteractive) {
-        await triggerReflection(story?.title, newChoices);
+        }).catch((err) => console.warn('Failed to record ethics decision:', err));
       }
     }
   };
@@ -296,6 +376,9 @@ export default function StoryDetailPage() {
       if (result.reflection && result.reflection.trim()) {
         setReflection(result.reflection);
         // Record story completion only on a real reflection.
+        // This playthrough is finished — freeze its attempt token so a later
+        // replay mints a fresh one (its own evidence record).
+        markAttemptCompleted();
         if (user?.uid && storyId) {
           try {
             await recordStoryCompletion(user.uid, storyId);
@@ -434,6 +517,13 @@ export default function StoryDetailPage() {
   })();
 
   const storyEndingText = currentSegment.text.substring(0, 200);
+
+  // Ranked ethical-framework breakdown for this playthrough — drives the
+  // end-of-story summary card and is captured into the saved evidence record.
+  const frameworkBreakdown = buildFrameworkBreakdown(journeyEntries);
+  const frameworkBreakdownLabels = frameworkBreakdown.map(
+    (f) => `${f.label} (${f.percent}%)`,
+  );
 
   const handleContinueReading = (): void => {
     if (!nextLinearSegment) return;
@@ -717,10 +807,14 @@ export default function StoryDetailPage() {
               Story Reflection
             </h3>
             {isLoadingReflection && (
-              <div className="flex items-center space-x-2 text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Generating your personalized reflection...</span>
-              </div>
+              <StoryThinking
+                className="w-full"
+                messages={[
+                  'Analyzing your decisions…',
+                  'Weighing the ethical frameworks…',
+                  'Preparing your reflection…',
+                ]}
+              />
             )}
             {reflection && <p className="text-foreground/90 whitespace-pre-wrap">{reflection}</p>}
           </CardFooter>
@@ -738,7 +832,38 @@ export default function StoryDetailPage() {
         )}
       </Card>
 
-      {/* "What Happened Next?" Epilogue + Submit-to-community on completion */}
+      {/* End-of-story Ethical Framework Breakdown — which frameworks the
+          reader's choices aligned with, and why. Shown for every completed
+          interactive playthrough; also captured into the evidence record. */}
+      {isStoryEnd && frameworkBreakdown.length > 0 && (
+        <Card className="mt-6 bg-card/80 backdrop-blur-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg text-accent">
+              <Scale className="h-5 w-5" /> Your Ethical Framework Breakdown
+            </CardTitle>
+            <CardDescription>
+              How the decisions you made across this story map onto the ethical
+              frameworks used throughout the platform.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {frameworkBreakdown.map((f) => (
+              <div key={f.id} className="space-y-1">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium">{f.label}</span>
+                  <span className="text-muted-foreground">{f.percent}%</span>
+                </div>
+                <Progress value={f.percent} className="h-1.5" />
+                {f.rationales[0] && (
+                  <p className="text-xs text-muted-foreground">{f.rationales[0]}</p>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* "What Happened Next?" Epilogue + downloadable evidence on completion */}
       {isStoryEnd && userChoices.length > 0 && (
         <div className="mt-6 space-y-3">
           <div className="flex flex-wrap gap-3">
@@ -752,6 +877,15 @@ export default function StoryDetailPage() {
                 What Happened Next?
               </Button>
             )}
+            <Button
+              onClick={startNewAttempt}
+              variant="ghost"
+              className="w-full sm:w-auto"
+              title="Replay from the start — your previous result stays saved as its own attempt."
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Play again (new attempt)
+            </Button>
           </div>
           {showEpilogue && (
             <Card className="bg-card/80 backdrop-blur-sm p-6">
@@ -766,21 +900,24 @@ export default function StoryDetailPage() {
             </Card>
           )}
           {/* Story Completion Badge — full story report, reflection, decision
-              path, "What Happens Next", and framework alignment. Downloadable,
-              submittable, emailable. */}
+              path, outcome, framework breakdown, and "What Happens Next".
+              Each playthrough is its own attempt record (attemptKey). */}
           <ActivityEvidence
             activityType="story"
             activityId={story.id}
             activityTitle={story.title}
+            attemptKey={attemptKey ?? undefined}
             content={{
               storyReport: story.description,
               storyTheme: story.theme,
               storyGenre: story.genre,
-              choices: userChoices,
+              choices: pickedChoiceTexts.length ? pickedChoiceTexts : userChoices,
               decisionPath: userChoices,
+              outcome: currentSegment.text,
               reflection: reflection || undefined,
               whatHappensNext: whatHappensNext || undefined,
               frameworkAlignment: latestInterpretation || undefined,
+              frameworkBreakdown: frameworkBreakdownLabels,
               visitedSegmentCount: visitedSegments.length,
             }}
           />

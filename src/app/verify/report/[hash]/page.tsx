@@ -8,7 +8,11 @@ import {
   ArrowLeft,
   BadgeCheck,
   CalendarDays,
+  ListChecks,
+  MessageSquare,
+  Scale,
   ShieldOff,
+  Sparkles,
   Trophy,
   Users,
 } from 'lucide-react';
@@ -81,6 +85,16 @@ export default function ReportVerifyPage() {
       ? report.completedAt
       : new Date(report.completedAt);
 
+  // Rich, readable result — lets a user review a past attempt WITHOUT replaying.
+  const c = (report.content ?? {}) as Record<string, any>;
+  const asList = (v: unknown): string[] =>
+    Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+  const choices = asList(c.choices).length ? asList(c.choices) : asList(c.decisionPath);
+  const breakdown = asList(c.frameworkBreakdown);
+  const reflectionText = typeof c.reflection === 'string' ? c.reflection.trim() : '';
+  const whatNext = typeof c.whatHappensNext === 'string' ? c.whatHappensNext.trim() : '';
+  const outcome = typeof c.outcome === 'string' ? c.outcome.trim() : '';
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-2xl space-y-4">
       <Card className="bg-card/80 backdrop-blur-sm">
@@ -98,9 +112,14 @@ export default function ReportVerifyPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Badge variant="secondary" className="mb-2">
-              {activityTypeLabel(String(report.activityType))}
-            </Badge>
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">
+                {activityTypeLabel(String(report.activityType))}
+              </Badge>
+              {typeof report.attemptNumber === 'number' && (
+                <Badge variant="outline">Attempt {report.attemptNumber}</Badge>
+              )}
+            </div>
             <h2 className="text-lg font-semibold">{report.activityTitle}</h2>
             <p className="text-sm text-muted-foreground">
               Completed by {report.userName}
@@ -146,6 +165,68 @@ export default function ReportVerifyPage() {
             </div>
             <p className="text-sm leading-relaxed">{report.summary}</p>
           </div>
+
+          {/* Full readable result — review a past attempt without replaying. */}
+          {choices.length > 0 && (
+            <div>
+              <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <ListChecks className="h-3.5 w-3.5" /> Your decisions
+              </div>
+              <ol className="list-decimal space-y-1 pl-5 text-sm">
+                {choices.map((choice, i) => (
+                  <li key={i}>{choice}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {breakdown.length > 0 && (
+            <div>
+              <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <Scale className="h-3.5 w-3.5" /> Ethical framework breakdown
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {breakdown.map((f, i) => (
+                  <Badge key={i} variant="outline" className="text-xs">
+                    {f}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {outcome && (
+            <div>
+              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Outcome
+              </div>
+              <p className="text-sm leading-relaxed text-foreground/90 line-clamp-6">
+                {outcome}
+              </p>
+            </div>
+          )}
+
+          {reflectionText && (
+            <div>
+              <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <MessageSquare className="h-3.5 w-3.5" /> Reflection
+              </div>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+                {reflectionText}
+              </p>
+            </div>
+          )}
+
+          {whatNext && (
+            <div>
+              <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <Sparkles className="h-3.5 w-3.5" /> What happens next
+              </div>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+                {whatNext}
+              </p>
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center gap-2 pt-1">
             {!voided && <DownloadReportButton report={report} />}

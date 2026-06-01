@@ -24,6 +24,12 @@ export interface ActivityReportInput {
   completedAt?: string;
   /** Type-specific evidence (choices, response, frameworkAlignment, …). */
   content?: Record<string, any>;
+  /**
+   * Per-playthrough token. When present, the report doc id is scoped to this
+   * attempt so each replay is its own immutable record (used by stories).
+   * Omit for idempotent activities (one report per user+activity).
+   */
+  attemptKey?: string;
 }
 
 function asList(v: unknown): string[] {
@@ -48,11 +54,21 @@ export function buildReportSummary(input: ActivityReportInput): string {
     case 'story': {
       const choices = asList(c.choices).length ? asList(c.choices) : asList(c.decisionPath);
       const reflection = str(c.reflection);
+      const outcome = str(c.outcome) || str(c.endingText);
+      const frameworks = asList(c.frameworkBreakdown).length
+        ? asList(c.frameworkBreakdown)
+        : str(c.frameworkAlignment)
+          ? [str(c.frameworkAlignment)]
+          : [];
       const parts = [`Completed the interactive story "${title}".`];
       if (choices.length) {
         parts.push(
           `Made ${choices.length} ${choices.length === 1 ? 'choice' : 'choices'}: ${truncate(choices.join(' → '))}.`
         );
+      }
+      if (outcome) parts.push(`Outcome: ${truncate(outcome)}`);
+      if (frameworks.length) {
+        parts.push(`Ethical frameworks: ${truncate(frameworks.join(', '), 120)}.`);
       }
       if (reflection) parts.push(`Reflection: ${truncate(reflection)}`);
       return parts.join(' ');

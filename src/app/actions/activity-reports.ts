@@ -49,9 +49,20 @@ function sanitizeId(s: string): string {
   return s.replace(/[^a-zA-Z0-9_-]/g, '-');
 }
 
-/** Deterministic doc id → idempotency: refresh/replay hit the same document. */
-function reportDocId(userId: string, activityType: string, activityId: string): string {
-  return sanitizeId(`${userId}__${activityType}__${activityId}`);
+/**
+ * Deterministic doc id → idempotency: refresh/replay hit the same document.
+ * When `attemptKey` is supplied (stories), the id is scoped to that single
+ * playthrough so each attempt is its own immutable record; without it, the id
+ * stays one-per-(user, activity) as before.
+ */
+function reportDocId(
+  userId: string,
+  activityType: string,
+  activityId: string,
+  attemptKey?: string,
+): string {
+  const base = `${userId}__${activityType}__${activityId}`;
+  return sanitizeId(attemptKey ? `${base}__${attemptKey}` : base);
 }
 
 function reportFromDoc(id: string, d: Record<string, any>): ActivityReport {
@@ -71,6 +82,8 @@ function reportFromDoc(id: string, d: Record<string, any>): ActivityReport {
     content: d.content || undefined,
     verificationHash: d.verificationHash || '',
     attempt: typeof d.attempt === 'number' ? d.attempt : 1,
+    attemptKey: d.attemptKey || undefined,
+    attemptNumber: typeof d.attemptNumber === 'number' ? d.attemptNumber : undefined,
     attemptsHistory: Array.isArray(d.attemptsHistory)
       ? d.attemptsHistory.map((a: any) => ({
           score: typeof a.score === 'number' ? a.score : undefined,
@@ -123,7 +136,12 @@ export async function generateActivityReport(
     if (!input.userId || !input.activityId) {
       return { success: false, error: 'Missing user or activity id.' };
     }
-    const id = reportDocId(input.userId, input.activityType, input.activityId);
+    const id = reportDocId(
+      input.userId,
+      input.activityType,
+      input.activityId,
+      input.attemptKey,
+    );
     const ref = doc(db, COLLECTION, id);
     const snap = await getDoc(ref);
     const summary = buildReportSummary(input);
@@ -164,10 +182,33 @@ export async function generateActivityReport(
       }
       await setDoc(ref, update, { merge: true });
     } else {
+      // For attempt-scoped (story) records, derive a 1-based attempt number
+      // from how many reports the user already has for this activity. Runs
+      // once per attempt (only on first create of this attemptKey's doc).
+      let attemptNumber = 1;
+      if (input.attemptKey) {
+        try {
+          const priorSnap = await getDocs(
+            query(collection(db, COLLECTION), where('userId', '==', input.userId)),
+          );
+          attemptNumber =
+            priorSnap.docs.filter((p) => {
+              const pd = p.data();
+              return (
+                pd.activityType === input.activityType &&
+                pd.activityId === input.activityId
+              );
+            }).length + 1;
+        } catch {
+          attemptNumber = 1;
+        }
+      }
       await setDoc(ref, {
         ...common,
         verificationHash: makeHash(),
         attempt: 1,
+        attemptKey: input.attemptKey ?? null,
+        attemptNumber,
         attemptsHistory: [],
         voided: false,
         createdAt: serverTimestamp(),

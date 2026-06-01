@@ -853,6 +853,15 @@ export interface ActivityReport {
   verificationHash: string;
   /** Latest attempt number (1-based). */
   attempt: number;
+  /**
+   * Per-playthrough token. When present, this report represents ONE specific
+   * attempt (used by stories so each replay is its own immutable record rather
+   * than overwriting the previous result). Absent for idempotent activities
+   * (quizzes etc.) which keep one report per (user, activity).
+   */
+  attemptKey?: string;
+  /** 1-based ordinal of this attempt among the user's attempts at this activity. */
+  attemptNumber?: number;
   /** Prior attempts (score/passed/date), newest last. */
   attemptsHistory?: ActivityReportAttempt[];
   /** Set when submitted to a community. */

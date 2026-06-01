@@ -119,6 +119,9 @@ function renderContent(content: Record<string, any> | undefined): string {
     'score',
     'passed',
     'passingThreshold',
+    // Internal / redundant story keys (decisionPath duplicates choices).
+    'decisionPath',
+    'visitedSegmentCount',
   ]);
   const label = (k: string) =>
     k

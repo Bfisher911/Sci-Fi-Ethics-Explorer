@@ -308,7 +308,10 @@ export function buildTimeline(entries: EthicsJourneyEntry[]): TimelinePoint[] {
  */
 export function interpretChoice(impacts: ChoiceFrameworkImpact[]): string {
   if (!impacts || impacts.length === 0) {
-    return 'This choice did not clearly align with a single ethical framework.';
+    // Neutral, non-judgmental fallback. Authored story choices always carry
+    // framework metadata, so this only appears for unannotated/navigation
+    // options — and it must never read like "you failed to align".
+    return 'This choice reflects a blend of ethical considerations.';
   }
   const sorted = [...impacts].sort((a, b) => b.weight - a.weight);
   const top = sorted[0];
@@ -318,4 +321,53 @@ export function interpretChoice(impacts: ChoiceFrameworkImpact[]): string {
     return top.rationale;
   }
   return `This choice leans ${label.toLowerCase()}.`;
+}
+
+export interface FrameworkBreakdownItem {
+  id: FrameworkId;
+  label: string;
+  score: number;
+  /** Share of total weight, 0–1. */
+  share: number;
+  /** Rounded percentage of total weight. */
+  percent: number;
+  /** Distinct authored rationales that fed this framework, for display. */
+  rationales: string[];
+}
+
+/**
+ * Aggregate a playthrough's journey entries into a ranked, display-ready
+ * ethical-framework breakdown: which frameworks the user's choices aligned
+ * with, how strongly, and why (the authored rationales). Powers the
+ * end-of-story breakdown card and is captured into the saved evidence record.
+ * Pure — reused on client and in the report content builder.
+ */
+export function buildFrameworkBreakdown(
+  entries: EthicsJourneyEntry[],
+  maxItems = 6,
+): FrameworkBreakdownItem[] {
+  const scores = computeFrameworkScores(entries);
+  const ranked = rankFrameworks(scores).filter((r) => r.score > 0);
+
+  const rationalesById = new Map<string, string[]>();
+  for (const entry of entries) {
+    for (const impact of entry.impacts ?? []) {
+      const id = normalizeFrameworkId(impact.framework);
+      if (!id) continue;
+      const r = (impact.rationale || '').trim();
+      if (!r || /heuristic/i.test(r)) continue;
+      const list = rationalesById.get(id) ?? [];
+      if (!list.includes(r)) list.push(r);
+      rationalesById.set(id, list);
+    }
+  }
+
+  return ranked.slice(0, maxItems).map((r) => ({
+    id: r.id,
+    label: r.label,
+    score: r.score,
+    share: r.share,
+    percent: Math.round(r.share * 100),
+    rationales: rationalesById.get(r.id) ?? [],
+  }));
 }

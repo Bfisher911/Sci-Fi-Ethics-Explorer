@@ -54,6 +54,12 @@ export interface ActivityEvidenceProps {
   content?: Record<string, any>;
   heading?: string;
   className?: string;
+  /**
+   * Per-playthrough token. When set (stories), this evidence record is scoped
+   * to one attempt so each replay is its own downloadable record. Omit for
+   * idempotent activities (one report per user+activity).
+   */
+  attemptKey?: string;
 }
 
 /**
@@ -73,6 +79,7 @@ export function ActivityEvidence({
   content,
   heading,
   className,
+  attemptKey,
 }: ActivityEvidenceProps) {
   const { user } = useAuth();
   const { communities, loading: loadingComms } = useUserCommunities();
@@ -109,6 +116,7 @@ export function ActivityEvidence({
       passingThreshold,
       passed,
       content,
+      attemptKey,
     })
       .then((res) => {
         if (cancelled) return;
@@ -128,7 +136,7 @@ export function ActivityEvidence({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid, activityType, activityId, activityTitle, score, passed, contentKey, retryNonce]);
+  }, [user?.uid, activityType, activityId, activityTitle, score, passed, contentKey, retryNonce, attemptKey]);
 
   useEffect(() => {
     if (communities.length === 1) setCommunityId(communities[0].id);
