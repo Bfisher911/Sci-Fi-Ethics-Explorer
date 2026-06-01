@@ -102,7 +102,7 @@ function MessagesIndicator(): React.ReactElement | null {
 export function AppHeader() {
   const { user } = useAuth();
   const router = useRouter();
-  const { toggleSidebar, isMobile } = useSidebar();
+  const { toggleSidebar } = useSidebar();
 
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -189,12 +189,20 @@ export function AppHeader() {
         role="banner"
         className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6"
       >
-        {isMobile && (
-           <Button variant="ghost" size="icon" onClick={toggleSidebar} className="md:hidden">
-              <PanelLeft className="h-5 w-5" />
-              <span className="sr-only">Toggle Menu</span>
-            </Button>
-        )}
+        {/* Collapse / expand the left navigation. Visible on every breakpoint:
+            on desktop it toggles the icon rail, on mobile it opens the menu
+            sheet. The open/closed state persists via the sidebar cookie, and
+            the keyboard shortcut (⌘/Ctrl + B) also works. */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
+          aria-label="Toggle navigation menu"
+          title="Toggle menu (⌘B)"
+        >
+          <PanelLeft className="h-5 w-5" />
+          <span className="sr-only">Toggle navigation menu</span>
+        </Button>
         <div className="flex-1">
           {/* Spacer */}
         </div>
