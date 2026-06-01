@@ -9,10 +9,12 @@ import {
   Lock,
   Lightbulb,
   Target,
+  Users,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
 import { useAuth } from '@/hooks/use-auth';
 import { saveReflection, getChapterReflections } from '@/app/actions/textbook';
 
@@ -228,6 +230,28 @@ export function ReflectionPrompt({
             <Lightbulb className="h-3 w-3" />
             {showStarters ? 'Hide starters' : 'Stuck? Try a starter'}
           </Button>
+          {/* Submit this reflection to a community once it has content. A
+              compact dialog button keeps repeated prompts uncluttered. */}
+          {user && value.trim() && (
+            <ShareToCommunityDialog
+              type="reflection"
+              defaultTitle={`Reflection: ${prompt.slice(0, 48)}${prompt.length > 48 ? '…' : ''}`}
+              defaultSummary={value.slice(0, 280)}
+              sourceCollection="textbookReflections"
+              sourceId={`${chapterSlug}:${promptId}`}
+              content={{ promptId, chapterSlug, prompt, reflection: value }}
+              trigger={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 gap-1 px-2 text-[11px]"
+                >
+                  <Users className="h-3 w-3" /> Submit to community
+                </Button>
+              }
+            />
+          )}
           {/* Word-count target: green when met. We pick 50 words as a
               reasonable "you actually thought about it" floor — enough
               for a paragraph, not so high it feels like an essay. */}

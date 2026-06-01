@@ -39,6 +39,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FrameworkBreakdown } from '@/components/ethics/framework-breakdown';
+import { SubmitToCommunitySection } from '@/components/communities/submit-to-community-section';
 import {
   getUnifiedEthicsProfile,
   generateEthicsReportForUser,
@@ -275,6 +276,7 @@ export function EthicsJourneyCard(): JSX.Element {
                   )}
 
                   {report && !report.error && (
+                    <>
                     <div className="mt-4 space-y-4 rounded-lg border bg-background/40 p-4">
                       {report.reflectiveSummary && (
                         <p className="text-sm italic leading-relaxed text-foreground/90">
@@ -349,6 +351,25 @@ export function EthicsJourneyCard(): JSX.Element {
                         </div>
                       )}
                     </div>
+                    {/* Submit this generated ethics report into a community
+                        learning record. */}
+                    <SubmitToCommunitySection
+                      type="ethics_report"
+                      defaultTitle="My ethical profile report"
+                      defaultSummary={
+                        report.reflectiveSummary?.slice(0, 280) ||
+                        'My ethical-framework learning record.'
+                      }
+                      className="mt-4"
+                      content={{
+                        report,
+                        reflectiveSummary: report.reflectiveSummary,
+                        dominantFrameworks: report.dominantFrameworks,
+                        patterns: report.patterns,
+                        tensions: report.tensions,
+                      }}
+                    />
+                    </>
                   )}
                 </>
               )}

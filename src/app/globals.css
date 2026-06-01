@@ -110,6 +110,42 @@
   }
 }
 
+/* ─── CTA glow: subtle call-to-action highlight for major post-completion
+ * evidence buttons (Download Badge, Print Certificate, What Happens Next,
+ * Submit to Community, …). A gentle pulse — never a flashing arcade sign —
+ * built from the theme's --primary token so it matches light/dark/themes.
+ * Under reduced-motion the pulse is replaced by a STATIC glow so the
+ * call-to-action is still visually obvious without any animation. The class
+ * is applied via `className="cta-glow"` on any Button.
+ * ─────────────────────────────────────────────────────────────────── */
+@keyframes cta-glow-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px hsl(var(--primary) / 0.45),
+      0 0 11px 1px hsl(var(--primary) / 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px hsl(var(--primary) / 0.6),
+      0 0 22px 4px hsl(var(--primary) / 0.55);
+  }
+}
+.cta-glow {
+  box-shadow:
+    0 0 0 1px hsl(var(--primary) / 0.5),
+    0 0 16px 2px hsl(var(--primary) / 0.45);
+  animation: cta-glow-pulse 2.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-glow {
+    animation: none !important;
+    box-shadow:
+      0 0 0 1px hsl(var(--primary) / 0.55),
+      0 0 16px 2px hsl(var(--primary) / 0.5);
+  }
+}
+
 /* ─── Accessibility: visible focus ring across interactive elements ──
  * Some shadcn primitives strip the default browser focus ring. Add
  * a fallback so keyboard users always see where they are.

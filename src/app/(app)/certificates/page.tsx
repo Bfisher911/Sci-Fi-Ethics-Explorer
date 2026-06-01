@@ -12,6 +12,7 @@ import { getUserCertificates } from '@/app/actions/certificates';
 import { getCurricula } from '@/app/actions/curriculum';
 import type { Certificate, CurriculumPath } from '@/types';
 import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
+import { CertificateProgress } from '@/components/certificates/certificate-progress';
 
 function formatDate(d: any): string {
   if (!d) return '';
@@ -66,6 +67,17 @@ export default function CertificatesPage() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Certificate progress — activity certificates (stories, quizzes,
+          studio, debates, …) plus one per textbook chapter quiz. Shows
+          earned / in-progress / locked status. */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-semibold text-primary mb-4 flex items-center gap-2">
+          <Award className="h-6 w-6" />
+          Certificate Progress
+        </h2>
+        <CertificateProgress className="bg-card/80 backdrop-blur-sm" />
+      </div>
 
       {/* Earned certificates */}
       {certs.length > 0 && (

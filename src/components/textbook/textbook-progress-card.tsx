@@ -46,7 +46,6 @@ export function TextbookProgressCard() {
 
   const total = chapters.length;
   const passed = progress?.chapterQuizzesPassed.length || 0;
-  const certs = Object.keys(progress?.chapterCertificateIds || {}).length;
   const hasMaster = Boolean(progress?.masterCertificateId);
   const pct = Math.round((passed / total) * 100);
   const resumeSlug = progress?.lastChapterRead || chapters[0].slug;
@@ -92,10 +91,10 @@ export function TextbookProgressCard() {
           </div>
           <div>
             <p className="font-headline text-xl font-bold text-foreground">
-              {certs + (hasMaster ? 1 : 0)}
+              {hasMaster ? 1 : 0}
             </p>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              Certificates
+              Master cert
             </p>
           </div>
         </div>

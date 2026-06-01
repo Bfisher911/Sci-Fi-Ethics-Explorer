@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
   Dialog,
   DialogContent,
@@ -182,9 +183,18 @@ export function ShareToCommunityDialog({
                 Loading your communities…
               </div>
             ) : communities.length === 0 ? (
-              <p className="text-sm text-muted-foreground pt-2">
-                You are not a member of any community yet. Join or create one first.
-              </p>
+              <div className="space-y-2 pt-2">
+                <p className="text-sm text-muted-foreground">
+                  You must join or be added to a community before you can submit
+                  results. Ask your instructor for an invite code, or browse
+                  available communities.
+                </p>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/communities" onClick={() => setOpen(false)}>
+                    Browse communities
+                  </Link>
+                </Button>
+              </div>
             ) : (
               <Select value={communityId} onValueChange={setCommunityId}>
                 <SelectTrigger id="share-community" className="mt-1">

@@ -23,11 +23,12 @@ type ActionResult<T = undefined> =
 
 /**
  * Checks user progress and awards any newly earned badges.
- * Returns the full list of earned badge IDs.
+ * Returns both the full earned list and just the badges newly awarded on this
+ * pass (so callers can show a congratulatory message for new badges).
  */
 export async function checkAndAwardBadges(
   userId: string
-): Promise<ActionResult<BadgeId[]>> {
+): Promise<ActionResult<{ allEarned: BadgeId[]; newlyEarned: BadgeId[] }>> {
   if (!userId) {
     return { success: false, error: 'User ID is required.' };
   }
@@ -41,7 +42,7 @@ export async function checkAndAwardBadges(
     const progressSnap = await getDoc(progressRef);
 
     if (!progressSnap.exists()) {
-      return { success: true, data: [] };
+      return { success: true, data: { allEarned: [], newlyEarned: [] } };
     }
 
     const progressData = progressSnap.data() as UserProgress;
@@ -128,7 +129,10 @@ export async function checkAndAwardBadges(
       );
     }
 
-    return { success: true, data: earnedIds };
+    return {
+      success: true,
+      data: { allEarned: earnedIds, newlyEarned: newBadges.map((b) => b.badgeId) },
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error('[SERVER ACTION] checkAndAwardBadges error:', message);

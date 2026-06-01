@@ -30,7 +30,8 @@ import { recordEthicalJudgmentEvent } from '@/app/actions/ethical-judgments';
 import { recordEthicsDecision } from '@/app/actions/ethics-journey';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
-import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
+import { ActivityEvidence } from '@/components/activity-reports/activity-evidence';
+import { useCertificateCheck } from '@/components/certificates/use-certificate-check';
 import { buildChoiceFrameworkWeights } from '@/lib/choice-frameworks';
 import { resolveChoiceImpacts } from '@/lib/ethics/classify';
 import {
@@ -112,12 +113,14 @@ export default function StoryDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [showStoryMap, setShowStoryMap] = useState(false);
   const [showEpilogue, setShowEpilogue] = useState(false);
+  const [whatHappensNext, setWhatHappensNext] = useState<string | null>(null);
   const [lastAlignedFramework, setLastAlignedFramework] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [atmosphereOn, setAtmosphereOn] = useState(false);
   const [showLockedModal, setShowLockedModal] = useState(false);
   const segmentRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  const checkCertificates = useCertificateCheck();
   const { isPaid } = useSubscription();
 
   // Free preview length for non-subscribers: they can read segments 0 and 1.
@@ -296,6 +299,7 @@ export default function StoryDetailPage() {
         if (user?.uid && storyId) {
           try {
             await recordStoryCompletion(user.uid, storyId);
+            void checkCertificates(user.uid, { categories: ['stories'] });
           } catch (err) {
             console.error('Failed to record story completion:', err);
           }
@@ -734,7 +738,7 @@ export default function StoryDetailPage() {
         )}
       </Card>
 
-      {/* "What Happened Next?" Epilogue + Share-to-community on completion */}
+      {/* "What Happened Next?" Epilogue + Submit-to-community on completion */}
       {isStoryEnd && userChoices.length > 0 && (
         <div className="mt-6 space-y-3">
           <div className="flex flex-wrap gap-3">
@@ -742,33 +746,12 @@ export default function StoryDetailPage() {
               <Button
                 onClick={() => setShowEpilogue(true)}
                 variant="outline"
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto cta-glow"
               >
                 <Sparkles className="mr-2 h-4 w-4" />
                 What Happened Next?
               </Button>
             )}
-            {/* Share story completion to a community. Surfaces the
-                reader's choices + the AI reflection (when present) so
-                classmates can engage with the same dilemma. */}
-            <ShareToCommunityDialog
-              type="story_completion"
-              defaultTitle={`Finished "${story.title}"`}
-              defaultSummary={
-                reflection
-                  ? reflection.slice(0, 280)
-                  : `I just finished "${story.title}". My choices: ${userChoices.slice(0, 3).join(' → ')}${userChoices.length > 3 ? ' …' : ''}`
-              }
-              sourceCollection="stories"
-              sourceId={story.id}
-              content={{
-                storyId: story.id,
-                storyTitle: story.title,
-                userChoices,
-                reflection: reflection || undefined,
-                visitedSegmentCount: visitedSegments.length,
-              }}
-            />
           </div>
           {showEpilogue && (
             <Card className="bg-card/80 backdrop-blur-sm p-6">
@@ -776,9 +759,29 @@ export default function StoryDetailPage() {
                 storyTitle={story.title}
                 storyEnding={storyEndingText}
                 userChoices={userChoices}
+                onEpilogue={(text) => setWhatHappensNext(text)}
               />
             </Card>
           )}
+          {/* Story Completion Badge — full story report, reflection, decision
+              path, "What Happens Next", and framework alignment. Downloadable,
+              submittable, emailable. */}
+          <ActivityEvidence
+            activityType="story"
+            activityId={story.id}
+            activityTitle={story.title}
+            content={{
+              storyReport: story.description,
+              storyTheme: story.theme,
+              storyGenre: story.genre,
+              choices: userChoices,
+              decisionPath: userChoices,
+              reflection: reflection || undefined,
+              whatHappensNext: whatHappensNext || undefined,
+              frameworkAlignment: latestInterpretation || undefined,
+              visitedSegmentCount: visitedSegments.length,
+            }}
+          />
         </div>
       )}
 

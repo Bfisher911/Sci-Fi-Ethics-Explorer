@@ -11,6 +11,9 @@ interface EpilogueViewerProps {
   storyTitle: string;
   storyEnding: string;
   userChoices: string[];
+  /** Fires when an epilogue ("What Happens Next") is generated, so the parent
+   *  can include it in the downloadable Story Completion Badge. */
+  onEpilogue?: (epilogueText: string, timeframe: string) => void;
 }
 
 type Timeframe = '1 year' | '5 years' | '50 years';
@@ -29,6 +32,7 @@ export function EpilogueViewer({
   storyTitle,
   storyEnding,
   userChoices,
+  onEpilogue,
 }: EpilogueViewerProps): JSX.Element {
   const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe>('1 year');
   const [isLoading, setIsLoading] = useState(false);
@@ -54,6 +58,7 @@ export function EpilogueViewer({
           timeframe,
         });
         setCache((prev) => ({ ...prev, [timeframe]: result }));
+        if (result?.epilogueText) onEpilogue?.(result.epilogueText, timeframe);
       } catch (err) {
         console.error('Error generating epilogue:', err);
         setError('Failed to generate epilogue. Please try again.');
@@ -61,7 +66,7 @@ export function EpilogueViewer({
         setIsLoading(false);
       }
     },
-    [cache, storyTitle, storyEnding, userChoices]
+    [cache, storyTitle, storyEnding, userChoices, onEpilogue]
   );
 
   const getSentimentColor = (sentiment: 'positive' | 'negative' | 'mixed'): string => {

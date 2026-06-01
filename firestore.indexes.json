@@ -131,6 +131,22 @@
       ]
     },
     {
+      "collectionGroup": "communityContributions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "contributorId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "activityReports",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "voided", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "analyses",
       "queryScope": "COLLECTION",
       "fields": [

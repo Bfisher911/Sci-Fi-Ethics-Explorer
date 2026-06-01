@@ -58,8 +58,11 @@ import type {
   SavedAnalysis,
   SavedPerspective,
   GlobalVisibility,
+  CommunityContribution,
 } from '@/types';
 import { getSubmissionsByAuthor } from '@/app/actions/admin';
+import { getUserContributions } from '@/app/actions/contributions';
+import { ContributionCard } from '@/components/communities/contribution-card';
 import {
   getUserStories,
   setStoryVisibility,
@@ -268,6 +271,9 @@ export default function MySubmissionsPage() {
   const router = useRouter();
 
   const [items, setItems] = useState<NormalizedItem[]>([]);
+  const [contributions, setContributions] = useState<CommunityContribution[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<NormalizedItem | null>(
@@ -280,13 +286,23 @@ export default function MySubmissionsPage() {
     setLoading(true);
     setError(null);
 
-    const [dilemmasRes, storiesRes, analysesRes, perspectivesRes] =
-      await Promise.all([
-        getSubmissionsByAuthor(user.uid),
-        getUserStories(user.uid),
-        getUserAnalyses(user.uid),
-        getUserPerspectives(user.uid),
-      ]);
+    const [
+      dilemmasRes,
+      storiesRes,
+      analysesRes,
+      perspectivesRes,
+      contributionsRes,
+    ] = await Promise.all([
+      getSubmissionsByAuthor(user.uid),
+      getUserStories(user.uid),
+      getUserAnalyses(user.uid),
+      getUserPerspectives(user.uid),
+      getUserContributions(user.uid),
+    ]);
+
+    // Community submissions are an independent surface — a failure to load
+    // them shouldn't blank out the user's created content.
+    setContributions(contributionsRes.success ? contributionsRes.data : []);
 
     const merged: NormalizedItem[] = [];
     if (dilemmasRes.success) {
@@ -451,8 +467,9 @@ export default function MySubmissionsPage() {
             </h1>
           </CardTitle>
           <CardDescription>
-            Manage everything you have created: stories, dilemmas, analyses,
-            and perspective comparisons.
+            Manage everything you have created — stories, dilemmas, analyses,
+            and perspective comparisons — and review what you have submitted to
+            your communities.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -483,7 +500,11 @@ export default function MySubmissionsPage() {
         </Alert>
       )}
 
-      {!loading && user && items.length === 0 && !error && (
+      {!loading &&
+        user &&
+        items.length === 0 &&
+        contributions.length === 0 &&
+        !error && (
         <Card className="p-12 text-center bg-card/80 backdrop-blur-sm">
           <CardContent className="p-0 space-y-4">
             <Inbox className="mx-auto h-16 w-16 text-muted-foreground" />
@@ -651,6 +672,31 @@ export default function MySubmissionsPage() {
             )}
           </TabsContent>
         </Tabs>
+      )}
+
+      {/* Community submissions — what the user has submitted into their
+          communities (quiz results, reflections, reports, …). Reuses the
+          shared ContributionCard so each links to its detail page. */}
+      {!loading && user && contributions.length > 0 && (
+        <Card className="mt-8 bg-card/80 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl text-primary">
+              <Users className="h-5 w-5" />
+              Community submissions ({contributions.length})
+            </CardTitle>
+            <CardDescription>
+              Results, reflections, decision paths, and reports you have
+              submitted to your communities — your community learning record.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {contributions.map((c) => (
+                <ContributionCard key={c.id} contribution={c} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <AlertDialog

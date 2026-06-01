@@ -43,8 +43,32 @@ const CommunityGradebookView = dynamic(
     ),
   },
 );
+const CommunityCertificatesView = dynamic(
+  () =>
+    import('@/components/communities/community-certificates').then(
+      (m) => m.CommunityCertificatesView,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-96 w-full rounded-lg bg-muted/20 animate-pulse" />
+    ),
+  },
+);
+const CommunityReportsView = dynamic(
+  () =>
+    import('@/components/communities/community-reports').then(
+      (m) => m.CommunityReportsView,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-96 w-full rounded-lg bg-muted/20 animate-pulse" />
+    ),
+  },
+);
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BarChart3, GraduationCap } from 'lucide-react';
+import { BarChart3, GraduationCap, Award, FileBadge } from 'lucide-react';
 import type { Community, CommunityMemberInfo, CommunityInvite } from '@/types';
 import Link from 'next/link';
 
@@ -131,8 +155,13 @@ export default function CommunityAnalyticsPage() {
     );
   }
 
+  // The owner manages the community even if they aren't separately listed in
+  // instructorIds. Treat owner OR instructor as able to view analytics — this
+  // matches the server-side check in getCommunityGradebook.
   const isInstructor =
-    !!user && community.instructorIds?.includes(user.uid);
+    !!user &&
+    (community.ownerId === user.uid ||
+      !!community.instructorIds?.includes(user.uid));
 
   if (!isInstructor) {
     return (
@@ -171,6 +200,12 @@ export default function CommunityAnalyticsPage() {
           <TabsTrigger value="gradebook">
             <GraduationCap className="h-4 w-4 mr-1.5" /> Gradebook
           </TabsTrigger>
+          <TabsTrigger value="certificates">
+            <Award className="h-4 w-4 mr-1.5" /> Certificates
+          </TabsTrigger>
+          <TabsTrigger value="reports">
+            <FileBadge className="h-4 w-4 mr-1.5" /> Reports
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-4">
           <InstructorAnalytics
@@ -182,6 +217,22 @@ export default function CommunityAnalyticsPage() {
         <TabsContent value="gradebook" className="mt-4">
           {user ? (
             <CommunityGradebookView
+              communityId={community.id}
+              requesterId={user.uid}
+            />
+          ) : null}
+        </TabsContent>
+        <TabsContent value="certificates" className="mt-4">
+          {user ? (
+            <CommunityCertificatesView
+              communityId={community.id}
+              requesterId={user.uid}
+            />
+          ) : null}
+        </TabsContent>
+        <TabsContent value="reports" className="mt-4">
+          {user ? (
+            <CommunityReportsView
               communityId={community.id}
               requesterId={user.uid}
             />

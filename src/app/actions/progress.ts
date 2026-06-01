@@ -30,6 +30,7 @@ const DEFAULT_PROGRESS: Omit<UserProgress, 'userId'> = {
   storyChoices: {},
   quizResults: [],
   scenariosAnalyzed: 0,
+  studioReflectionsCompleted: 0,
   debatesParticipated: [],
   dilemmasSubmitted: [],
   lastActivity: new Date(),
@@ -77,6 +78,7 @@ export async function getUserProgress(
       storyChoices: data.storyChoices || {},
       quizResults,
       scenariosAnalyzed: data.scenariosAnalyzed || 0,
+      studioReflectionsCompleted: data.studioReflectionsCompleted || 0,
       debatesParticipated: data.debatesParticipated || [],
       dilemmasSubmitted: data.dilemmasSubmitted || [],
       lastActivity: toDate(data.lastActivity) ?? new Date(),
@@ -319,6 +321,40 @@ export async function recordAnalysis(
     console.error('[SERVER ACTION] recordAnalysis error:', error);
     const msg = error instanceof Error ? error.message : String(error);
     return { success: false, error: `Failed to record analysis: ${msg}` };
+  }
+}
+
+/**
+ * Records one completed Studio "Reflect" activity. The Reflect tool is
+ * otherwise ephemeral (it generates an AI reflection without persisting),
+ * so this counter is the source of truth for the Studio Reflect certificate.
+ */
+export async function recordStudioReflection(
+  userId: string
+): Promise<ProgressActionResult<undefined>> {
+  if (!userId) {
+    return { success: false, error: 'User ID is required.' };
+  }
+  if (!db) {
+    return { success: false, error: 'Firestore is not initialized.' };
+  }
+
+  try {
+    const docRef = doc(db, 'userProgress', userId);
+    await setDoc(
+      docRef,
+      {
+        userId,
+        studioReflectionsCompleted: increment(1),
+        lastActivity: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error('[SERVER ACTION] recordStudioReflection error:', error);
+    const msg = error instanceof Error ? error.message : String(error);
+    return { success: false, error: `Failed to record studio reflection: ${msg}` };
   }
 }
 

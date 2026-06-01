@@ -14,6 +14,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { getUserBadges } from '@/app/actions/badges';
 import { EarnedBadges } from '@/components/profile/earned-badges';
 import { CertificatesCard } from '@/components/profile/certificates-card';
+import { CertificateProgress } from '@/components/certificates/certificate-progress';
+import { ActivityEvidenceList } from '@/components/activity-reports/activity-evidence-list';
 
 /**
  * Top-level "Achievements" section for the profile page. Combines the
@@ -64,7 +66,11 @@ export function AchievementsSection() {
         </CardContent>
       </Card>
 
+      <CertificateProgress className="bg-card/80 backdrop-blur-sm" />
+
       <CertificatesCard />
+
+      <ActivityEvidenceList className="bg-card/80 backdrop-blur-sm" />
     </div>
   );
 }

@@ -652,6 +652,31 @@ export interface Certificate {
   revokedAt?: Date | any;
   revokedBy?: string;
   revokeReason?: string;
+  /**
+   * Distinguishes activity/achievement certificates (story completion,
+   * quiz mastery, …) issued by the rule engine from curriculum/path
+   * completion certificates. Absent on legacy records ⇒ treat as
+   * 'curriculum'. See src/lib/certificates/registry.ts.
+   */
+  certificateType?: 'curriculum' | 'achievement';
+  /** Human-readable description of what the certificate represents. */
+  description?: string;
+  /** Human-readable earning criteria (e.g. "Complete 12 stories"). */
+  criteria?: string;
+  /** Snapshot of the metric that earned it, for the detail page. */
+  progressSnapshot?: { current: number; target: number; label?: string };
+  /** Set when the certificate was earned inside a community context. */
+  communityId?: string;
+  communityName?: string;
+  /** Owner/instructor display name of the associated community, if any. */
+  instructorName?: string;
+  /**
+   * Free-form per-certificate metadata. Used by chapter-quiz certificates to
+   * carry { chapterNumber, chapterTitle, quizTitle, score, passingThreshold }.
+   * Generic so future certificate types can attach their own fields without a
+   * schema change.
+   */
+  metadata?: Record<string, any>;
 }
 
 // ─── Direct Messages ────────────────────────────────────────────────
@@ -744,7 +769,11 @@ export type ContributionType =
   | 'reflection'            // freeform learner reflection (curriculum/textbook prompts)
   | 'highlight'             // textbook quote with optional note
   | 'certificate'           // earned a curriculum/textbook certificate
-  | 'workshop';             // participated in / hosted a workshop
+  | 'workshop'              // participated in / hosted a workshop
+  | 'framework_result'      // framework-explorer module / ethical-framework alignment result
+  | 'media_reflection'      // sci-fi media ethical-scenario reflection (choice + framework feedback)
+  | 'weekly_dilemma'        // weekly clause / community dilemma response (choice + reflection)
+  | 'ethics_report';        // AI-generated ethical-profile report / learning record
 
 export interface CommunityContribution {
   id: string;
@@ -771,6 +800,77 @@ export interface CommunityContribution {
   createdAt: Date | any;
 }
 
+// ─── Activity Evidence (badges / activity reports) ──────────────────
+
+/**
+ * Individual-activity evidence. Every completed activity produces one of these
+ * (idempotently, one per user+activity) — proof of completion a student can
+ * download as a PDF, submit to a community, email to an instructor, and verify
+ * by code. Distinct from milestone Certificates.
+ *
+ * Adding a new activity type is the only place a new evidence kind needs to be
+ * declared — the service + UI are generic.
+ */
+export type ActivityReportType =
+  | 'story'
+  | 'quiz'
+  | 'dilemma'
+  | 'debate'
+  | 'studio_analysis'
+  | 'studio_compare'
+  | 'studio_reflect'
+  | 'framework_explorer'
+  | 'media_reflection'
+  | 'other';
+
+export interface ActivityReportAttempt {
+  score?: number;
+  passed?: boolean;
+  completedAt: Date | any;
+}
+
+export interface ActivityReport {
+  id: string;
+  userId: string;
+  userName: string;
+  activityType: ActivityReportType | string;
+  /** e.g. quiz subjectType ('philosopher' | 'book-chapter' | …). */
+  activitySubtype?: string;
+  activityId: string;
+  activityTitle: string;
+  completedAt: Date | any;
+  score?: number;
+  passingThreshold?: number;
+  passed?: boolean;
+  /** Human-readable summary of what the student did. */
+  summary: string;
+  /**
+   * Type-specific evidence: choices, decisionPath, response, frameworkAlignment,
+   * aiFeedback, tags, etc.
+   */
+  content?: Record<string, any>;
+  /** Short verification code (also the public verify URL segment). */
+  verificationHash: string;
+  /** Latest attempt number (1-based). */
+  attempt: number;
+  /** Prior attempts (score/passed/date), newest last. */
+  attemptsHistory?: ActivityReportAttempt[];
+  /** Set when submitted to a community. */
+  communityId?: string;
+  communityName?: string;
+  instructorName?: string;
+  submittedAt?: Date | any;
+  /** The communityContribution created on submit. */
+  contributionId?: string;
+  /** Void/restore (admin or managing instructor). Voided evidence does not
+   *  count toward certificates until restored. */
+  voidedAt?: Date | any;
+  voidedBy?: string;
+  voidReason?: string;
+  createdAt: Date | any;
+  updatedAt?: Date | any;
+}
+
 export interface ContributionComment {
   id: string;
   contributionId: string;
@@ -790,6 +890,7 @@ export type NotificationType =
   | 'community_invite'
   | 'debate_reply'
   | 'certificate_earned'
+  | 'badge_earned'
   | 'seat_assigned'
   | 'classmate_milestone'
   | 'platform_update'
@@ -880,6 +981,9 @@ export interface UserProgress {
   storyChoices: Record<string, string[]>;
   quizResults: QuizResult[];
   scenariosAnalyzed: number;
+  /** Count of Studio "Reflect" tool completions. Powers the Studio Reflect
+   *  certificate. Incremented by recordStudioReflection. */
+  studioReflectionsCompleted?: number;
   debatesParticipated: string[];
   dilemmasSubmitted: string[];
   lastActivity: Date | any;

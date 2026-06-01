@@ -12,7 +12,7 @@ import {
   analyzeScenario,
   type AnalyzeScenarioOutput,
 } from '@/ai/flows/analyze-scenario';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -31,7 +31,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { recordAnalysis } from '@/app/actions/progress';
 import { createAnalysis } from '@/app/actions/analyses';
-import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
+import { ActivityEvidence } from '@/components/activity-reports/activity-evidence';
+import { useCertificateCheck } from '@/components/certificates/use-certificate-check';
 
 export function AnalyzeTab() {
   const [analysisResult, setAnalysisResult] = useState<AnalyzeScenarioOutput | null>(null);
@@ -43,6 +44,9 @@ export function AnalyzeTab() {
   const [savedId, setSavedId] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const checkCertificates = useCertificateCheck();
+  // Fresh evidence id per analysis run so each produces its own report.
+  const [evidenceId, setEvidenceId] = useState<string | null>(null);
 
   const handleAnalyze = async (text: string) => {
     setScenarioText(text);
@@ -53,9 +57,15 @@ export function AnalyzeTab() {
     try {
       const result = await analyzeScenario({ scenarioText: text });
       setAnalysisResult(result);
+      setEvidenceId(
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `analysis-${Date.now()}`
+      );
       if (user?.uid) {
         try {
           await recordAnalysis(user.uid);
+          void checkCertificates(user.uid, { categories: ['studio-analysis'] });
         } catch (err) {
           console.error('Failed to record analysis:', err);
         }
@@ -203,24 +213,22 @@ export function AnalyzeTab() {
               </div>
             )}
           </CardContent>
-          {user && (
-            <CardFooter className="flex justify-end">
-              <ShareToCommunityDialog
-                type="analysis"
-                defaultTitle={
-                  scenarioText.slice(0, 60) + (scenarioText.length > 60 ? '…' : '')
-                }
-                defaultSummary=""
-                content={{
-                  scenarioText,
-                  ethicalDilemmas: analysisResult.ethicalDilemmas,
-                  potentialConsequences: analysisResult.potentialConsequences,
-                  applicableEthicalTheories: analysisResult.applicableEthicalTheories,
-                }}
-              />
-            </CardFooter>
-          )}
         </Card>
+      )}
+      {analysisResult && evidenceId && (
+        <ActivityEvidence
+          activityType="studio_analysis"
+          activityId={evidenceId}
+          activityTitle={
+            scenarioText.slice(0, 60) + (scenarioText.length > 60 ? '…' : '')
+          }
+          content={{
+            scenario: scenarioText,
+            ethicalDilemmas: analysisResult.ethicalDilemmas,
+            potentialConsequences: analysisResult.potentialConsequences,
+            applicableEthicalTheories: analysisResult.applicableEthicalTheories,
+          }}
+        />
       )}
     </div>
   );

@@ -133,10 +133,10 @@ export function TextbookHero({ meta, progress, resumeSlug }: TextbookHeroProps) 
                   </div>
                   <div>
                     <p className="font-headline text-2xl font-bold text-foreground">
-                      {Object.keys(progress.chapterCertificateIds || {}).length}
+                      {progress.masterCertificateId ? 1 : 0}
                     </p>
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                      Certs
+                      Master cert
                     </p>
                   </div>
                 </div>

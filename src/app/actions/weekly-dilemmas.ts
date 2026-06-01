@@ -26,6 +26,26 @@ function weeklyDb() {
   return adminDb;
 }
 
+/**
+ * Count how many weekly dilemmas a user has responded to. Powers the
+ * "Ethical Dilemma Certificate" (respond to 12 dilemmas). Single-field
+ * query — no composite index required. Returns 0 (never throws) when admin
+ * credentials are unavailable so the certificate engine degrades gracefully.
+ */
+export async function countUserDilemmaResponses(userId: string): Promise<number> {
+  if (!userId) return 0;
+  try {
+    const snap = await weeklyDb()
+      .collection('weeklyDilemmaResponses')
+      .where('userId', '==', userId)
+      .get();
+    return snap.size;
+  } catch (error) {
+    console.warn('[weekly-dilemmas] countUserDilemmaResponses failed:', error);
+    return 0;
+  }
+}
+
 function toDate(value: any): Date {
   if (!value) return new Date();
   if (value instanceof Date) return value;

@@ -68,7 +68,7 @@ function CommunityFeedPage() {
     const [communityRes, topicsRes, contribsRes] = await Promise.all([
       getCommunity(communityId),
       listForumTopics({ communityId, max: 50 }),
-      getContributions(communityId),
+      getContributions(communityId, { requesterId: user?.uid }),
     ]);
     if (communityRes.success) setCommunity(communityRes.data);
     const merged: FeedEvent[] = [];

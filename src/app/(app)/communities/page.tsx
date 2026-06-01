@@ -69,7 +69,13 @@ function CommunitiesPageInner() {
 
   function getUserRole(community: Community): CommunityMemberRole {
     if (!user) return 'member';
-    if (community.instructorIds?.includes(user.uid)) return 'instructor';
+    // The owner manages the community even if not separately listed in
+    // instructorIds, so treat them as an instructor for role/permissions.
+    if (
+      community.ownerId === user.uid ||
+      community.instructorIds?.includes(user.uid)
+    )
+      return 'instructor';
     return 'member';
   }
 
@@ -153,6 +159,7 @@ function CommunitiesPageInner() {
               key={community.id}
               community={community}
               userRole={getUserRole(community)}
+              isOwner={!!user && community.ownerId === user.uid}
             />
           ))}
         </div>

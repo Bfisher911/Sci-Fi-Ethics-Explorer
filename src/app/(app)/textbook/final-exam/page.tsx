@@ -137,7 +137,7 @@ export default function FinalExamPage() {
                 Explorer profile.
               </p>
             </div>
-            <Button asChild>
+            <Button asChild className="cta-glow">
               <Link href={`/textbook/certificate/${masterCert.verificationHash}`}>
                 View Master Certificate
               </Link>

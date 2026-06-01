@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Download, Loader2 } from 'lucide-react';
 import type { Certificate } from '@/types';
 import { CertificateTemplate } from './certificate-template';
+import { cn } from '@/lib/utils';
 
 interface DownloadCertificateButtonProps {
   certificate: Certificate;
@@ -17,6 +18,8 @@ interface DownloadCertificateButtonProps {
     | 'destructive';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   className?: string;
+  /** Subtle call-to-action glow (post-completion screens). */
+  glow?: boolean;
 }
 
 /**
@@ -35,6 +38,7 @@ export function DownloadCertificateButton({
   variant = 'default',
   size = 'sm',
   className,
+  glow,
 }: DownloadCertificateButtonProps) {
   const [isPrinting, setIsPrinting] = useState(false);
 
@@ -83,7 +87,7 @@ export function DownloadCertificateButton({
       size={size}
       onClick={handleDownload}
       disabled={isPrinting}
-      className={className}
+      className={cn(glow && 'cta-glow', className)}
     >
       {isPrinting ? (
         <Loader2 className="h-4 w-4 mr-2 animate-spin" />

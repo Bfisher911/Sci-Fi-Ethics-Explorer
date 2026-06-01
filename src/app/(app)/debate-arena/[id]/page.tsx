@@ -27,6 +27,7 @@ import type { Debate, DebateArgument } from '@/types';
 import { displayAuthorName } from '@/lib/official-author';
 import { BookmarkButton } from '@/components/bookmarks/bookmark-button';
 import { ShareToMessageDialog } from '@/components/messages/share-to-message-dialog';
+import { ActivityEvidence } from '@/components/activity-reports/activity-evidence';
 import { AdminActions } from '@/components/admin/admin-actions';
 import { adminDeleteArtifact } from '@/app/actions/admin';
 import { PageWalkthrough } from '@/components/walkthroughs/page-walkthrough';
@@ -332,6 +333,26 @@ export default function DebateDetailPage() {
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Activity evidence for engaging with this debate. */}
+      {debate.status === 'closed' && (
+        <div className="mb-8">
+          <ActivityEvidence
+            activityType="debate"
+            activityId={debate.id}
+            activityTitle={`Debate: ${debate.title}`}
+            content={{
+              topic: debate.title,
+              description: debate.description,
+              tags: debate.tags ?? [],
+              proScore,
+              conScore,
+              outcome:
+                proScore > conScore ? 'pro' : conScore > proScore ? 'con' : 'tie',
+            }}
+          />
+        </div>
       )}
 
       {/* Arguments Grid */}

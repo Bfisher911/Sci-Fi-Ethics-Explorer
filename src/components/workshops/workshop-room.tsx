@@ -14,6 +14,7 @@ import { joinWorkshop, sendWorkshopMessage } from '@/app/actions/workshops';
 import type { Workshop, WorkshopMessage } from '@/types';
 import { ParticipantPanel } from '@/components/workshops/participant-panel';
 import { SharedNotes } from '@/components/workshops/shared-notes';
+import { SubmitToCommunitySection } from '@/components/communities/submit-to-community-section';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -171,6 +172,24 @@ export function WorkshopRoom({ workshop }: WorkshopRoomProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Once a workshop has ended, participants can submit it into a
+          community learning record. */}
+      {workshop.status === 'completed' && isParticipant && (
+        <SubmitToCommunitySection
+          type="workshop"
+          defaultTitle={`Workshop: ${workshop.title}`}
+          defaultSummary={workshop.description}
+          sourceCollection="workshops"
+          sourceId={workshop.id}
+          content={{
+            workshopId: workshop.id,
+            workshopTitle: workshop.title,
+            hostName: workshop.hostName,
+            description: workshop.description,
+          }}
+        />
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Sidebar */}

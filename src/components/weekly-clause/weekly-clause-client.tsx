@@ -18,6 +18,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ActivityEvidence } from '@/components/activity-reports/activity-evidence';
+import { useCertificateCheck } from '@/components/certificates/use-certificate-check';
 import { Lock, MessageSquare, Send, Sparkles } from 'lucide-react';
 
 interface WeeklyClauseData {
@@ -32,6 +34,7 @@ export function WeeklyClauseClient({ slug }: { slug?: string }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
+  const checkCertificates = useCertificateCheck();
   const [data, setData] = useState<WeeklyClauseData | null>(null);
   const [selectedChoiceId, setSelectedChoiceId] = useState('');
   const [responseText, setResponseText] = useState('');
@@ -89,6 +92,7 @@ export function WeeklyClauseClient({ slug }: { slug?: string }) {
       title: 'Response submitted',
       description: 'Peer responses are now unlocked, and your ethical profile was updated.',
     });
+    void checkCertificates(user.uid, { categories: ['dilemma'] });
     setResponseText('');
     await load();
   }
@@ -133,6 +137,9 @@ export function WeeklyClauseClient({ slug }: { slug?: string }) {
 
   const { dilemma } = data;
   const selectedChoice = dilemma.choices.find((choice) => choice.id === selectedChoiceId);
+  const ownSelectedChoice = data.ownResponse?.selectedChoiceId
+    ? dilemma.choices.find((choice) => choice.id === data.ownResponse?.selectedChoiceId)
+    : undefined;
 
   return (
     <div className="container mx-auto py-8 px-4 space-y-6">
@@ -189,9 +196,26 @@ export function WeeklyClauseClient({ slug }: { slug?: string }) {
               </Button>
             </div>
           ) : (
-            <div className="rounded-md border border-primary/30 bg-primary/5 p-4">
-              <h3 className="font-semibold text-primary mb-2">Your submitted response</h3>
-              <p className="text-sm whitespace-pre-wrap">{data.ownResponse.responseText}</p>
+            <div className="space-y-4">
+              <div className="rounded-md border border-primary/30 bg-primary/5 p-4">
+                <h3 className="font-semibold text-primary mb-2">Your submitted response</h3>
+                <p className="text-sm whitespace-pre-wrap">{data.ownResponse.responseText}</p>
+              </div>
+
+              {/* Activity evidence for this weekly-dilemma response — chosen
+                  position + reasoning. */}
+              <ActivityEvidence
+                activityType="dilemma"
+                activityId={dilemma.id}
+                activityTitle={`Weekly Clause: ${dilemma.title}`}
+                content={{
+                  dilemmaPrompt: dilemma.mainEthicalQuestion,
+                  selectedOption: ownSelectedChoice
+                    ? `${ownSelectedChoice.label}. ${ownSelectedChoice.text}`
+                    : undefined,
+                  reasoning: data.ownResponse.responseText,
+                }}
+              />
             </div>
           )}
         </CardContent>

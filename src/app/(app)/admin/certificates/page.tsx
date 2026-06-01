@@ -178,12 +178,30 @@ export default function AdminCertificatesPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Link
-                          href={`/curriculum/${c.curriculumId}`}
-                          className="hover:text-primary"
-                        >
-                          {c.curriculumTitle || c.curriculumId}
-                        </Link>
+                        {(() => {
+                          const isAchievement =
+                            c.certificateType === 'achievement' ||
+                            c.curriculumId.startsWith('achievement-');
+                          return (
+                            <div className="flex items-center gap-2">
+                              <Link
+                                href={
+                                  isAchievement
+                                    ? `/certificates/${c.verificationHash}`
+                                    : `/curriculum/${c.curriculumId}`
+                                }
+                                className="hover:text-primary"
+                              >
+                                {c.curriculumTitle || c.curriculumId}
+                              </Link>
+                              {isAchievement && (
+                                <Badge variant="secondary" className="text-[10px]">
+                                  Achievement
+                                </Badge>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {issuedAt.toLocaleDateString()}

@@ -33,6 +33,15 @@ function fromDoc(id: string, data: Record<string, any>): Certificate {
     revokedAt: timestampToDate(data.revokedAt),
     revokedBy: data.revokedBy,
     revokeReason: data.revokeReason,
+    certificateType:
+      data.certificateType === 'achievement' ? 'achievement' : data.certificateType === 'curriculum' ? 'curriculum' : undefined,
+    description: data.description || undefined,
+    criteria: data.criteria || undefined,
+    progressSnapshot: data.progressSnapshot || undefined,
+    communityId: data.communityId || undefined,
+    communityName: data.communityName || undefined,
+    instructorName: data.instructorName || undefined,
+    metadata: data.metadata || undefined,
   };
 }
 
@@ -53,6 +62,16 @@ export async function issueCertificate(input: {
    *  client cannot claim official status. Textbook/master paths omit
    *  this — the curriculumId prefix identifies them as official. */
   creatorId?: string | null;
+  /** Optional achievement-certificate metadata (rule engine). All optional
+   *  so existing curriculum/textbook callers are unaffected. */
+  certificateType?: 'curriculum' | 'achievement';
+  description?: string;
+  criteria?: string;
+  progressSnapshot?: { current: number; target: number; label?: string };
+  communityId?: string;
+  communityName?: string;
+  instructorName?: string;
+  metadata?: Record<string, any>;
 }): Promise<ActionResult<Certificate>> {
   try {
     // Avoid duplicates
@@ -106,6 +125,17 @@ export async function issueCertificate(input: {
       tier,
       issuerName,
       issuedAt: serverTimestamp(),
+      // Optional achievement metadata — only persisted when supplied so
+      // curriculum/textbook issuance is byte-for-byte unchanged.
+      certificateType: input.certificateType || null,
+      description: input.description || null,
+      criteria: input.criteria || null,
+      progressSnapshot: input.progressSnapshot || null,
+      communityId: input.communityId || null,
+      communityName: input.communityName || null,
+      // instructorName falls back to the resolved issuerName when present.
+      instructorName: input.instructorName || issuerName || null,
+      metadata: input.metadata || null,
     });
 
     const created = await getDoc(ref);
@@ -119,8 +149,12 @@ export async function issueCertificate(input: {
         type: 'certificate_earned',
         title: `Certificate earned`,
         body: input.curriculumTitle,
+        // Achievement certs use the general detail page; curriculum/textbook
+        // certs keep their existing textbook viewer link.
         link: verificationHash
-          ? `/textbook/certificate/${verificationHash}`
+          ? input.certificateType === 'achievement'
+            ? `/certificates/${verificationHash}`
+            : `/textbook/certificate/${verificationHash}`
           : '/certificates',
         metadata: { certificateId: ref.id, curriculumId: input.curriculumId },
       });

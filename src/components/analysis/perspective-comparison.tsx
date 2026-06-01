@@ -17,7 +17,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Scale, Globe, Save, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
+import { ActivityEvidence } from '@/components/activity-reports/activity-evidence';
+import { useCertificateCheck } from '@/components/certificates/use-certificate-check';
 import { createPerspective } from '@/app/actions/perspectives';
 import { recordEthicalJudgmentEvent } from '@/app/actions/ethical-judgments';
 
@@ -56,6 +57,7 @@ export function PerspectiveComparison({
 }: PerspectiveComparisonProps) {
   const { toast } = useToast();
   const { user } = useAuth();
+  const checkCertificates = useCertificateCheck();
   const [scenario, setScenario] = useState(initialScenario ?? '');
   const [userChoice, setUserChoice] = useState(initialChoice ?? '');
   const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>([
@@ -66,6 +68,7 @@ export function PerspectiveComparison({
   const [makePublic, setMakePublic] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [evidenceId, setEvidenceId] = useState<string | null>(null);
 
   const toggleFramework = (framework: string) => {
     setSelectedFrameworks((prev) =>
@@ -126,6 +129,11 @@ export function PerspectiveComparison({
         });
       } else {
         setResult(output);
+        setEvidenceId(
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `compare-${Date.now()}`
+        );
         if (user?.uid) {
           const frameworkWeights = Object.fromEntries(
             output.comparisons
@@ -199,6 +207,7 @@ export function PerspectiveComparison({
             ? 'Saved and made publicly visible.'
             : 'Saved privately to My Submissions.',
         });
+        void checkCertificates(user.uid, { categories: ['studio-compare'] });
       } else {
         toast({
           title: 'Could not save',
@@ -355,22 +364,20 @@ export function PerspectiveComparison({
             </div>
           )}
 
-          {user && (
-            <div className="flex justify-end">
-              <ShareToCommunityDialog
-                type="perspective_comparison"
-                defaultTitle={
-                  scenario.slice(0, 60) + (scenario.length > 60 ? '…' : '')
-                }
-                defaultSummary={`My choice: ${userChoice}`}
-                content={{
-                  scenario,
-                  userChoice,
-                  comparisons: result.comparisons,
-                  synthesis: result.synthesis,
-                }}
-              />
-            </div>
+          {user && evidenceId && (
+            <ActivityEvidence
+              activityType="studio_compare"
+              activityId={evidenceId}
+              activityTitle={
+                scenario.slice(0, 60) + (scenario.length > 60 ? '…' : '')
+              }
+              content={{
+                scenario,
+                userChoice,
+                comparisons: result.comparisons,
+                synthesis: result.synthesis,
+              }}
+            />
           )}
         </div>
       )}

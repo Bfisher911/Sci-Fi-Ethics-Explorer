@@ -13,7 +13,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, ArrowLeft, CheckCircle2, Lightbulb, Loader2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle2, Lightbulb, Loader2, Trophy } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -39,6 +39,8 @@ import {
   getFrameworkMeta,
   type FrameworkId,
 } from '@/lib/ethics/frameworks';
+import { ActivityEvidence } from '@/components/activity-reports/activity-evidence';
+import { useCertificateCheck } from '@/components/certificates/use-certificate-check';
 import type { FrameworkResponse } from '@/types/framework-explorer';
 
 interface ModuleQuizRunnerProps {
@@ -73,6 +75,7 @@ export function ModuleQuizRunner({
   onExit,
 }: ModuleQuizRunnerProps): JSX.Element {
   const { user } = useAuth();
+  const checkCertificates = useCertificateCheck();
   const mod = useMemo(() => getModuleByNumber(moduleNumber), [moduleNumber]);
 
   const [index, setIndex] = useState(0);
@@ -82,6 +85,8 @@ export function ModuleQuizRunner({
   const [saving, setSaving] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Leading framework after this module, surfaced in the submit summary. */
+  const [dominantFramework, setDominantFramework] = useState<string | null>(null);
 
   // Preload any answers the user already gave for this module so a
   // resumed or reviewed module starts in the right place.
@@ -168,6 +173,7 @@ export function ModuleQuizRunner({
     if (!all.success) return;
     const label = dominantFrameworkLabel(all.data);
     if (label) {
+      setDominantFramework(label);
       await updateUserProfile(user.uid, { dominantFramework: label });
     }
   };
@@ -187,6 +193,11 @@ export function ModuleQuizRunner({
       if (isLast) {
         await refreshDominantFramework();
         setCompleted(true);
+        // Completing this module may complete the whole Explorer — check the
+        // Framework Explorer certificate.
+        if (user?.uid) {
+          void checkCertificates(user.uid, { categories: ['framework'] });
+        }
       } else {
         setIndex((i) => i + 1);
       }
@@ -214,35 +225,66 @@ export function ModuleQuizRunner({
 
   if (completed) {
     return (
-      <Card className="bg-card/80 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl text-emerald-400">
-            <CheckCircle2 className="h-6 w-6" /> Module {moduleNumber} complete
-          </CardTitle>
-          <CardDescription className="pt-1">
-            {mod.title} — all {total} questions answered. Your responses now
-            feed your unified ethics profile.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          {nextModuleUnlocks ? (
-            <p className="inline-flex items-center gap-1.5">
-              <ArrowRight className="h-4 w-4 text-primary" /> Module{' '}
-              {moduleNumber + 1} is now unlocked.
-            </p>
-          ) : (
-            <p>You&apos;ve completed the final module. Nicely done.</p>
-          )}
-        </CardContent>
-        <CardFooter className="flex flex-wrap justify-between gap-2">
-          <Button variant="outline" onClick={onExit}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to modules
-          </Button>
-          <Button asChild>
-            <Link href="/me">View your ethics profile</Link>
-          </Button>
-        </CardFooter>
-      </Card>
+      <div className="space-y-4">
+        <Card className="bg-card/80 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-2xl text-emerald-400">
+              <CheckCircle2 className="h-6 w-6" /> Module {moduleNumber} complete
+            </CardTitle>
+            <CardDescription className="pt-1">
+              {mod.title} — all {total} questions answered. Your responses now
+              feed your unified ethics profile.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            {nextModuleUnlocks ? (
+              <p className="inline-flex items-center gap-1.5">
+                <ArrowRight className="h-4 w-4 text-primary" /> Module{' '}
+                {moduleNumber + 1} is now unlocked.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-foreground">
+                  You&apos;ve completed all {TOTAL_MODULES} Framework Explorer
+                  modules — you&apos;ve earned the Master Certificate.
+                </p>
+                <Button asChild size="sm" className="cta-glow">
+                  <Link href="/certificates">
+                    <Trophy className="mr-2 h-4 w-4" /> Framework Explorer Master
+                    Certificate
+                  </Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="flex flex-wrap justify-between gap-2">
+            <Button variant="outline" onClick={onExit}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to modules
+            </Button>
+            <Button asChild>
+              <Link href="/me">View your ethics profile</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Activity evidence for completing this module — leading framework
+            + selected answers. */}
+        <ActivityEvidence
+          activityType="framework_explorer"
+          activityId={`module-${moduleNumber}`}
+          activityTitle={`Framework Explorer — ${mod.title}`}
+          content={{
+            moduleNumber,
+            moduleTitle: mod.title,
+            completionPercent: '100%',
+            totalQuestions: total,
+            frameworkAlignment: dominantFramework ?? undefined,
+            selectedAnswers: Object.entries(answers).map(
+              ([questionId, optionId]) => `${questionId}: ${optionId}`,
+            ),
+          }}
+        />
+      </div>
     );
   }
 

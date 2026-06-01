@@ -10,12 +10,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CertificateTemplate } from '@/components/certificates/certificate-template';
 import { MasterCertificateTemplate } from '@/components/textbook/master-certificate-template';
 import { DownloadCertificateButton } from '@/components/certificates/download-certificate-button';
+import { SubmitToCommunitySection } from '@/components/communities/submit-to-community-section';
 import { getCertificateByHash } from '@/app/actions/certificates';
 import { chapters } from '@/data/textbook';
+import { useAuth } from '@/hooks/use-auth';
 import type { Certificate } from '@/types';
 
 export default function TextbookCertificateViewer() {
   const params = useParams();
+  const { user } = useAuth();
   const hash = params?.hash as string;
   const [cert, setCert] = useState<Certificate | null>(null);
   const [loading, setLoading] = useState(true);
@@ -81,7 +84,7 @@ export default function TextbookCertificateViewer() {
         >
           <ArrowLeft className="h-3 w-3" /> Back to Textbook
         </Link>
-        <DownloadCertificateButton certificate={cert} />
+        <DownloadCertificateButton certificate={cert} glow />
       </div>
 
       {isMaster ? (
@@ -91,6 +94,25 @@ export default function TextbookCertificateViewer() {
         />
       ) : (
         <CertificateTemplate certificate={cert} />
+      )}
+
+      {/* Only the certificate owner may submit it to a community. */}
+      {user?.uid === cert.userId && (
+        <SubmitToCommunitySection
+          type="certificate"
+          defaultTitle={cert.curriculumTitle}
+          defaultSummary={`I earned the "${cert.curriculumTitle}" certificate.`}
+          sourceCollection="certificates"
+          sourceId={cert.id}
+          content={{
+            certificateId: cert.id,
+            verificationHash: cert.verificationHash,
+            curriculumId: cert.curriculumId,
+            curriculumTitle: cert.curriculumTitle,
+            tier: cert.tier,
+            credentialKind: isMaster ? 'master' : 'certificate',
+          }}
+        />
       )}
 
       <div className="text-center text-xs text-muted-foreground pt-2">

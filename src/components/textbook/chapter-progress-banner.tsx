@@ -7,7 +7,6 @@ import {
   ArrowRight,
   Brain,
   Loader2,
-  Award,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -35,7 +34,6 @@ export function ChapterProgressBanner({ chapter }: ChapterProgressBannerProps) {
   const [scrollPct, setScrollPct] = useState(0);
   const [isRead, setIsRead] = useState(false);
   const [isPassed, setIsPassed] = useState(false);
-  const [isCertified, setIsCertified] = useState(false);
   const [marking, setMarking] = useState(false);
 
   // Hydrate progress
@@ -47,7 +45,6 @@ export function ChapterProgressBanner({ chapter }: ChapterProgressBannerProps) {
       if (!cancelled && res.success) {
         setIsRead(res.data.chaptersRead.includes(chapter.slug));
         setIsPassed(res.data.chapterQuizzesPassed.includes(chapter.slug));
-        setIsCertified(Boolean(res.data.chapterCertificateIds?.[chapter.slug]));
       }
     })();
     return () => {
@@ -103,12 +100,7 @@ export function ChapterProgressBanner({ chapter }: ChapterProgressBannerProps) {
           <span className="font-headline">
             Chapter {chapter.number} · {Math.round(scrollPct)}% read
           </span>
-          {isCertified && (
-            <Badge variant="default" className="bg-chart-2/20 text-chart-2 border-chart-2/40">
-              <Award className="h-3 w-3 mr-1" /> Certificate earned
-            </Badge>
-          )}
-          {!isCertified && isPassed && (
+          {isPassed && (
             <Badge variant="default" className="text-[10px]">
               <CheckCircle2 className="h-3 w-3 mr-1" /> Quiz passed
             </Badge>

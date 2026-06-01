@@ -135,8 +135,12 @@ export default function CommunityDetailPage() {
   const [duplicating, setDuplicating] = useState(false);
   const router = useRouter();
 
+  // The owner manages the community even when not separately listed in
+  // instructorIds — treat owner OR instructor as the instructor view.
   const isInstructor =
-    !!user && !!community?.instructorIds?.includes(user.uid);
+    !!user &&
+    (community?.ownerId === user.uid ||
+      !!community?.instructorIds?.includes(user.uid));
   const isMember =
     !!user && members.some((m) => m.uid === user.uid);
   // The super-admin and any user with the communityManager flag get

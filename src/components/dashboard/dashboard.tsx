@@ -85,6 +85,9 @@ const FirstRunCards = dynamic(
 // drops first-load JS substantially. We render a lightweight skeleton
 // while it loads so the layout doesn't shift.
 import { splitForGradient } from '@/components/dashboard/cinematic-hero';
+import { MyCommunitiesMini } from '@/components/dashboard/my-communities-mini';
+import { CertificateProgress } from '@/components/certificates/certificate-progress';
+import { ActivityEvidenceList } from '@/components/activity-reports/activity-evidence-list';
 import type {
   DilemmaPayload,
   ResumePayload,
@@ -714,6 +717,16 @@ export function Dashboard(): JSX.Element {
         />
       </div>
 
+      {/* Milestone certificates (stories, quizzes, studio, textbook, …) */}
+      <div className="mt-5">
+        <CertificateProgress compact className="bg-card/80 backdrop-blur-sm" />
+      </div>
+
+      {/* Activity evidence — badges/reports for individual activities */}
+      <div className="mt-5">
+        <ActivityEvidenceList compact className="bg-card/80 backdrop-blur-sm" />
+      </div>
+
       {/* Mission control glass grid */}
       <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr]">
         <div className="flex flex-col gap-5">
@@ -737,6 +750,9 @@ export function Dashboard(): JSX.Element {
           </GlassCard>
           <GlassCard accent eyebrow="Debate Arena" title={debateCardTitle}>
             <DebateRail items={debatePayload} />
+          </GlassCard>
+          <GlassCard eyebrow="Community" title="My communities">
+            <MyCommunitiesMini />
           </GlassCard>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { submitArgument } from '@/app/actions/debates';
+import { useCertificateCheck } from '@/components/certificates/use-certificate-check';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +20,7 @@ interface SubmitArgumentFormProps {
 export function SubmitArgumentForm({ debateId, onArgumentSubmitted }: SubmitArgumentFormProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const checkCertificates = useCertificateCheck();
   const [position, setPosition] = useState<'pro' | 'con'>('pro');
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,6 +54,9 @@ export function SubmitArgumentForm({ debateId, onArgumentSubmitted }: SubmitArgu
       toast({ title: 'Argument Submitted', description: 'Your argument has been added to the debate.' });
       setContent('');
       onArgumentSubmitted?.();
+      // submitArgument records debate participation server-side; check the
+      // Debate certificate afterwards.
+      void checkCertificates(user.uid, { categories: ['debate'] });
     } else {
       toast({ title: 'Error', description: result.error, variant: 'destructive' });
     }

@@ -17,18 +17,40 @@ import {
   Loader2,
   Award,
   GraduationCap,
+  Lock,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { submitQuizAttempt } from '@/app/actions/quizzes';
 import type { Quiz, QuizAttempt } from '@/types';
 import { cn } from '@/lib/utils';
-import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
+import { ActivityEvidence } from '@/components/activity-reports/activity-evidence';
+import { useCertificateCheck } from '@/components/certificates/use-certificate-check';
+import type { CertificateCategory } from '@/lib/certificates/registry';
 
 interface QuizEngineProps {
   quiz: Quiz;
   onComplete?: (attempt: QuizAttempt) => void;
 }
+
+/** Maps a quiz subject type to its mastery-certificate category (when one
+ *  exists). Textbook chapter/final quizzes earn curriculum certs elsewhere. */
+const QUIZ_MASTERY_CATEGORY: Partial<Record<string, CertificateCategory>> = {
+  philosopher: 'quiz-philosopher',
+  theory: 'quiz-framework',
+  'scifi-author': 'quiz-scifi-author',
+  'scifi-media': 'quiz-scifi-media',
+};
+
+/** Library quizzes (Philosophers, Ethical Frameworks, Sci-Fi Authors, Sci-Fi
+ *  Media) only unlock a downloadable completion certificate at 80%+. */
+const LIBRARY_QUIZ_THRESHOLD = 80;
+const LIBRARY_CATEGORY_LABEL: Record<string, string> = {
+  philosopher: 'Philosopher',
+  theory: 'Ethical Framework',
+  'scifi-author': 'Sci-Fi Author',
+  'scifi-media': 'Sci-Fi Media',
+};
 
 type Phase = 'taking' | 'submitting' | 'results';
 
@@ -39,6 +61,7 @@ type Phase = 'taking' | 'submitting' | 'results';
 export function QuizEngine({ quiz, onComplete }: QuizEngineProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const checkCertificates = useCertificateCheck();
 
   const totalQuestions = quiz.questions.length;
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -119,6 +142,13 @@ export function QuizEngine({ quiz, onComplete }: QuizEngineProps) {
       title: result.data.passed ? 'Quiz passed!' : 'Quiz complete',
       description: `You scored ${result.data.scorePercent}%.`,
     });
+
+    // After the attempt is recorded, let the certificate engine check the
+    // relevant quiz-mastery certificate (only when this subject type has one).
+    const masteryCategory = QUIZ_MASTERY_CATEGORY[quiz.subjectType];
+    if (masteryCategory) {
+      void checkCertificates(user.uid, { categories: [masteryCategory] });
+    }
   };
 
   const handleRetake = () => {
@@ -188,32 +218,69 @@ export function QuizEngine({ quiz, onComplete }: QuizEngineProps) {
               <Button onClick={handleRetake} variant="outline">
                 Take again
               </Button>
-              {/* Share quiz result to a community. Available regardless of
-                  pass/fail — students may want to discuss a question they
-                  got wrong as much as celebrate a pass. */}
-              <ShareToCommunityDialog
-                type="quiz_result"
-                defaultTitle={`${quiz.title} — ${scorePercent}%`}
-                defaultSummary={
-                  passed
-                    ? `I passed "${quiz.title}" with ${scorePercent}%.`
-                    : `I scored ${scorePercent}% on "${quiz.title}" — looking for tips on the questions I missed.`
-                }
-                sourceCollection="quizAttempts"
-                sourceId={attempt.id}
-                content={{
-                  quizId: quiz.id,
-                  subjectId: quiz.subjectId,
-                  subjectName: quiz.subjectName,
-                  subjectType: quiz.subjectType,
-                  scorePercent,
-                  passed,
-                  totalQuestions: quiz.questions.length,
-                }}
-              />
             </div>
           </CardContent>
         </Card>
+
+        {/* Activity evidence. Library quizzes (philosopher / framework /
+            sci-fi author / sci-fi media) only unlock the downloadable
+            completion certificate at 80%+; below that we show a clear message
+            instead. Textbook chapter/final quizzes always show their badge. */}
+        {(() => {
+          const libraryCategory = LIBRARY_CATEGORY_LABEL[quiz.subjectType];
+          if (libraryCategory) {
+            if (scorePercent < LIBRARY_QUIZ_THRESHOLD) {
+              return (
+                <Alert>
+                  <Lock className="h-4 w-4" />
+                  <AlertTitle>
+                    Score {LIBRARY_QUIZ_THRESHOLD}% or higher to unlock your
+                    completion certificate
+                  </AlertTitle>
+                  <AlertDescription>
+                    You scored {scorePercent}%. Review the answers below and retake
+                    the quiz to earn your downloadable {libraryCategory} quiz
+                    certificate.
+                  </AlertDescription>
+                </Alert>
+              );
+            }
+            return (
+              <ActivityEvidence
+                activityType="quiz"
+                activitySubtype={quiz.subjectType}
+                activityId={quiz.subjectId}
+                activityTitle={quiz.title}
+                score={scorePercent}
+                passingThreshold={LIBRARY_QUIZ_THRESHOLD}
+                passed
+                content={{
+                  category: libraryCategory,
+                  subjectName: quiz.subjectName,
+                  answers: attempt.answers,
+                  totalQuestions: quiz.questions.length,
+                }}
+              />
+            );
+          }
+          return (
+            <ActivityEvidence
+              activityType="quiz"
+              activitySubtype={quiz.subjectType}
+              activityId={quiz.subjectId}
+              activityTitle={quiz.title}
+              score={scorePercent}
+              passingThreshold={quiz.passingScorePercent}
+              passed={passed}
+              content={{
+                subjectName: quiz.subjectName,
+                answers: attempt.answers,
+                totalQuestions: quiz.questions.length,
+                xpAwarded: attempt.xpAwarded ?? 0,
+              }}
+            />
+          );
+        })()}
 
         <Card className="bg-card/80 backdrop-blur-sm">
           <CardHeader>

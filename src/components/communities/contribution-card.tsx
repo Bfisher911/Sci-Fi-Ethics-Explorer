@@ -17,6 +17,10 @@ import {
   Highlighter,
   Award,
   Users,
+  Compass,
+  Film,
+  CalendarClock,
+  ScrollText,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import { cn } from '@/lib/utils';
@@ -52,6 +56,10 @@ export const CONTRIBUTION_TYPE_META: Record<ContributionType, TypeMeta> = {
   highlight: { icon: Highlighter, label: 'Highlight' },
   certificate: { icon: Award, label: 'Certificate Earned' },
   workshop: { icon: Users, label: 'Workshop' },
+  framework_result: { icon: Compass, label: 'Framework Result' },
+  media_reflection: { icon: Film, label: 'Media Reflection' },
+  weekly_dilemma: { icon: CalendarClock, label: 'Weekly Dilemma' },
+  ethics_report: { icon: ScrollText, label: 'Ethics Report' },
 };
 
 function initials(name: string): string {

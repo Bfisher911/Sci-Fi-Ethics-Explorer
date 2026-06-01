@@ -31,6 +31,9 @@ export const PLATFORM_OFFICIAL_CURRICULUM_IDS: ReadonlyArray<string> = [
 export function isPlatformOfficialCurriculumId(id: string): boolean {
   if (!id) return false;
   if (id.startsWith('textbook-chapter-')) return true;
+  // Achievement certificates (story/quiz-mastery/etc.) are platform-minted
+  // credentials — always official. See src/lib/certificates/registry.ts.
+  if (id.startsWith('achievement-')) return true;
   return PLATFORM_OFFICIAL_CURRICULUM_IDS.includes(id);
 }
 

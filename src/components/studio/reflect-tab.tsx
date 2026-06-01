@@ -27,11 +27,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, AlertCircle, Sparkles, Plus, X } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { recordStudioReflection } from '@/app/actions/progress';
+import { useCertificateCheck } from '@/components/certificates/use-certificate-check';
 
 const MAX_CHOICES = 8;
 const MIN_CHOICES = 2;
 
 export function ReflectTab() {
+  const { user } = useAuth();
+  const checkCertificates = useCertificateCheck();
   const [title, setTitle] = useState('');
   const [genre, setGenre] = useState('');
   const [theme, setTheme] = useState('');
@@ -75,6 +80,12 @@ export function ReflectTab() {
       });
       if (result.reflection && result.reflection.trim()) {
         setReflection(result.reflection);
+        // Count this Studio Reflect completion, then let the certificate
+        // engine check the Studio Reflect certificate.
+        if (user?.uid) {
+          await recordStudioReflection(user.uid);
+          void checkCertificates(user.uid, { categories: ['studio-reflect'] });
+        }
       } else {
         setError(
           result.error ??

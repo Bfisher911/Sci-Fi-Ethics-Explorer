@@ -49,6 +49,35 @@ function commentFromDoc(id: string, data: Record<string, any>): ContributionComm
 }
 
 /**
+ * True when `uid` is the owner, an instructor, or a member of the community.
+ * This is the single notion of "belongs to this community" used to gate both
+ * submitting and reading a community's submissions. Firestore rules are open
+ * by design across this app; membership is enforced here in the server action.
+ */
+function isCommunityMember(community: Record<string, any>, uid: string): boolean {
+  if (!uid) return false;
+  if (community.ownerId === uid) return true;
+  if (Array.isArray(community.instructorIds) && community.instructorIds.includes(uid)) {
+    return true;
+  }
+  if (Array.isArray(community.memberIds) && community.memberIds.includes(uid)) {
+    return true;
+  }
+  return false;
+}
+
+/** Platform-level admin (distinct from per-community roles). */
+async function isPlatformAdmin(uid: string): Promise<boolean> {
+  if (!uid) return false;
+  try {
+    const snap = await getDoc(doc(db, 'users', uid));
+    return snap.exists() && snap.data().isAdmin === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Create a contribution — a shared artifact visible only to community members.
  * Also resolves the community name for display convenience.
  */
@@ -65,14 +94,22 @@ export async function createContribution(input: {
   content?: Record<string, any>;
 }): Promise<ActionResult<string>> {
   try {
-    // Resolve community name for display
-    let communityName: string | undefined;
-    try {
-      const commSnap = await getDoc(doc(db, 'communities', input.communityId));
-      if (commSnap.exists()) communityName = commSnap.data().name;
-    } catch {
-      // non-fatal
+    // Enforce membership: a user may only submit to a community they belong to
+    // (owner, instructor, or member). This is the authoritative check — the
+    // Firestore rules are intentionally permissive and the app enforces access
+    // in server actions like this one.
+    const commSnap = await getDoc(doc(db, 'communities', input.communityId));
+    if (!commSnap.exists()) {
+      return { success: false, error: 'That community no longer exists.' };
     }
+    const commData = commSnap.data();
+    if (!isCommunityMember(commData, input.contributorId)) {
+      return {
+        success: false,
+        error: 'You must be a member of this community to submit to it.',
+      };
+    }
+    const communityName: string | undefined = commData.name;
 
     const ref = await addDoc(collection(db, 'communityContributions'), {
       communityId: input.communityId,
@@ -102,9 +139,28 @@ export async function createContribution(input: {
  */
 export async function getContributions(
   communityId: string,
-  options: { type?: ContributionType } = {}
+  options: { type?: ContributionType; requesterId?: string } = {}
 ): Promise<ActionResult<CommunityContribution[]>> {
   try {
+    // Members-only read. When a requesterId is supplied (it should be, from any
+    // authenticated surface), verify they belong to the community — or are a
+    // platform admin — before returning anyone's submissions.
+    if (options.requesterId) {
+      const commSnap = await getDoc(doc(db, 'communities', communityId));
+      if (!commSnap.exists()) {
+        return { success: false, error: 'That community no longer exists.' };
+      }
+      if (
+        !isCommunityMember(commSnap.data(), options.requesterId) &&
+        !(await isPlatformAdmin(options.requesterId))
+      ) {
+        return {
+          success: false,
+          error: 'You must be a member of this community to view its submissions.',
+        };
+      }
+    }
+
     const constraints = [where('communityId', '==', communityId)];
     if (options.type) constraints.push(where('type', '==', options.type));
 
@@ -136,6 +192,38 @@ export async function getContribution(
     return { success: true, data: contributionFromDoc(snap.id, snap.data()) };
   } catch (error) {
     console.error('[contributions] getContribution error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Fetch every community contribution a single user has submitted, across all
+ * communities, newest first. Powers the learner's own "My submissions" view —
+ * a user can always see their own submissions.
+ *
+ * Results are sorted in memory so this works even before the
+ * (contributorId, createdAt) composite index is deployed.
+ */
+export async function getUserContributions(
+  userId: string
+): Promise<ActionResult<CommunityContribution[]>> {
+  try {
+    if (!userId) return { success: true, data: [] };
+    const q = query(
+      collection(db, 'communityContributions'),
+      where('contributorId', '==', userId)
+    );
+    const snap = await getDocs(q);
+    const items = snap.docs
+      .map((d) => contributionFromDoc(d.id, d.data()))
+      .sort((a, b) => {
+        const at = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
+        const bt = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
+        return bt - at;
+      });
+    return { success: true, data: items };
+  } catch (error) {
+    console.error('[contributions] getUserContributions error:', error);
     return { success: false, error: String(error) };
   }
 }

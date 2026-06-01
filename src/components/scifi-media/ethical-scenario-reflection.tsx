@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { ActivityEvidence } from '@/components/activity-reports/activity-evidence';
 import { Brain, CheckCircle2, Loader2 } from 'lucide-react';
 
 interface EthicalScenarioReflectionProps {
@@ -30,9 +31,11 @@ interface ResponseState {
 
 function QuestionCard({
   mediaId,
+  mediaTitle,
   question,
 }: {
   mediaId: string;
+  mediaTitle: string;
   question: EthicalScenarioQuestion;
 }) {
   const { user } = useAuth();
@@ -164,21 +167,41 @@ function QuestionCard({
         )}
 
         {state.submitted ? (
-          <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-sm space-y-2">
-            <div className="flex items-center gap-2 font-medium text-primary">
-              <CheckCircle2 className="h-4 w-4" />
-              {state.persisted ? 'Profile updated' : 'Reflection captured'}
+          <div className="space-y-3">
+            <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-sm space-y-2">
+              <div className="flex items-center gap-2 font-medium text-primary">
+                <CheckCircle2 className="h-4 w-4" />
+                {state.persisted ? 'Profile updated' : 'Reflection captured'}
+              </div>
+              <p>{state.feedbackText}</p>
+              {state.persisted === false && (
+                <p className="text-muted-foreground">
+                  This preview could not write to the profile database, so the reflection was not
+                  permanently added to your learning profile.
+                </p>
+              )}
+              {state.challengeQuestion && (
+                <p className="text-muted-foreground italic">{state.challengeQuestion}</p>
+              )}
             </div>
-            <p>{state.feedbackText}</p>
-            {state.persisted === false && (
-              <p className="text-muted-foreground">
-                This preview could not write to the profile database, so the reflection was not
-                permanently added to your learning profile.
-              </p>
-            )}
-            {state.challengeQuestion && (
-              <p className="text-muted-foreground italic">{state.challengeQuestion}</p>
-            )}
+
+            {/* Activity evidence for this media reflection — choice, reasoning,
+                framework alignment, and AI feedback. */}
+            <ActivityEvidence
+              activityType="media_reflection"
+              activityId={`${mediaId}-${question.id}`}
+              activityTitle={`${question.title} — ${mediaTitle}`}
+              content={{
+                prompt: question.prompt,
+                response: state.responseText?.trim() || undefined,
+                selectedOption: selectedOption
+                  ? `${selectedOption.label}. ${selectedOption.text}`
+                  : undefined,
+                frameworkAlignment: selectedOption?.likelyFrameworkAlignments ?? [],
+                feedback: state.feedbackText,
+                challengeQuestion: state.challengeQuestion,
+              }}
+            />
           </div>
         ) : (
           <Button onClick={handleSubmit} disabled={submitting} className="gap-2">
@@ -213,7 +236,12 @@ export function EthicalScenarioReflection({
       </CardHeader>
       <CardContent className="space-y-4">
         {questions.map((question) => (
-          <QuestionCard key={question.id} mediaId={mediaId} question={question} />
+          <QuestionCard
+            key={question.id}
+            mediaId={mediaId}
+            mediaTitle={mediaTitle}
+            question={question}
+          />
         ))}
       </CardContent>
     </Card>

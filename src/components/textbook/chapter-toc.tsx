@@ -13,8 +13,8 @@ function chapterState(
   progress: TextbookProgress | null | undefined
 ): 'unread' | 'reading' | 'read' | 'quiz-passed' | 'certified' {
   if (!progress) return 'unread';
-  const certified = Boolean(progress.chapterCertificateIds?.[chapter.slug]);
-  if (certified) return 'certified';
+  // Chapter quizzes no longer issue per-chapter certificates — passing the
+  // quiz is the highest per-chapter state (it earns a badge/report).
   const passed = progress.chapterQuizzesPassed.includes(chapter.slug);
   if (passed) return 'quiz-passed';
   const read = progress.chaptersRead.includes(chapter.slug);
