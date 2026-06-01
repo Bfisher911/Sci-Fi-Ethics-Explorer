@@ -26,7 +26,9 @@ export type ScoreEthicalJudgmentOutput =
   | { success: false; error: string; errorCode: 'empty_input' | 'missing_api_key' | 'parse_error' | 'upstream_error' };
 
 const PROMPT_VERSION = 'ethical-judgment-v1';
-const MODEL_USED = 'googleai/gemini-2.0-flash';
+// Recorded as metadata on each analysis. Keep in sync with the genkit default
+// model in `src/ai/genkit.ts` (the actual generation uses that default).
+const MODEL_USED = 'googleai/gemini-2.5-flash';
 
 function hasGeminiKey(): boolean {
   return Boolean(
