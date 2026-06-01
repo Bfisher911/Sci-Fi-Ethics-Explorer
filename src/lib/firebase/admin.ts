@@ -31,46 +31,70 @@ const APP_NAME = 'sfe-admin';
 
 let cached: { app: App | null; auth: Auth | null; db: Firestore | null } | null = null;
 
+/**
+ * Resolve a service account from either supported configuration shape:
+ *   1. FIREBASE_ADMIN_CREDENTIALS — the full service-account JSON blob, or
+ *   2. the three separate vars FIREBASE_ADMIN_PROJECT_ID /
+ *      FIREBASE_ADMIN_CLIENT_EMAIL / FIREBASE_ADMIN_PRIVATE_KEY (what the
+ *      Netlify deployment actually has). Without this fallback the Admin SDK
+ *      silently returned null in production, disabling every admin-backed
+ *      feature (weekly dilemmas, the dilemma library, token verification).
+ * Returns null when neither is fully configured.
+ */
+function resolveServiceAccount(): (ServiceAccount & { projectId: string }) | null {
+  const raw = process.env.FIREBASE_ADMIN_CREDENTIALS;
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw) as ServiceAccount & {
+        project_id?: string;
+        client_email?: string;
+        private_key?: string;
+      };
+      const projectId =
+        parsed.projectId ??
+        parsed.project_id ??
+        process.env.FIREBASE_PROJECT_ID ??
+        process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+      if (projectId) {
+        return { ...parsed, projectId } as ServiceAccount & { projectId: string };
+      }
+    } catch {
+      // eslint-disable-next-line no-console
+      console.error(
+        '[firebase-admin] FIREBASE_ADMIN_CREDENTIALS is not valid JSON; trying separate FIREBASE_ADMIN_* vars.',
+      );
+    }
+  }
+
+  const projectId =
+    process.env.FIREBASE_ADMIN_PROJECT_ID ??
+    process.env.FIREBASE_PROJECT_ID ??
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
+  // Private keys are commonly stored with the newlines escaped as "\n".
+  const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+  if (projectId && clientEmail && privateKey) {
+    return { projectId, clientEmail, privateKey };
+  }
+  return null;
+}
+
 function buildAdminApp(): App | null {
   // Already initialized? Reuse it. The default app might be in use
   // elsewhere too; we use a named app so we don't collide.
   const existing = getApps().find((a) => a.name === APP_NAME);
   if (existing) return existing;
 
-  const raw = process.env.FIREBASE_ADMIN_CREDENTIALS;
-  if (!raw) {
-    return null;
-  }
-
-  let parsed: ServiceAccount;
-  try {
-    parsed = JSON.parse(raw) as ServiceAccount;
-  } catch {
-    // eslint-disable-next-line no-console
-    console.error(
-      '[firebase-admin] FIREBASE_ADMIN_CREDENTIALS is not valid JSON. Refusing to initialize.',
-    );
-    return null;
-  }
-
-  const projectId =
-    (parsed as { project_id?: string }).project_id ??
-    (parsed as { projectId?: string }).projectId ??
-    process.env.FIREBASE_PROJECT_ID ??
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-
-  if (!projectId) {
-    // eslint-disable-next-line no-console
-    console.error(
-      '[firebase-admin] No project_id found in FIREBASE_ADMIN_CREDENTIALS or FIREBASE_PROJECT_ID env. Refusing to initialize.',
-    );
+  const serviceAccount = resolveServiceAccount();
+  if (!serviceAccount) {
     return null;
   }
 
   return initializeApp(
     {
-      credential: cert(parsed),
-      projectId,
+      credential: cert(serviceAccount),
+      projectId: serviceAccount.projectId,
     },
     APP_NAME,
   );
