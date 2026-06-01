@@ -20,7 +20,7 @@
  * output with defensive parsing is far more resilient.
  */
 
-import { ai } from '@/ai/genkit';
+import { generateProse } from '@/ai/generate';
 import { z } from 'genkit';
 
 const GenerateEpilogueInputSchema = z.object({
@@ -198,12 +198,11 @@ ${choicesBlock}${contextBlock}
 
 Project ${input.timeframe} into the future. Write the narrative epilogue, then the <consequences> JSON block.`;
 
-    const result = await ai.generate({
+    const { text } = await generateProse({
       system: SYSTEM_PROMPT,
       prompt: userPrompt,
     });
 
-    const text = (result.text ?? '').trim();
     if (!text) {
       return {
         epilogueText: '',

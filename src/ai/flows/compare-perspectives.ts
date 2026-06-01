@@ -23,6 +23,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { generateProse } from '@/ai/generate';
 import { z } from 'genkit';
 
 const ComparePerspectivesInputSchema = z.object({
@@ -211,12 +212,11 @@ Rules:
 - Never leave "analysis" or "verdict" empty.
 - Do not invent frameworks that weren't requested.`;
 
-    const result = await ai.generate({
+    const { text } = await generateProse({
       system: SYSTEM_PROMPT,
       prompt: userPrompt,
     });
 
-    const text = result.text ?? '';
     const parsed = extractJsonObject(text);
     if (!parsed) {
       console.error(

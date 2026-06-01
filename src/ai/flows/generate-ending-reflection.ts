@@ -17,6 +17,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { generateProse } from '@/ai/generate';
 import { z } from 'genkit';
 
 const GenerateEndingReflectionInputSchema = z.object({
@@ -161,11 +162,11 @@ ${choicesBlock}
 
 Write the reflection now.`;
 
-    const result = await ai.generate({
+    const { text } = await generateProse({
       system: SYSTEM_PROMPT,
       prompt: userPrompt,
     });
 
-    return { reflection: (result.text ?? '').trim() };
+    return { reflection: text };
   }
 );

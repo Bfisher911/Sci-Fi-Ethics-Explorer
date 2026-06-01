@@ -99,6 +99,21 @@ const STORY_WALKTHROUGH_STEPS = [
   },
 ];
 
+/** Map a reflection-flow error code to a friendly, non-technical message.
+ *  The raw API error is logged to the console — never shown to the student. */
+function friendlyReflectionError(code?: string): string {
+  switch (code) {
+    case 'rate_limited':
+      return 'The reflection engine is busy right now. Give it a moment and try again.';
+    case 'missing_api_key':
+      return "The reflection engine isn't configured yet. Please try again later.";
+    case 'empty_input':
+      return 'We need a few decisions before we can reflect on your story.';
+    default:
+      return 'We couldn’t generate your story reflection just now. Please try again.';
+  }
+}
+
 export default function StoryDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -115,6 +130,11 @@ export default function StoryDetailPage() {
   const [visitedSegments, setVisitedSegments] = useState<string[]>([]);
   const [reflection, setReflection] = useState<string | null>(null);
   const [isLoadingReflection, setIsLoadingReflection] = useState(false);
+  const [reflectionError, setReflectionError] = useState<string | null>(null);
+  const [lastReflectionArgs, setLastReflectionArgs] = useState<{
+    storyTitle?: string;
+    choices?: string[];
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showStoryMap, setShowStoryMap] = useState(false);
   const [showEpilogue, setShowEpilogue] = useState(false);
@@ -224,6 +244,8 @@ export default function StoryDetailPage() {
     setJourneyEntries([]);
     setLatestInterpretation(null);
     setReflection(null);
+    setReflectionError(null);
+    setLastReflectionArgs(null);
     setShowEpilogue(false);
     setWhatHappensNext(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -361,6 +383,8 @@ export default function StoryDetailPage() {
 
     setIsLoadingReflection(true);
     setReflection(null);
+    setReflectionError(null);
+    setLastReflectionArgs({ storyTitle, choices });
     try {
       const result = await generateEndingReflection({
         storyTitle: storyTitle,
@@ -369,10 +393,8 @@ export default function StoryDetailPage() {
         storyTheme: story?.theme,
       });
 
-      // The flow always resolves. When it couldn't produce a real
-      // reflection it returns an empty `reflection` + a diagnostic
-      // `error` / `errorCode` pair. Surface that specific message to
-      // the reader instead of the old catch-all "Failed to generate".
+      // The flow always resolves. When it couldn't produce a real reflection
+      // it returns an empty `reflection` + a diagnostic `error`/`errorCode`.
       if (result.reflection && result.reflection.trim()) {
         setReflection(result.reflection);
         // Record story completion only on a real reflection.
@@ -388,23 +410,26 @@ export default function StoryDetailPage() {
           }
         }
       } else {
-        const message =
-          result.error ??
-          'The reflection engine returned an empty response. Try again in a moment.';
-        console.warn('[reflection] generation returned no text:', result);
-        setReflection(`⚠️ ${message}`);
+        // Log the REAL diagnostic for debugging; show the student a friendly,
+        // non-technical message with a retry. Never surface the raw API error.
+        console.error(
+          '[reflection] generation failed:',
+          result.errorCode,
+          result.error,
+        );
+        setReflectionError(friendlyReflectionError(result.errorCode));
       }
     } catch (err) {
-      // The flow shouldn't throw anymore (it returns errorCode instead),
-      // but we still guard against network failures reaching the client
-      // server-action call itself.
       console.error('[reflection] unexpected throw:', err);
-      const msg = err instanceof Error ? err.message : String(err);
-      setReflection(
-        `⚠️ Could not reach the reflection service (${msg}). Try again in a moment.`,
-      );
+      setReflectionError(friendlyReflectionError('upstream_error'));
     } finally {
       setIsLoadingReflection(false);
+    }
+  };
+
+  const retryReflection = (): void => {
+    if (lastReflectionArgs) {
+      void triggerReflection(lastReflectionArgs.storyTitle, lastReflectionArgs.choices);
     }
   };
 
@@ -800,7 +825,7 @@ export default function StoryDetailPage() {
           </div>
         )}
 
-        {(isLoadingReflection || reflection) && (
+        {(isLoadingReflection || reflection || reflectionError) && (
           <CardFooter className="flex flex-col items-start gap-3 pt-6 border-t">
             <h3 className="text-xl font-semibold text-accent flex items-center">
               <MessageSquare className="mr-2 h-5 w-5" />
@@ -817,6 +842,17 @@ export default function StoryDetailPage() {
               />
             )}
             {reflection && <p className="text-foreground/90 whitespace-pre-wrap">{reflection}</p>}
+            {reflectionError && !isLoadingReflection && (
+              <div className="w-full space-y-2">
+                <p className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <RefreshCw className="mt-0.5 h-4 w-4 shrink-0" />
+                  {reflectionError}
+                </p>
+                <Button variant="outline" size="sm" onClick={retryReflection}>
+                  <RefreshCw className="mr-2 h-4 w-4" /> Try again
+                </Button>
+              </div>
+            )}
           </CardFooter>
         )}
 

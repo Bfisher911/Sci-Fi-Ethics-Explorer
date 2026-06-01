@@ -18,6 +18,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { generateProse } from '@/ai/generate';
 import { z } from 'genkit';
 import {
   MIN_DECISIONS_FOR_REPORT,
@@ -227,12 +228,12 @@ Rules:
 - If tensions were detected, reflect them; if none, you may infer subtle ones from the decisions but say so.
 - Be specific and concrete. Avoid generic ethics-textbook descriptions.`;
 
-    const result = await ai.generate({
+    const { text } = await generateProse({
       system: SYSTEM_PROMPT,
       prompt: userPrompt,
     });
 
-    const parsed = extractJsonObject(result.text ?? '');
+    const parsed = extractJsonObject(text);
     if (!parsed || typeof parsed !== 'object') {
       return {
         ...emptyOut(),

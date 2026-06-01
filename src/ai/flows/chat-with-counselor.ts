@@ -136,16 +136,23 @@ const chatWithCounselorFlow = ai.defineFlow(
       return { response: '' };
     }
 
-    // Use Genkit's native messages format (role + content pairs).
-    const messages = normalized.map((m) => ({
+    // Use Genkit's native messages format (role + content pairs). Fold the
+    // system instruction into the FIRST user turn instead of passing `system`:
+    // the @genkit-ai/googleai plugin maps `system` to a `role: 'system'` entry
+    // that current Gemini models reject ("Role 'system' is not supported").
+    const messages = normalized.map((m, i) => ({
       role: m.role === 'assistant' ? ('model' as const) : ('user' as const),
-      content: [{ text: m.content }],
+      content: [
+        {
+          text:
+            i === 0 && m.role === 'user'
+              ? `${systemPrompt}\n\n${m.content}`
+              : m.content,
+        },
+      ],
     }));
 
-    const result = await ai.generate({
-      system: systemPrompt,
-      messages,
-    });
+    const result = await ai.generate({ messages });
 
     return {
       response: result.text ?? '',
