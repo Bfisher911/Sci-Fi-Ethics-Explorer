@@ -221,6 +221,10 @@ const debates: Array<Record<string, unknown>> = [
     createdAt: { __timestamp__: nowIso },
     participantCount: 0,
     tags: ['consciousness', 'legal-personhood', 'identity'],
+    imageUrl: '/images/debates/debate-uploaded-consciousness-rights.png',
+    imageHint: 'digital person courtroom',
+    imageAlt:
+      'An uploaded older woman appears as a half-human, half-digital figure in a futuristic courtroom.',
   },
   {
     title: 'Is it ethical to preserve a dying species through genetic engineering if they\'ll exist only in captivity?',
@@ -232,6 +236,10 @@ const debates: Array<Record<string, unknown>> = [
     createdAt: { __timestamp__: nowIso },
     participantCount: 0,
     tags: ['de-extinction', 'animal-welfare', 'environment'],
+    imageUrl: '/images/debates/debate-genetic-engineering-captive-species.png',
+    imageHint: 'marine biotech enclosure',
+    imageAlt:
+      'Scientists observe a restored marine mammal inside a vast futuristic ocean enclosure.',
   },
   {
     title: 'When a superintelligent AI proposes ending global suffering through radical intervention, should humanity consent?',
@@ -243,6 +251,10 @@ const debates: Array<Record<string, unknown>> = [
     createdAt: { __timestamp__: nowIso },
     participantCount: 0,
     tags: ['superintelligence', 'consent', 'existential-risk'],
+    imageUrl: '/images/debates/debate-ai-end-suffering-radical-intervention.png',
+    imageHint: 'global ai council',
+    imageAlt:
+      'Human delegates sit in council beneath a vast luminous superintelligent AI presence.',
   },
 ];
 
