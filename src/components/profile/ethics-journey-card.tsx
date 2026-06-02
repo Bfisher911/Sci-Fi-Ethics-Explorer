@@ -57,6 +57,7 @@ import {
 export function EthicsJourneyCard(): JSX.Element {
   const { user } = useAuth();
   const [profile, setProfile] = useState<JourneyProfile | null>(null);
+  const [sources, setSources] = useState<Record<string, number>>({});
   const [showAll, setShowAll] = useState(false);
   const [report, setReport] = useState<EthicsReport | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
@@ -64,12 +65,14 @@ export function EthicsJourneyCard(): JSX.Element {
   useEffect(() => {
     if (!user) {
       setProfile(buildJourneyProfile([]));
+      setSources({});
       return;
     }
     let cancelled = false;
     getUnifiedEthicsProfile(user.uid).then((res) => {
       if (cancelled) return;
       setProfile(res.success ? res.data.profile : buildJourneyProfile([]));
+      setSources(res.success ? res.data.counts.bySource : {});
     });
     return () => {
       cancelled = true;
@@ -185,9 +188,21 @@ export function EthicsJourneyCard(): JSX.Element {
               )}
               <p className="mt-2 text-xs text-muted-foreground">
                 Based on {profile.totalDecisions} decision
-                {profile.totalDecisions === 1 ? '' : 's'} across your stories
-                and Framework Explorer modules.
+                {profile.totalDecisions === 1 ? '' : 's'} across all your
+                activities — stories, dilemmas, debates, textbook work, and the
+                Studio AI tools.
               </p>
+              {Object.keys(sources).length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {Object.entries(sources)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([label, n]) => (
+                      <Badge key={label} variant="outline" className="text-[10px]">
+                        {label} · {n}
+                      </Badge>
+                    ))}
+                </div>
+              )}
             </div>
 
             {/* Tensions */}

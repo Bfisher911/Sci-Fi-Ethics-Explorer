@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { ShareToCommunityDialog } from '@/components/communities/share-to-community-dialog';
 import { useAuth } from '@/hooks/use-auth';
 import { saveReflection, getChapterReflections } from '@/app/actions/textbook';
+import { recordEthicalJudgmentEvent } from '@/app/actions/ethical-judgments';
 
 interface ReflectionPromptProps {
   index: number;
@@ -113,6 +114,37 @@ export function ReflectionPrompt({
     };
   }, [user, chapterSlug, promptId]);
 
+  const lastJournaledRef = useRef('');
+
+  /**
+   * Feed a substantial discussion answer into the Ethical Journey (background,
+   * non-blocking). Runs on blur — not per keystroke — and only when the answer
+   * meets the word target and has changed since the last record. The stable
+   * `eventId` upserts one event per (user, chapter, prompt), so the AI scores
+   * the response at most once per editing session.
+   */
+  function recordToJourney() {
+    if (!user) return;
+    const text = value.trim();
+    if (!targetMet || text.length < 40 || text === lastJournaledRef.current) return;
+    lastJournaledRef.current = text;
+    void recordEthicalJudgmentEvent({
+      userId: user.uid,
+      eventId: `tbref_${user.uid}_${chapterSlug}_${promptId}`.replace(
+        /[^a-zA-Z0-9_-]/g,
+        '-',
+      ),
+      interactionType: 'textbook_reflection',
+      sourceContentType: 'textbook',
+      sourceContentId: `${chapterSlug}:${promptId}`,
+      sourceTitle: `Textbook discussion — ${chapterSlug}`,
+      promptText: prompt,
+      responseText: text,
+      affectsProfile: true,
+      activityContext: 'textbook',
+    }).catch((e) => console.warn('[reflection] journey record failed:', e));
+  }
+
   function onChange(next: string) {
     setValue(next);
     if (!user) return;
@@ -166,6 +198,7 @@ export function ReflectionPrompt({
         ref={textareaRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={recordToJourney}
         placeholder={user ? 'Write your reflection…' : 'Sign in to save your answer.'}
         rows={4}
         className="bg-background/50 resize-y"

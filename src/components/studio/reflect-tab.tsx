@@ -29,6 +29,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, AlertCircle, Sparkles, Plus, X } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { recordStudioReflection } from '@/app/actions/progress';
+import { recordEthicalJudgmentEvent } from '@/app/actions/ethical-judgments';
 import { useCertificateCheck } from '@/components/certificates/use-certificate-check';
 
 const MAX_CHOICES = 8;
@@ -85,6 +86,20 @@ export function ReflectTab() {
         if (user?.uid) {
           await recordStudioReflection(user.uid);
           void checkCertificates(user.uid, { categories: ['studio-reflect'] });
+          // Feed the reflection into the Ethical Journey (background, AI-scored
+          // from the decisions reflected on + the generated reflection).
+          void recordEthicalJudgmentEvent({
+            userId: user.uid,
+            interactionType: 'studio_reflect',
+            sourceContentType: 'studio',
+            sourceContentId: `studio-reflect-${Date.now()}`,
+            sourceTitle: `Studio Reflect: ${cleanedTitle || 'a decision path'}`,
+            promptText: 'Reflect on this set of ethical decisions.',
+            responseText: cleanedChoices.join(' → ').slice(0, 1200),
+            explanation: result.reflection.slice(0, 1200),
+            affectsProfile: true,
+            activityContext: 'practice',
+          }).catch((e) => console.warn('[studio-reflect] journey record failed:', e));
         }
       } else {
         setError(

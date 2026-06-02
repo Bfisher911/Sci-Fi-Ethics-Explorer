@@ -7,6 +7,7 @@ import {
   getUserEthicalProfile,
 } from '@/app/actions/ethical-judgments';
 import { getFrameworkDisplayName } from '@/lib/ethical-framework-registry';
+import { activityTypeLabel } from '@/lib/ethics/event-entries';
 import type { EthicsLearningReport } from '@/types';
 
 type ActionResult<T = undefined> =
@@ -48,10 +49,38 @@ export async function generateEthicsLearningReport(
   const leastUsed = profile.leastUsedFrameworks
     .slice(0, 4)
     .map((item) => getFrameworkDisplayName(item.frameworkId));
-  const examples = events.slice(0, 4).map((event) => {
-    const choice = event.userChoice || event.responseText || event.explanation || 'Open-ended response';
-    return `- ${event.sourceTitle}: ${choice.toString().slice(0, 180)}`;
-  });
+  // Per-activity-type breakdown so the report names the variety of work.
+  const sourceCounts: Record<string, number> = {};
+  for (const event of events) {
+    const label = activityTypeLabel(event.interactionType);
+    sourceCounts[label] = (sourceCounts[label] ?? 0) + 1;
+  }
+  const sourceBreakdown = Object.entries(sourceCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, n]) => `${label} (${n})`)
+    .join(' · ');
+
+  // Diversify examples across activity types so the report reflects the full
+  // range of work (stories, dilemmas, debates, textbook, Studio) rather than
+  // the most recent few of a single kind.
+  const byType = new Map<string, typeof events>();
+  for (const event of events) {
+    const key = String(event.interactionType || 'other');
+    if (!byType.has(key)) byType.set(key, []);
+    byType.get(key)!.push(event);
+  }
+  const examples: string[] = [];
+  for (const [, evs] of byType) {
+    const event = evs[0];
+    const choice =
+      event.userChoice || event.responseText || event.explanation || 'Open-ended response';
+    examples.push(
+      `- ${activityTypeLabel(event.interactionType)} — ${event.sourceTitle}: ${choice
+        .toString()
+        .slice(0, 160)}`,
+    );
+    if (examples.length >= 6) break;
+  }
   const tensions = profile.frameworkTensions.slice(0, 4).map((tension) => {
     return `- ${tension.frameworks.map(getFrameworkDisplayName).join(' vs. ')}: ${tension.description}`;
   });
@@ -65,6 +94,8 @@ This report summarizes patterns in your OffWorld Clause activity. It is an inter
 ## Activity Included
 
 ${profile.eventCount} ethical judgment event${profile.eventCount === 1 ? '' : 's'} analyzed across ${sentenceList(profile.contentAreasIncluded)}.
+
+By activity: ${sourceBreakdown || 'no activity yet'}.
 
 ## Overall Pattern
 

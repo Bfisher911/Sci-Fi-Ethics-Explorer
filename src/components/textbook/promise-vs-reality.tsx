@@ -11,11 +11,17 @@ import {
   getPromiseRealityScores,
   savePromiseRealityScores,
 } from '@/app/actions/textbook';
+import { recordEthicalJudgmentEvent } from '@/app/actions/ethical-judgments';
+import { impactsToDeterministicAnalysis } from '@/lib/ethics/impacts';
 import type { ChapterSection } from '@/types/textbook';
 
 interface PromiseVsRealityProps {
   section: ChapterSection;
   chapterSlug: string;
+  chapterTitle?: string;
+  /** The chapter's framework focus — used to map this self-assessment into the
+   *  Ethical Journey deterministically (no AI call). */
+  frameworkIds?: string[];
 }
 
 /**
@@ -25,9 +31,52 @@ interface PromiseVsRealityProps {
 export function PromiseVsReality({
   section,
   chapterSlug,
+  chapterTitle,
+  frameworkIds,
 }: PromiseVsRealityProps) {
   const { user } = useAuth();
   const items = section.scoringItems || [];
+
+  /**
+   * Feed the Promise-vs-Reality self-assessment into the Ethical Journey using
+   * a DETERMINISTIC analysis built from the chapter's framework focus (no AI
+   * call). The stable `eventId` upserts one event per (user, chapter), so this
+   * is safe to call on each debounced save.
+   */
+  function recordPvrToJourney(currentScores: Record<string, number>) {
+    if (!user) return;
+    const fw = (frameworkIds ?? []).filter(Boolean);
+    const scored = items.filter((it) => typeof currentScores[it.id] === 'number');
+    if (fw.length === 0 || scored.length === 0) return;
+    const avg =
+      scored.reduce((s, it) => s + (currentScores[it.id] ?? 0), 0) / scored.length;
+    const impacts = fw.map((f) => ({
+      framework: f,
+      weight: 2,
+      rationale: `Applied the chapter's lens by critically weighing whether technologies deliver on their stated promises (avg ${avg.toFixed(1)}/5).`,
+    }));
+    const summary = `Promise-vs-Reality self-assessment: scored ${scored.length} technolog${
+      scored.length === 1 ? 'y' : 'ies'
+    } at an average of ${avg.toFixed(1)}/5 on whether they deliver on their promise.`;
+    const analysis = impactsToDeterministicAnalysis(impacts, {
+      promptText: 'Promise vs. Reality self-assessment',
+      userText: summary,
+    });
+    if (!analysis) return;
+    void recordEthicalJudgmentEvent({
+      userId: user.uid,
+      eventId: `pvr_${user.uid}_${chapterSlug}`.replace(/[^a-zA-Z0-9_-]/g, '-'),
+      interactionType: 'promise_reality_score',
+      sourceContentType: 'textbook',
+      sourceContentId: `${chapterSlug}:promise-vs-reality`,
+      sourceTitle: `Promise vs. Reality — ${chapterTitle || chapterSlug}`,
+      promptText: 'Promise vs. Reality self-assessment',
+      responseText: summary,
+      analysis,
+      affectsProfile: true,
+      activityContext: 'textbook',
+    }).catch((e) => console.warn('[pvr] journey record failed:', e));
+  }
   const [scores, setScores] = useState<Record<string, number>>({});
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -66,6 +115,7 @@ export function PromiseVsReality({
       if (res.success) {
         setStatus('saved');
         setTimeout(() => setStatus('idle'), 1500);
+        recordPvrToJourney(next);
       } else {
         setStatus('idle');
       }

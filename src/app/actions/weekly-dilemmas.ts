@@ -314,18 +314,22 @@ export async function getWeeklyDilemmaBySlug(slug: string, userId?: string) {
       } as const;
     }
 
-    const peerSnap = await db
-      .collection('weeklyDilemmaResponses')
-      .where('dilemmaId', '==', dilemma.id)
-      .orderBy('createdAt', 'desc')
-      .limit(50)
-      .get();
-    const replySnap = await db
-      .collection('weeklyDilemmaReplies')
-      .where('dilemmaId', '==', dilemma.id)
-      .orderBy('createdAt', 'asc')
-      .limit(100)
-      .get();
+    // Peers + replies are independent — fetch them in parallel so the dilemma
+    // detail resolves in one round-trip instead of two sequential admin reads.
+    const [peerSnap, replySnap] = await Promise.all([
+      db
+        .collection('weeklyDilemmaResponses')
+        .where('dilemmaId', '==', dilemma.id)
+        .orderBy('createdAt', 'desc')
+        .limit(50)
+        .get(),
+      db
+        .collection('weeklyDilemmaReplies')
+        .where('dilemmaId', '==', dilemma.id)
+        .orderBy('createdAt', 'asc')
+        .limit(100)
+        .get(),
+    ]);
     return {
       success: true,
       data: {

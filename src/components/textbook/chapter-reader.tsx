@@ -173,6 +173,8 @@ export function ChapterReader({ chapter, prev, next }: ChapterReaderProps) {
                   key={section.id}
                   section={section}
                   chapterSlug={chapter.slug}
+                  chapterTitle={chapter.title}
+                  frameworkIds={chapter.relatedFrameworkIds}
                 />
               );
             default:

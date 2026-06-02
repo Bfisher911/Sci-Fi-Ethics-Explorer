@@ -42,6 +42,8 @@ import { normalizeFrameworkId, FRAMEWORK_META } from '@/lib/ethics/frameworks';
 import { generateEthicsReport } from '@/ai/flows/generate-ethics-report';
 import type { EthicsReport } from '@/lib/ethics/report-types';
 import { getAllFrameworkResponses } from '@/app/actions/framework-explorer';
+import { getUserEthicalJudgmentEvents } from '@/app/actions/ethical-judgments';
+import { eventToJourneyEntry, activityTypeLabel } from '@/lib/ethics/event-entries';
 
 type ActionResult<T = void> =
   | { success: true; data: T }
@@ -158,22 +160,41 @@ export async function getEthicsJourney(
 }
 
 /**
- * Pull every ethical-decision source for a user — story/dilemma/debate
- * journey entries AND Framework Explorer responses — as one combined
- * EthicsJourneyEntry list. This is the single input to the unified
- * profile, so all activities feed one score.
+ * Pull EVERY ethical-reasoning source for a user as one combined
+ * EthicsJourneyEntry list, so the unified profile reflects all activity:
+ *   - the canonical `ethicalJudgmentEvents` store (stories, dilemmas, debates,
+ *     textbook discussion, Promise-vs-Reality, and the Studio AI tools — every
+ *     surface that calls `recordEthicalJudgmentEvent`), converted via
+ *     `eventToJourneyEntry`, and
+ *   - Framework Explorer responses (their own store).
+ *
+ * We read events (not the stories-only `ethicsJourney` collection) so stories
+ * are represented exactly once and all other sources are included. Events with
+ * `affectsProfile === false` (e.g. knowledge quizzes) are excluded.
  */
 async function getUnifiedEntries(
   userId: string,
-): Promise<{ entries: EthicsJourneyEntry[]; feResponses: Awaited<ReturnType<typeof getAllFrameworkResponses>> }> {
-  const [journeyRes, feRes] = await Promise.all([
-    getEthicsJourney(userId),
+): Promise<{
+  entries: EthicsJourneyEntry[];
+  feResponses: Awaited<ReturnType<typeof getAllFrameworkResponses>>;
+  /** Per-interactionType event counts (for the source mix). */
+  eventCounts: Record<string, number>;
+}> {
+  const [eventsRes, feRes] = await Promise.all([
+    getUserEthicalJudgmentEvents(userId),
     getAllFrameworkResponses(userId),
   ]);
-  const journeyEntries = journeyRes.success ? journeyRes.data : [];
-  const feEntries =
-    feRes.success ? frameworkResponsesToEntries(feRes.data) : [];
-  return { entries: [...journeyEntries, ...feEntries], feResponses: feRes };
+  const events = (eventsRes.success ? eventsRes.data : []).filter(
+    (e) => e.affectsProfile !== false,
+  );
+  const eventCounts: Record<string, number> = {};
+  const eventEntries = events.map((e, i) => {
+    const key = String(e.interactionType || 'other');
+    eventCounts[key] = (eventCounts[key] ?? 0) + 1;
+    return eventToJourneyEntry(e, events.length - i);
+  });
+  const feEntries = feRes.success ? frameworkResponsesToEntries(feRes.data) : [];
+  return { entries: [...eventEntries, ...feEntries], feResponses: feRes, eventCounts };
 }
 
 export interface UnifiedEthicsProfile {
@@ -182,8 +203,14 @@ export interface UnifiedEthicsProfile {
   topics: Record<string, FrameworkScores>;
   /** Cumulative-over-time series across all sources. */
   timeline: TimelinePoint[];
-  /** Count of decisions from each source. */
-  counts: { story: number; frameworkExplorer: number; total: number };
+  /** Count of decisions from each source. `bySource` is keyed by friendly
+   *  activity label (Story, Dilemma, Debate, Studio Analyze, …). */
+  counts: {
+    story: number;
+    frameworkExplorer: number;
+    total: number;
+    bySource: Record<string, number>;
+  };
 }
 
 /**
@@ -202,13 +229,22 @@ export async function getUnifiedEthicsProfile(
           profile: buildJourneyProfile([]),
           topics: {},
           timeline: [],
-          counts: { story: 0, frameworkExplorer: 0, total: 0 },
+          counts: { story: 0, frameworkExplorer: 0, total: 0, bySource: {} },
         },
       };
     }
-    const { entries, feResponses } = await getUnifiedEntries(userId);
+    const { entries, feResponses, eventCounts } = await getUnifiedEntries(userId);
     const fe = feResponses.success ? feResponses.data : [];
-    const storyCount = entries.length - fe.length;
+    // Friendly per-source counts: collapse interactionTypes into display labels
+    // (e.g. weekly_dilemma_response + weekly_dilemma_reply → "Dilemma").
+    const bySource: Record<string, number> = {};
+    for (const [type, n] of Object.entries(eventCounts)) {
+      const label = activityTypeLabel(type);
+      bySource[label] = (bySource[label] ?? 0) + n;
+    }
+    if (fe.length) {
+      bySource['Framework Explorer'] = (bySource['Framework Explorer'] ?? 0) + fe.length;
+    }
     return {
       success: true,
       data: {
@@ -216,9 +252,10 @@ export async function getUnifiedEthicsProfile(
         topics: topicBreakdown(fe),
         timeline: buildTimeline(entries),
         counts: {
-          story: storyCount,
+          story: eventCounts['story_choice'] ?? 0,
           frameworkExplorer: fe.length,
           total: entries.length,
+          bySource,
         },
       },
     };

@@ -23,6 +23,13 @@ export interface DeterministicAnalysisInput {
 
 export interface RecordEthicalJudgmentInput {
   userId: string;
+  /**
+   * Optional stable id for idempotent upsert. When provided, re-recording the
+   * same key (e.g. a textbook reflection that is edited) updates one event
+   * instead of creating duplicates. Omit (stories, per-choice) to get a fresh
+   * event each time.
+   */
+  eventId?: string;
   interactionType: string;
   sourceContentType: string;
   sourceContentId: string;
@@ -151,7 +158,9 @@ export async function recordEthicalJudgmentEvent(
   const now = new Date();
   const event = omitUndefinedDeep(
     validateEthicalJudgmentEventInput({
-      id: `ethical-event-${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
+      id:
+        input.eventId ||
+        `ethical-event-${now.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
       userId: input.userId,
       interactionType: input.interactionType,
       sourceContentType: input.sourceContentType,

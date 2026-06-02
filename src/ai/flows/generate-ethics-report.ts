@@ -115,7 +115,7 @@ export async function generateEthicsReport(
     return {
       ...emptyOut(),
       errorCode: 'insufficient_data',
-      error: `Make at least ${MIN_DECISIONS_FOR_REPORT} Story decisions to generate a report. You have ${input?.totalDecisions ?? 0} so far.`,
+      error: `Complete at least ${MIN_DECISIONS_FOR_REPORT} ethics activities (story choices, dilemmas, debates, textbook discussions, or Studio analyses) to generate a report. You have ${input?.totalDecisions ?? 0} so far.`,
     };
   }
 
@@ -178,7 +178,7 @@ function extractJsonObject(text: string): unknown | null {
   return null;
 }
 
-const SYSTEM_PROMPT = `You are an ethics professor writing a warm, precise, intellectually honest reflection on a student's decision-making in a series of interactive science-fiction ethics scenarios. You ground every observation in the specific choices they actually made. You never flatter, never invent decisions, and you are willing to name tensions and blind spots respectfully.`;
+const SYSTEM_PROMPT = `You are an ethics professor writing a warm, precise, intellectually honest reflection on a student's decision-making across a range of ethics activities — interactive science-fiction stories, ethical dilemmas, structured debates, textbook discussion questions, and Studio AI analyses. You ground every observation in the specific choices and responses they actually made, and you note which kinds of activity a pattern shows up in. You never flatter, never invent decisions, and you are willing to name tensions and blind spots respectfully.`;
 
 const generateEthicsReportFlow = ai.defineFlow(
   {
@@ -199,7 +199,7 @@ const generateEthicsReportFlow = ai.defineFlow(
     const decisionList = input.decisions
       .map(
         (d, i) =>
-          `${i + 1}. [${d.storyTitle ?? 'Story'}] Prompt: "${d.prompt}"\n   Chose: "${d.choiceText}"\n   Leaned: ${d.frameworks}\n   Note: ${d.interpretation}`,
+          `${i + 1}. [${d.storyTitle ?? 'Activity'}] Prompt: "${d.prompt}"\n   Chose: "${d.choiceText}"\n   Leaned: ${d.frameworks}\n   Note: ${d.interpretation}`,
       )
       .join('\n');
 

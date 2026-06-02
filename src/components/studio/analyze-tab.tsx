@@ -30,6 +30,7 @@ import {
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { recordAnalysis } from '@/app/actions/progress';
+import { recordEthicalJudgmentEvent } from '@/app/actions/ethical-judgments';
 import { createAnalysis } from '@/app/actions/analyses';
 import { ActivityEvidence } from '@/components/activity-reports/activity-evidence';
 import { useCertificateCheck } from '@/components/certificates/use-certificate-check';
@@ -57,11 +58,11 @@ export function AnalyzeTab() {
     try {
       const result = await analyzeScenario({ scenarioText: text });
       setAnalysisResult(result);
-      setEvidenceId(
+      const evId =
         typeof crypto !== 'undefined' && crypto.randomUUID
           ? crypto.randomUUID()
-          : `analysis-${Date.now()}`
-      );
+          : `analysis-${Date.now()}`;
+      setEvidenceId(evId);
       if (user?.uid) {
         try {
           await recordAnalysis(user.uid);
@@ -69,6 +70,25 @@ export function AnalyzeTab() {
         } catch (err) {
           console.error('Failed to record analysis:', err);
         }
+        // Feed the analysis into the Ethical Journey (background, AI-scored).
+        void recordEthicalJudgmentEvent({
+          userId: user.uid,
+          eventId: `studio_analyze_${user.uid}_${evId}`.replace(/[^a-zA-Z0-9_-]/g, '-'),
+          interactionType: 'studio_analyze',
+          sourceContentType: 'studio',
+          sourceContentId: evId,
+          sourceTitle: 'Studio: scenario analysis',
+          promptText: 'Analyze the ethical dimensions of this scenario.',
+          responseText: text,
+          explanation: [
+            ...(result.ethicalDilemmas ?? []),
+            ...(result.applicableEthicalTheories ?? []),
+          ]
+            .join('; ')
+            .slice(0, 1200),
+          affectsProfile: true,
+          activityContext: 'practice',
+        }).catch((e) => console.warn('[studio-analyze] journey record failed:', e));
       }
     } catch (err: unknown) {
       console.error('Error analyzing scenario:', err);
