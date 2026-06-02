@@ -62,7 +62,10 @@ export const NEW_DILEMMAS: SeedDilemma[] = [
       'You wrote your reflection believing a person would read it. Would you have written it differently knowing a machine assigned the score? What does that difference reveal about what reflection is for?',
     visibilityStatus: 'published',
     isoWeek: '2026-W10',
+    imageUrl: '/images/dilemmas/ai-grading-emotional-essays.png',
     imageHint: 'classroom screen',
+    imageAlt:
+      'Student writing a private reflection journal while a cool AI grading light scans the page.',
     publishDate: '2026-03-02T09:00:00.000Z',
   },
   {
@@ -104,7 +107,10 @@ export const NEW_DILEMMAS: SeedDilemma[] = [
       'The app saved lives and quietly logged a year of your movements. Where would you set the line between a warning system and a surveillance system — and who do you trust to hold it?',
     visibilityStatus: 'published',
     isoWeek: '2026-W11',
+    imageUrl: '/images/dilemmas/mandatory-disaster-app.png',
     imageHint: 'flood city',
+    imageAlt:
+      'Residents follow phone evacuation alerts through floodwater while glowing location trails suggest surveillance.',
     publishDate: '2026-03-09T09:00:00.000Z',
   },
   {
@@ -152,7 +158,10 @@ export const NEW_DILEMMAS: SeedDilemma[] = [
       'You once wrote something in confidence that helped build a machine you never agreed to. Does the good the machine does change what was owed to you — and is consent something a buried clause can ever really give?',
     visibilityStatus: 'published',
     isoWeek: '2026-W12',
+    imageUrl: '/images/dilemmas/ai-trained-on-grief-journals.png',
     imageHint: 'candle journal',
+    imageAlt:
+      'Candlelit grief journal dissolving into a compassionate digital presence in a quiet room.',
     publishDate: '2026-03-16T09:00:00.000Z',
   },
   {
@@ -194,7 +203,10 @@ export const NEW_DILEMMAS: SeedDilemma[] = [
       'If a machine\'s refusal to kill might cost lives, and a human\'s override might kill children, where should the last word live? What does your answer assume about whom we can trust with the worst decisions?',
     visibilityStatus: 'published',
     isoWeek: '2026-W13',
+    imageUrl: '/images/dilemmas/drone-refusing-command.png',
     imageHint: 'drone sky',
+    imageAlt:
+      'Officer reaching toward an override control as an autonomous drone marks civilians inside a building.',
     publishDate: '2026-03-23T09:00:00.000Z',
   },
   {
@@ -242,7 +254,10 @@ export const NEW_DILEMMAS: SeedDilemma[] = [
       'A company decided you could not handle the truth about a threat to your life, and may have saved you by doing it. Did they have the right? Would your answer change if they were wrong?',
     visibilityStatus: 'published',
     isoWeek: '2026-W14',
+    imageUrl: '/images/dilemmas/platform-suppressing-panic.png',
     imageHint: 'phone alert',
+    imageAlt:
+      'Social platform operations room dimming alarming disaster posts while a city faces a distant chemical fire.',
     publishDate: '2026-03-30T09:00:00.000Z',
   },
   {
@@ -290,7 +305,10 @@ export const NEW_DILEMMAS: SeedDilemma[] = [
       'A camera scores whether your face looks like it is learning. What is lost when attention becomes a performance to be measured — and who is most likely to be penalized for how they look while thinking?',
     visibilityStatus: 'published',
     isoWeek: '2026-W15',
+    imageUrl: '/images/dilemmas/school-emotion-cameras.png',
     imageHint: 'classroom camera',
+    imageAlt:
+      'Students in a classroom sit beneath emotion-detection cameras and cool biometric tracking rings.',
     publishDate: '2026-04-06T09:00:00.000Z',
   },
   {
@@ -332,7 +350,10 @@ export const NEW_DILEMMAS: SeedDilemma[] = [
       'The machine is usually right but cannot tell you why. Is "it works" enough to cut someone open? What does informed consent mean when no one — not even the expert — can explain the reason?',
     visibilityStatus: 'published',
     isoWeek: '2026-W16',
+    imageUrl: '/images/dilemmas/inexplicable-medical-ai.png',
     imageHint: 'operating room',
+    imageAlt:
+      'Doctor and patient confront an opaque medical AI recommendation beside a softly lit operating room.',
     publishDate: '2026-04-13T09:00:00.000Z',
   },
   {
@@ -374,7 +395,10 @@ export const NEW_DILEMMAS: SeedDilemma[] = [
       'Is there a difference between making someone suffer and making someone feel suffering? If a felt decade reforms a person and spares them a literal one, is that mercy or a new kind of cruelty?',
     visibilityStatus: 'published',
     isoWeek: '2026-W17',
+    imageUrl: '/images/dilemmas/vr-prison-time-dilation.png',
     imageHint: 'vr headset cell',
+    imageAlt:
+      'Person wearing a VR headset in a sparse correctional room as a digital prison corridor stretches behind them.',
     publishDate: '2026-04-20T09:00:00.000Z',
   },
   {
@@ -422,7 +446,10 @@ export const NEW_DILEMMAS: SeedDilemma[] = [
       'You can save the people in front of you by changing a sky shared with a billion strangers who never agreed. What do we owe people on the other side of the planet when our solution becomes their risk?',
     visibilityStatus: 'published',
     isoWeek: '2026-W18',
+    imageUrl: '/images/dilemmas/regional-climate-engineering.png',
     imageHint: 'aerosol sky',
+    imageAlt:
+      'Climate engineers and community representatives study cross-border wind currents beneath aerosol aircraft.',
     publishDate: '2026-04-27T09:00:00.000Z',
   },
 ];

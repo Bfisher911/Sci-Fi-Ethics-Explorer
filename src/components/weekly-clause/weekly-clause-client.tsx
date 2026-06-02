@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ActivityEvidence } from '@/components/activity-reports/activity-evidence';
 import { useCertificateCheck } from '@/components/certificates/use-certificate-check';
+import { DilemmaImage } from '@/components/community-dilemmas/dilemma-image';
 import { Lock, MessageSquare, Send, Sparkles } from 'lucide-react';
 
 interface WeeklyClauseData {
@@ -143,7 +144,18 @@ export function WeeklyClauseClient({ slug }: { slug?: string }) {
 
   return (
     <div className="container mx-auto py-8 px-4 space-y-6">
-      <Card className="shadow-xl bg-card/80 backdrop-blur-sm">
+      <Card className="overflow-hidden shadow-xl bg-card/80 backdrop-blur-sm">
+        <div className="relative h-56 w-full bg-muted md:h-72">
+          <DilemmaImage
+            imageUrl={dilemma.imageUrl}
+            title={dilemma.title}
+            theme={dilemma.tags?.[0]}
+            hint={dilemma.imageHint}
+            imageAlt={dilemma.imageAlt}
+            keywords={dilemma.relatedTechnologies}
+            size="detail"
+          />
+        </div>
         <CardHeader>
           <div className="flex flex-wrap gap-2 mb-2">
             {dilemma.tags.map((tag) => (

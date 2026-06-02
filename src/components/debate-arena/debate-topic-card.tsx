@@ -1,6 +1,7 @@
 'use client';
 
 import type { Debate } from '@/types';
+import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, CalendarDays, MessageSquare } from 'lucide-react';
@@ -33,7 +34,7 @@ export function DebateTopicCard({ debate }: DebateTopicCardProps) {
 
   return (
     <Link href={`/debate-arena/${debate.id}`}>
-      <Card className="relative shadow-xl hover:shadow-primary/20 transition-all duration-300 bg-card/80 backdrop-blur-sm hover:border-primary/30 cursor-pointer">
+      <Card className="relative overflow-hidden shadow-xl hover:shadow-primary/20 transition-all duration-300 bg-card/80 backdrop-blur-sm hover:border-primary/30 cursor-pointer">
         <div
           className="absolute top-2 right-2 z-10"
           onClick={(e) => {
@@ -49,6 +50,18 @@ export function DebateTopicCard({ debate }: DebateTopicCardProps) {
             />
           </div>
         </div>
+        {debate.imageUrl && (
+          <div className="relative h-44 w-full bg-muted">
+            <Image
+              src={debate.imageUrl}
+              alt={debate.imageAlt || `Illustration for ${debate.title}`}
+              fill
+              sizes="(max-width: 768px) 100vw, 400px"
+              className="object-cover"
+              data-ai-hint={debate.imageHint || 'ethics debate'}
+            />
+          </div>
+        )}
         <CardHeader>
           <div className="flex justify-between items-start mb-2">
             <Badge variant="outline" className={statusInfo.className}>

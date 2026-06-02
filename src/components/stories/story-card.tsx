@@ -43,7 +43,7 @@ export function StoryCard({ story, isCommunity }: StoryCardProps) {
             return (
               <Image
                 src={cover}
-                alt={story.title}
+                alt={story.imageAlt || `Cover art for ${story.title}`}
                 fill
                 sizes="(max-width: 768px) 100vw, 400px"
                 className="object-cover transition-transform duration-300 group-hover:scale-105"

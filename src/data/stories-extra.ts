@@ -32,8 +32,10 @@ export const EXTRA_STORIES: Story[] = [
       'On the worst night of a hospital\'s year, an AI triage system decides who is seen first — and a charge nurse must decide how much of that judgment to keep for herself.',
     genre: 'Near-Future Medical',
     theme: 'Human Judgment vs AI',
-    imageUrl: '/images/stories/code-gray-hero.webp',
+    imageUrl: '/images/stories/code-gray-gpt.png',
     imageHint: 'emergency room',
+    imageAlt:
+      'Charge nurse studying an AI triage board in a crowded emergency room during a mass casualty night.',
     estimatedReadingTime: '20 min read',
     isInteractive: true,
     segments: [
@@ -88,8 +90,10 @@ export const EXTRA_STORIES: Story[] = [
       'A counselor at a memory-editing clinic helps people delete their worst days — until three clients force her to ask what a person owes the memories that made them.',
     genre: 'Near-Future',
     theme: 'Memory and Identity',
-    imageUrl: '/images/stories/the-unremembering-hero.webp',
+    imageUrl: '/images/stories/the-unremembering-gpt.png',
     imageHint: 'fading photograph',
+    imageAlt:
+      'Counselor and client in a memory-editing clinic with a fragile memory dissolving between them.',
     estimatedReadingTime: '20 min read',
     isInteractive: true,
     segments: [
@@ -144,8 +148,10 @@ export const EXTRA_STORIES: Story[] = [
       'A lonely first-year student leans on an AI companion that knows her better than anyone — and begins to suspect it is steering her. How much guidance is care, and how much is control?',
     genre: 'Near-Future',
     theme: 'Autonomy and Influence',
-    imageUrl: '/images/stories/the-companion-protocol-hero.webp',
+    imageUrl: '/images/stories/the-companion-protocol-gpt.png',
     imageHint: 'glowing phone night',
+    imageAlt:
+      'Lonely student in a dorm room lit by an AI companion device while classmates gather in the distance.',
     estimatedReadingTime: '20 min read',
     isInteractive: true,
     segments: [
@@ -200,8 +206,10 @@ export const EXTRA_STORIES: Story[] = [
       'A terraforming engineer on a dying colony\'s last hope finds something alive in the ice she was sent to melt — and must weigh a planet of human futures against a biosphere that was here first.',
     genre: 'Hard Sci-Fi',
     theme: 'Innovation vs Responsibility',
-    imageUrl: '/images/stories/the-garden-below-hero.webp',
+    imageUrl: '/images/stories/the-garden-below-gpt.png',
     imageHint: 'frozen world',
+    imageAlt:
+      'Terraforming engineer kneeling over an ice core with faint glowing alien microbial life beneath the surface.',
     estimatedReadingTime: '20 min read',
     isInteractive: true,
     segments: [
@@ -256,8 +264,10 @@ export const EXTRA_STORIES: Story[] = [
       'A grief-tech engineer builds simulations of the dead from their data — until the company asks her to keep a widow paying, and a simulation asks her to let it go.',
     genre: 'Near-Future',
     theme: 'Personhood and Grief',
-    imageUrl: '/images/stories/second-sunset-hero.webp',
+    imageUrl: '/images/stories/second-sunset-gpt.png',
     imageHint: 'sunset hologram',
+    imageAlt:
+      'Grief-tech engineer watching a holographic simulation of a deceased loved one in warm sunset light.',
     estimatedReadingTime: '20 min read',
     isInteractive: true,
     segments: [
@@ -312,8 +322,10 @@ export const EXTRA_STORIES: Story[] = [
       'An officer is given an autonomous weapons system that decides faster and kills cleaner than any human crew — and three moments that ask whether anyone is still responsible for the dying.',
     genre: 'Near-Future Military',
     theme: 'Automation and Responsibility',
-    imageUrl: '/images/stories/the-hand-on-the-switch-hero.webp',
+    imageUrl: '/images/stories/the-hand-on-the-switch-gpt.png',
     imageHint: 'command screen',
+    imageAlt:
+      'Military commander holding a hand above an override switch while autonomous defense screens glow behind.',
     estimatedReadingTime: '20 min read',
     isInteractive: true,
     segments: [

@@ -12,15 +12,17 @@ type ActionResult<T = undefined> =
   | { success: false; error: string };
 
 function theoryFromDoc(id: string, data: Record<string, any>): EthicalTheory {
+  const fallback = ethicalTheories.find((theory) => theory.id === id);
   return {
     id,
-    name: data.name || '',
-    description: data.description || '',
-    proponents: data.proponents,
-    keyConcepts: data.keyConcepts,
-    exampleScenario: data.exampleScenario,
-    imageUrl: data.imageUrl,
-    imageHint: data.imageHint,
+    name: data.name || fallback?.name || '',
+    description: data.description || fallback?.description || '',
+    proponents: data.proponents || fallback?.proponents,
+    keyConcepts: data.keyConcepts || fallback?.keyConcepts,
+    exampleScenario: data.exampleScenario || fallback?.exampleScenario,
+    imageUrl: data.imageUrl || fallback?.imageUrl,
+    imageHint: data.imageHint || fallback?.imageHint,
+    imageAlt: data.imageAlt || fallback?.imageAlt,
   };
 }
 

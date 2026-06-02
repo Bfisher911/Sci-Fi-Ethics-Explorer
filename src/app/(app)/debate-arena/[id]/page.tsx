@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getDebateById, getArguments, closeDebate } from '@/app/actions/debates';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
@@ -227,7 +228,21 @@ export default function DebateDetailPage() {
       />
 
       {/* Debate Header */}
-      <Card data-tour="debate-header" className="mb-8 bg-card/80 backdrop-blur-sm">
+      <Card data-tour="debate-header" className="mb-8 overflow-hidden bg-card/80 backdrop-blur-sm">
+        {debate.imageUrl && (
+          <div className="relative h-56 w-full bg-muted md:h-80">
+            <Image
+              src={debate.imageUrl}
+              alt={debate.imageAlt || `Illustration for ${debate.title}`}
+              fill
+              sizes="(max-width: 1024px) 100vw, 1024px"
+              className="object-cover"
+              data-ai-hint={debate.imageHint || 'ethics debate'}
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-card/80 via-transparent to-transparent" />
+          </div>
+        )}
         <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
             <div className="flex-1">

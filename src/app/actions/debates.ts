@@ -18,10 +18,15 @@ import {
 import type { Debate, DebateArgument, DebateVote } from '@/types';
 import { buildChoiceFrameworkWeights } from '@/lib/choice-frameworks';
 import { shouldScoreDebateReply } from '@/lib/ethical-judgment/aggregation';
+import { NEW_DEBATES } from '@/data/debates';
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
   | { success: false; error: string };
+
+function seededDebateFallback(id: string) {
+  return NEW_DEBATES.find((debate) => debate.id === id);
+}
 
 // ─── Create Debate ─────────────────────────────────────────────────
 
@@ -33,6 +38,9 @@ export async function createDebate(data: {
   tags?: string[];
   dilemmaId?: string;
   storyId?: string;
+  imageUrl?: string;
+  imageHint?: string;
+  imageAlt?: string;
 }): Promise<ActionResult<string>> {
   if (!db) {
     return { success: false, error: 'Firestore is not initialized.' };
@@ -49,6 +57,9 @@ export async function createDebate(data: {
       tags: data.tags || [],
       dilemmaId: data.dilemmaId || null,
       storyId: data.storyId || null,
+      imageUrl: data.imageUrl || null,
+      imageHint: data.imageHint || null,
+      imageAlt: data.imageAlt || null,
       createdAt: serverTimestamp(),
     };
 
@@ -77,6 +88,7 @@ export async function getDebates(): Promise<ActionResult<Debate[]>> {
     const snapshot = await getDocs(q);
     const debates: Debate[] = snapshot.docs.map((docSnap) => {
       const d = docSnap.data();
+      const fallback = seededDebateFallback(docSnap.id);
       return {
         id: docSnap.id,
         title: d.title,
@@ -88,6 +100,9 @@ export async function getDebates(): Promise<ActionResult<Debate[]>> {
         tags: d.tags ?? [],
         dilemmaId: d.dilemmaId,
         storyId: d.storyId,
+        imageUrl: d.imageUrl ?? fallback?.imageUrl,
+        imageHint: d.imageHint ?? fallback?.imageHint,
+        imageAlt: d.imageAlt ?? fallback?.imageAlt,
         brief: d.brief ?? undefined,
         createdAt: d.createdAt?.toDate?.() ?? new Date(),
         closesAt: d.closesAt?.toDate?.() ?? undefined,
@@ -117,6 +132,7 @@ export async function getDebateById(debateId: string): Promise<ActionResult<Deba
     }
 
     const d = docSnap.data();
+    const fallback = seededDebateFallback(docSnap.id);
     const debate: Debate = {
       id: docSnap.id,
       title: d.title,
@@ -128,6 +144,9 @@ export async function getDebateById(debateId: string): Promise<ActionResult<Deba
       tags: d.tags ?? [],
       dilemmaId: d.dilemmaId,
       storyId: d.storyId,
+      imageUrl: d.imageUrl ?? fallback?.imageUrl,
+      imageHint: d.imageHint ?? fallback?.imageHint,
+      imageAlt: d.imageAlt ?? fallback?.imageAlt,
       brief: d.brief ?? undefined,
       createdAt: d.createdAt?.toDate?.() ?? new Date(),
       closesAt: d.closesAt?.toDate?.() ?? undefined,

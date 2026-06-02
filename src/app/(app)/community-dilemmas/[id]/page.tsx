@@ -230,6 +230,7 @@ export default function CommunityDilemmaDetailPage() {
             title={dilemma.title}
             theme={dilemma.theme}
             hint={dilemma.imageHint}
+            imageAlt={dilemma.imageAlt}
             size="detail"
           />
         </div>

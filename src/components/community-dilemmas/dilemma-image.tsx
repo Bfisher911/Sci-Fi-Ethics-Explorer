@@ -13,6 +13,8 @@ interface DilemmaImageProps {
   theme?: string;
   /** Free-text hint; combined with theme to build the Unsplash query. */
   hint?: string;
+  /** Specific accessible description for the image. */
+  imageAlt?: string;
   /**
    * Additional keywords that take priority over theme/hint when present.
    * Used to pass sub-genre + ethical-focus for community stories so the
@@ -93,6 +95,7 @@ export function DilemmaImage({
   title,
   theme,
   hint,
+  imageAlt,
   keywords,
   className,
   size = 'card',
@@ -118,7 +121,7 @@ export function DilemmaImage({
           background:
             'radial-gradient(circle at 30% 20%, rgba(125,249,255,0.18), transparent 55%), radial-gradient(circle at 80% 80%, rgba(255,0,255,0.10), transparent 50%), linear-gradient(135deg, #0a0e27 0%, #14143a 50%, #1a1a4a 100%)',
         }}
-        aria-label={`Cover for ${title}`}
+        aria-label={imageAlt || `Cover for ${title}`}
       >
         <span className="text-xs uppercase tracking-[0.3em] text-primary/70">
           {theme || 'Dilemma'}
@@ -130,7 +133,7 @@ export function DilemmaImage({
   return (
     <Image
       src={src}
-      alt={`Cover for ${title}`}
+      alt={imageAlt || `Cover for ${title}`}
       fill
       className={cn('object-cover', className)}
       sizes={size === 'detail' ? '(max-width: 1024px) 100vw, 1024px' : '(max-width: 768px) 100vw, 400px'}

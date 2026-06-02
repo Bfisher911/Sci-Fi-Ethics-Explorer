@@ -109,7 +109,7 @@ export default function TheoryDetailPage() {
           <div className="relative w-full h-56">
             <Image
               src={theory.imageUrl}
-              alt={theory.name}
+              alt={theory.imageAlt || `Conceptual illustration for ${theory.name}`}
               fill
               className="object-cover"
               data-ai-hint={theory.imageHint || 'abstract concept'}

@@ -56,6 +56,7 @@ export function CommunityDilemmaCard({ dilemma }: CommunityDilemmaCardProps) {
             title={dilemma.title}
             theme={dilemma.theme}
             hint={dilemma.imageHint}
+            imageAlt={dilemma.imageAlt}
             size="card"
           />
         </div>

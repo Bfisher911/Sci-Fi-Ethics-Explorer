@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/empty/empty-state';
+import { DilemmaImage } from '@/components/community-dilemmas/dilemma-image';
 import { getPublishedDilemmas } from '@/app/actions/weekly-dilemmas';
 import { FRAMEWORK_META, normalizeFrameworkId } from '@/lib/ethics/frameworks';
 import type { WeeklyDilemma } from '@/types';
@@ -71,8 +72,19 @@ export default function DilemmasLibraryPage(): JSX.Element {
           {dilemmas.map((d) => (
             <Card
               key={d.id}
-              className="flex flex-col bg-card/70 transition-colors hover:border-primary/40"
+              className="flex flex-col overflow-hidden bg-card/70 transition-colors hover:border-primary/40"
             >
+              <div className="relative h-44 w-full bg-muted">
+                <DilemmaImage
+                  imageUrl={d.imageUrl}
+                  title={d.title}
+                  theme={d.tags?.[0]}
+                  hint={d.imageHint}
+                  imageAlt={d.imageAlt}
+                  keywords={d.relatedTechnologies}
+                  size="card"
+                />
+              </div>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg leading-tight">{d.title}</CardTitle>
                 <CardDescription>{d.shortSetup}</CardDescription>

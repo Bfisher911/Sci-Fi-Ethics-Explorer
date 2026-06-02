@@ -699,6 +699,7 @@ export default function StoryDetailPage() {
               undefined
             }
             imageHint={currentSegment.imageHint || story.imageHint}
+            imageAlt={story.imageAlt}
             title={story.title}
             subtitle={`${story.genre} · ${story.theme}`}
             fallbackKeywords={[

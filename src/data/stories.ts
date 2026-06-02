@@ -23,8 +23,10 @@ export const mockStories: Story[] = [
     theme: 'AI Sentience',
     author: OFFICIAL_AUTHOR_NAME,
     authorId: OFFICIAL_AUTHOR_UID,
-    imageUrl: '/images/stories/the-algernon-gambit-hero.webp',
+    imageUrl: '/images/stories/the-algernon-gambit-gpt.png',
     imageHint: 'neon lab',
+    imageAlt:
+      'Scientist facing glowing AI server stacks in a neon research lab at night.',
     estimatedReadingTime: '25 min read',
     isInteractive: true,
     segments: [
@@ -239,8 +241,10 @@ export const mockStories: Story[] = [
     theme: 'Resource Scarcity',
     author: OFFICIAL_AUTHOR_NAME,
     authorId: OFFICIAL_AUTHOR_UID,
-    imageUrl: '/images/stories/cryosleep-conundrum-hero.webp',
+    imageUrl: '/images/stories/cryosleep-conundrum-gpt.png',
     imageHint: 'cryo pods',
+    imageAlt:
+      'Starship captain standing before rows of frost-covered cryosleep pods under red emergency lights.',
     estimatedReadingTime: '25 min read',
     isInteractive: true,
     segments: [
@@ -452,8 +456,10 @@ export const mockStories: Story[] = [
     theme: 'Transhumanism',
     author: OFFICIAL_AUTHOR_NAME,
     authorId: OFFICIAL_AUTHOR_UID,
-    imageUrl: '/images/stories/synthetic-souls-hero.webp',
+    imageUrl: '/images/stories/synthetic-souls-gpt.png',
     imageHint: 'twin figures',
+    imageAlt:
+      'Reflective android seated in an ethics room as mirrored selves and human reviewers surround it.',
     estimatedReadingTime: '20 min read',
     isInteractive: true,
     segments: [
@@ -669,8 +675,10 @@ export const mockStories: Story[] = [
     theme: 'Memory and Identity',
     author: OFFICIAL_AUTHOR_NAME,
     authorId: OFFICIAL_AUTHOR_UID,
-    imageUrl: '/images/stories/the-palimpsest-clause-hero.webp',
+    imageUrl: '/images/stories/the-palimpsest-clause-gpt.png',
     imageHint: 'rain noir',
+    imageAlt:
+      'Hooded archivist in a rain-lit neon city holding a satchel beneath hovering legal holograms.',
     estimatedReadingTime: '25 min read',
     isInteractive: true,
     segments: [
@@ -883,8 +891,10 @@ export const mockStories: Story[] = [
     theme: 'Diplomacy and Otherness',
     author: OFFICIAL_AUTHOR_NAME,
     authorId: OFFICIAL_AUTHOR_UID,
-    imageUrl: '/images/stories/the-river-we-offered-hero.webp',
+    imageUrl: '/images/stories/the-river-we-offered-gpt.png',
     imageHint: 'alien ocean',
+    imageAlt:
+      'Coastal villagers and a climate engineer watch lanterns drift across floodwater under storm clouds.',
     estimatedReadingTime: '20 min read',
     isInteractive: true,
     segments: [
@@ -1114,8 +1124,10 @@ export const mockStories: Story[] = [
     theme: 'Determinism and Surveillance',
     author: OFFICIAL_AUTHOR_NAME,
     authorId: OFFICIAL_AUTHOR_UID,
-    imageUrl: '/images/stories/the-forecast-division-hero.webp',
+    imageUrl: '/images/stories/the-forecast-division-gpt.png',
     imageHint: 'city surveillance',
+    imageAlt:
+      'Government analyst overlooking predictive city maps that highlight a family home.',
     estimatedReadingTime: '25 min read',
     isInteractive: true,
     segments: [

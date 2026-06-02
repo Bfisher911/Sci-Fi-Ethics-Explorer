@@ -277,6 +277,7 @@ export interface Story {
   author: string;
   imageUrl?: string;
   imageHint?: string;
+  imageAlt?: string;
   segments: StorySegment[];
   isInteractive: boolean;
   estimatedReadingTime: string;
@@ -342,6 +343,7 @@ export interface EthicalTheory {
   exampleScenario?: string;
   imageUrl?: string;
   imageHint?: string;
+  imageAlt?: string;
 }
 
 export type EthicalJudgmentInteractionType =
@@ -488,6 +490,7 @@ export interface SubmittedDilemma {
   authorEmail?: string;
   imageUrl?: string;
   imageHint?: string;
+  imageAlt?: string;
   submittedAt: Date | any;
   status: 'pending' | 'approved' | 'rejected' | 'draft';
   /** Whether the dilemma appears in the global Community Dilemmas feed. */
@@ -988,6 +991,9 @@ export interface Debate {
   closesAt?: Date | any;
   participantCount: number;
   tags?: string[];
+  imageUrl?: string;
+  imageHint?: string;
+  imageAlt?: string;
   /** Structured scaffolding for first-party debate activities. */
   brief?: DebateBrief;
 }
@@ -1368,6 +1374,7 @@ export interface WeeklyDilemma {
   isoWeek: string;
   imageUrl?: string;
   imageHint?: string;
+  imageAlt?: string;
   generatedAt?: Date | any;
 }
 

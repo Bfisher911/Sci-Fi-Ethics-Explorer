@@ -41,6 +41,7 @@ function dilemmaFromDoc(id: string, data: Record<string, any>): SubmittedDilemma
     authorEmail: data.authorEmail,
     imageUrl: data.imageUrl,
     imageHint: data.imageHint,
+    imageAlt: data.imageAlt,
     submittedAt: data.submittedAt?.toDate
       ? data.submittedAt.toDate().toISOString()
       : data.submittedAt,
@@ -351,6 +352,7 @@ export async function getAllStories(): Promise<ActionResult<Story[]>> {
         author: data.author || '',
         imageUrl: data.imageUrl,
         imageHint: data.imageHint,
+        imageAlt: data.imageAlt,
         segments: data.segments || [],
         isInteractive: data.isInteractive ?? false,
         estimatedReadingTime: data.estimatedReadingTime || '',

@@ -20,7 +20,7 @@ export function TheoryCard({ theory }: TheoryCardProps) {
           <div className="relative w-full h-48">
             <Image
               src={theory.imageUrl}
-              alt={theory.name}
+              alt={theory.imageAlt || `Conceptual illustration for ${theory.name}`}
               layout="fill"
               objectFit="cover"
               data-ai-hint={theory.imageHint || 'abstract concept'}

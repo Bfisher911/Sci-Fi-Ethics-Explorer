@@ -38,6 +38,7 @@ function storyFromDoc(id: string, data: Record<string, any>): Story {
     author: data.author || '',
     imageUrl: data.imageUrl || '',
     imageHint: data.imageHint || '',
+    imageAlt: data.imageAlt || '',
     segments: data.segments || [],
     isInteractive: data.isInteractive ?? false,
     estimatedReadingTime: data.estimatedReadingTime || '',

@@ -188,7 +188,10 @@ export const ethicalTheories: EthicalTheory[] = [
     proponents: ['Jeremy Bentham', 'John Stuart Mill', 'Henry Sidgwick', 'Derek Parfit', 'Peter Railton', 'Philip Pettit'],
     keyConcepts: ['Outcomes as the Measure of Right', 'Act vs Rule Consequentialism', 'Maximizing vs Satisficing', 'Negative Consequentialism', 'Expected Value', 'Impartial Aggregation'],
     exampleScenario: 'Evaluating whether to ship a feature, a consequentialist team models the realistic distribution of outcomes — who benefits, who is harmed, and by how much — and treats that projected impact, not the elegance of the design or the purity of intent, as the thing that decides.',
+    imageUrl: '/images/theories/consequentialism.png',
     imageHint: 'outcomes branching paths',
+    imageAlt:
+      'Analysts weighing branching possible futures that show different social outcomes from one decision.',
   },
   {
     id: 'rights-based-ethics',
@@ -197,7 +200,10 @@ export const ethicalTheories: EthicalTheory[] = [
     proponents: ['John Locke', 'Ronald Dworkin', 'Robert Nozick', 'Judith Jarvis Thomson', 'Henry Shue', 'Eleanor Roosevelt'],
     keyConcepts: ['Rights as Trumps', 'Negative vs Positive Rights', 'Side Constraints', 'Inviolability of the Person', 'Human Rights', 'Informed Consent', 'Due Process'],
     exampleScenario: 'A data team discovers a use of customer records that would be highly profitable and broadly beneficial, but exceeds what users consented to. The rights-based view treats the consent boundary as a constraint that the projected benefits are not permitted to override, however large they are.',
+    imageUrl: '/images/theories/rights-based-ethics.png',
     imageHint: 'shield individual person',
+    imageAlt:
+      'People protected by transparent rights boundaries while a large optimization stream bends around them.',
   },
   {
     id: 'justice-ethics',
@@ -206,7 +212,10 @@ export const ethicalTheories: EthicalTheory[] = [
     proponents: ['John Rawls', 'Amartya Sen', 'Iris Marion Young', 'Elizabeth Anderson', 'Charles Mills', 'Miranda Fricker'],
     keyConcepts: ['Distributive Justice', 'Procedural Justice', 'The Difference Principle', 'Structural Injustice', 'Disparate Impact', 'Equity vs Equality', 'Justice as Fairness'],
     exampleScenario: 'An ML team finds their hiring model is accurate overall but systematically downranks candidates from under-represented groups. A justice lens treats that disparate burden as the central problem, even if the aggregate accuracy looks strong.',
+    imageUrl: '/images/theories/justice-ethics.png',
     imageHint: 'balance scales equity',
+    imageAlt:
+      'Futuristic civic hall redistributing light and access so people on lower platforms are not left in shadow.',
   },
   {
     id: 'autonomy',
@@ -215,6 +224,9 @@ export const ethicalTheories: EthicalTheory[] = [
     proponents: ['Immanuel Kant', 'John Stuart Mill', 'Tom Beauchamp', 'James Childress', 'Gerald Dworkin', 'Marina Oshana'],
     keyConcepts: ['Self-Determination', 'Informed Consent', 'Anti-Paternalism', 'Anti-Manipulation', 'Voluntariness', 'Relational Autonomy', 'Competence'],
     exampleScenario: 'A product team can boost retention with a near-irreversible default and a confusing cancellation flow. The autonomy principle treats this as a violation regardless of the metric gain, because it secures the outcome by defeating the user\'s capacity to choose freely.',
+    imageUrl: '/images/theories/autonomy.png',
     imageHint: 'self direction compass',
+    imageAlt:
+      'Self-directed person standing at a consent interface where several possible paths remain open.',
   },
 ];

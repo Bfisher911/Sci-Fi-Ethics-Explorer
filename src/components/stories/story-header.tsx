@@ -10,6 +10,8 @@ interface StoryHeaderProps {
   imageUrl?: string;
   /** AI hint for the image (used as alt-text augmentation + data attribute). */
   imageHint?: string;
+  /** Specific accessible description for the cover image. */
+  imageAlt?: string;
   /** Story title — used in alt text and as the displayed gradient fallback label. */
   title: string;
   /** Optional subtitle (genre · theme). */
@@ -40,6 +42,7 @@ const ASPECT_CLASS: Record<NonNullable<StoryHeaderProps['aspect']>, string> = {
 export function StoryHeader({
   imageUrl,
   imageHint,
+  imageAlt,
   title,
   subtitle,
   fallbackKeywords,
@@ -78,7 +81,7 @@ export function StoryHeader({
       {showImage ? (
         <Image
           src={derivedSrc as string}
-          alt={`Cover art for ${title}${imageHint ? ` — ${imageHint}` : ''}`}
+          alt={imageAlt || `Cover art for ${title}${imageHint ? ` - ${imageHint}` : ''}`}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 800px, 1024px"
           className="object-cover"

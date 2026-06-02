@@ -13,6 +13,7 @@ import {
 } from '@/lib/weekly-dilemmas';
 import { shouldScoreDebateReply } from '@/lib/ethical-judgment/aggregation';
 import type { WeeklyDilemma, WeeklyDilemmaReply, WeeklyDilemmaResponse } from '@/types';
+import { NEW_DILEMMAS } from '@/data/dilemmas';
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -59,6 +60,9 @@ function responseDocId(dilemmaId: string, userId: string): string {
 }
 
 function dilemmaFromDoc(id: string, data: Record<string, any>): WeeklyDilemma {
+  const fallback = NEW_DILEMMAS.find(
+    (dilemma) => dilemma.id === id || dilemma.slug === data.slug,
+  );
   return {
     id,
     title: data.title || '',
@@ -76,8 +80,9 @@ function dilemmaFromDoc(id: string, data: Record<string, any>): WeeklyDilemma {
     closeDate: data.closeDate ? toDate(data.closeDate) : undefined,
     visibilityStatus: data.visibilityStatus || 'draft',
     isoWeek: data.isoWeek || getIsoWeek(toDate(data.publishDate)),
-    imageUrl: data.imageUrl,
-    imageHint: data.imageHint,
+    imageUrl: data.imageUrl || fallback?.imageUrl,
+    imageHint: data.imageHint || fallback?.imageHint,
+    imageAlt: data.imageAlt || fallback?.imageAlt,
     generatedAt: data.generatedAt ? toDate(data.generatedAt) : undefined,
   };
 }

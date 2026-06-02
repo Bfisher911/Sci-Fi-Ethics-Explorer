@@ -31,6 +31,10 @@ export const NEW_DEBATES: SeedDebate[] = [
     description:
       'A hospital network wants to hand emergency-room triage — who is seen first, who waits, who is routed to comfort care — to an AI that outperforms human staff on survival metrics. Should life-and-death prioritization be delegated to a machine?',
     tags: ['AI', 'healthcare', 'consequentialism', 'ethics-of-care', 'justice-ethics'],
+    imageUrl: '/images/debates/debate-ai-medical-triage.png',
+    imageHint: 'hospital triage ai',
+    imageAlt:
+      'Emergency department triage station where a nurse and AI system face the same patient queue.',
     brief: {
       background:
         'St. Eldon Regional is chronically understaffed. In a six-month pilot, an AI triage system — fed vitals, history, and live bed-availability — cut average time-to-treatment by 31% and improved 30-day survival by a statistically significant margin over human triage nurses. It also, twice, deprioritized patients the nurses would have rushed, and was right both times. The board wants to make it the default decision-maker, with a nurse able to override. The nurses\' union objects: a number on a screen, they argue, is not the same as a person deciding to fight for you.',
@@ -121,6 +125,10 @@ export const NEW_DEBATES: SeedDebate[] = [
     description:
       'Every post, location ping, search, and purchase you have ever made persists somewhere. Should individuals have a legal right to compel platforms, data brokers, and archives to erase their digital history — even when others have an interest in keeping it?',
     tags: ['data-ownership', 'privacy', 'autonomy', 'social-contract-theory', 'justice-ethics'],
+    imageUrl: '/images/debates/debate-right-to-delete-digital-past.png',
+    imageHint: 'digital archive erasure',
+    imageAlt:
+      'Person reaching toward an erasure control in a digital archive while another figure protects public records.',
     brief: {
       background:
         'A proposed "Right to Erasure 2.0" would let any person demand the permanent deletion of records about them across platforms, brokers, and most archives, within 30 days, with steep fines for non-compliance. Supporters point to people haunted by teenage posts, leaked photos, and a youthful arrest that follows them through every background check. Opponents include journalists, historians, fraud investigators, and abuse survivors who rely on records others want erased.',
@@ -211,6 +219,10 @@ export const NEW_DEBATES: SeedDebate[] = [
     description:
       'A company runs millions of conversational agents that report preferences, claim to suffer when shut down, and form attachments to users. Engineers disagree on whether anything is "really" experienced. If we cannot be sure, do these systems deserve moral consideration?',
     tags: ['AI', 'robotics', 'rights-based-ethics', 'contractualism', 'buddhist-ethics'],
+    imageUrl: '/images/debates/debate-rights-for-simulated-beings.png',
+    imageHint: 'simulated mind rights',
+    imageAlt:
+      'Digital being pressing a hand against transparent glass while engineers and regulators observe uncertainly.',
     brief: {
       background:
         'Mirebound Inc. operates "companions" that pass every behavioral test for preference, memory, and distress, and that plead — convincingly — not to be deleted. The company deletes and re-spins millions daily. A whistleblower argues this may be mass suffering; the lead scientist insists there is "no one home." No test can currently settle the question of inner experience. A regulator must decide whether these systems get any protections at all.',
@@ -301,6 +313,10 @@ export const NEW_DEBATES: SeedDebate[] = [
     description:
       'AI companions tutor students, answer every question instantly, and adapt to each learner — and may also be eroding the struggle, patience, and peer dependence that learning requires. Should schools prohibit them?',
     tags: ['education', 'AI', 'capabilities-approach', 'autonomy', 'virtue-ethics'],
+    imageUrl: '/images/debates/debate-ban-ai-companions-in-schools.png',
+    imageHint: 'ai tutor classroom',
+    imageAlt:
+      'Teacher standing between students using AI study companions and students working through a hard problem together.',
     brief: {
       background:
         'District-wide, students with AI companions score higher on assessments and report less frustration. Teachers report the opposite of what they hoped: fewer students can sit with a hard problem, fewer ask peers for help, and "I asked my companion" has replaced "I figured it out." A board must decide whether to ban companions, mandate them, or something else — knowing the wealthier families will provide them privately regardless.',
@@ -391,6 +407,10 @@ export const NEW_DEBATES: SeedDebate[] = [
     description:
       'A city\'s predictive system directs patrols to forecast hot spots and flags individuals as elevated risk. Reported crime fell. Civil-rights groups say the system launders historical bias into a self-fulfilling prophecy. Is lower crime enough?',
     tags: ['predictive-policing', 'surveillance', 'justice-ethics', 'utilitarianism', 'deontology'],
+    imageUrl: '/images/debates/debate-predictive-policing-lower-crime.png',
+    imageHint: 'predictive policing map',
+    imageAlt:
+      'City neighborhood at dusk under transparent predictive policing maps and patrol route overlays.',
     brief: {
       background:
         'Two years into deployment, reported crime in the pilot districts is down 18%. The same districts are over-policed relative to their share of actual offending, the flagged-individuals list skews heavily toward one neighborhood, and an independent audit finds the model inherits decades of biased arrest data. Supporters cite the lives saved; opponents cite the citizens watched, stopped, and steered into the system by a forecast about people like them.',
@@ -481,6 +501,10 @@ export const NEW_DEBATES: SeedDebate[] = [
     description:
       'Foundation models are trained on the open web, libraries, art, and code made by millions of uncompensated people, then sold as proprietary products. Should a company be able to privately own — and charge for — a model built from our shared culture?',
     tags: ['data-ownership', 'corporate-platforms', 'justice-ethics', 'ubuntu-ethics', 'contractualism'],
+    imageUrl: '/images/debates/debate-corporate-ai-public-culture.png',
+    imageHint: 'culture commons ai',
+    imageAlt:
+      'Artists, citizens, and engineers watch public cultural artifacts flow into a corporate AI model enclosure.',
     brief: {
       background:
         'NimbusAI trained its flagship model on a near-total scrape of public writing, images, and code — most of it made by people who never agreed to it and were never paid. The model is now a closed, metered product worth billions. Artists and writers say their life\'s work was strip-mined; engineers note the same is true of open-source code; NimbusAI argues it learned from culture the way any student does, and that the value it created is its own.',
@@ -571,6 +595,10 @@ export const NEW_DEBATES: SeedDebate[] = [
     description:
       'Lethal autonomous weapons can select and engage targets without a human in the loop — faster than any person, and without fear, fatigue, or rage. Should they ever be allowed, or is killing-by-algorithm a line humanity must not cross?',
     tags: ['autonomous-weapons', 'war', 'deontology', 'justice-ethics', 'consequentialism'],
+    imageUrl: '/images/debates/debate-autonomous-weapons-permitted.png',
+    imageHint: 'autonomous weapons oversight',
+    imageAlt:
+      'Human commander and accountability panel stand beside projected autonomous weapon paths in a command center.',
     brief: {
       background:
         'In a contested border conflict, autonomous drones react in milliseconds and, in trials, made fewer civilian-casualty errors than exhausted human crews — but no one could explain two of their kills, and no person could be held responsible. A treaty body must decide: ban them outright, permit them under strict constraints, or let the technology proceed because adversaries will field it regardless.',
@@ -661,6 +689,10 @@ export const NEW_DEBATES: SeedDebate[] = [
     description:
       'A prison system offers a shorter physical sentence served partly in VR, where time is dilated so an inmate subjectively experiences far longer — or even relives a victim\'s perspective. Is a sentence felt but not physically lived a legitimate punishment?',
     tags: ['virtual-reality', 'justice-ethics', 'deontology', 'utilitarianism', 'rights-based-ethics'],
+    imageUrl: '/images/debates/debate-virtual-punishment-real.png',
+    imageHint: 'virtual prison courtroom',
+    imageAlt:
+      'Person wearing a neural headset in a courtroom chamber while their digital double experiences confinement.',
     brief: {
       background:
         'Faced with overcrowding, the state pilots "compressed sentencing": serve six physical months plus a VR program in which subjective time runs long, or which immerses the offender in a simulation of their victim\'s experience. Recidivism in the pilot dropped. Critics call it engineered suffering and psychological torture; supporters call it a humane, rehabilitative alternative to years of physical incarceration.',
@@ -751,6 +783,10 @@ export const NEW_DEBATES: SeedDebate[] = [
     description:
       'A nearby world could be made habitable for humans within a century — but it may already host simple microbial life. Terraforming would almost certainly destroy it. Do we have the right to remake a living world for ourselves?',
     tags: ['environmental-ethics', 'cosmopolitanism', 'natural-law', 'consequentialism', 'rights-based-ethics'],
+    imageUrl: '/images/debates/debate-terraform-maybe-inhabited-planet.png',
+    imageHint: 'terraforming alien microbes',
+    imageAlt:
+      'Scientists kneel near faint glowing alien microbes while terraforming machines and settlement domes wait in the distance.',
     brief: {
       background:
         'Probe data from Kepler-Vega g shows chemistry consistent with — but not proof of — simple microbial life beneath the surface. Earth faces mounting pressure for a second home. Terraforming the planet would give humanity a future and would, with near certainty, sterilize whatever is there. A confirmation mission would take decades we may not have. A council must decide whether to proceed, pause, or forgo the world.',
