@@ -15,6 +15,7 @@
  */
 
 import { chapters } from '@/data/textbook';
+import { DIALOGUE_CATEGORY_CERT_THRESHOLD } from '@/lib/dialogues/types';
 
 /** Count threshold shared by the "do N activities" certificates. Configurable. */
 export const ACTIVITY_CERT_THRESHOLD = 12;
@@ -39,7 +40,8 @@ export type CertificateCategory =
   | 'quiz-framework'
   | 'quiz-scifi-author'
   | 'quiz-scifi-media'
-  | 'textbook-master';
+  | 'textbook-master'
+  | 'dialogue';
 
 export type CertificateKind = 'count' | 'completion' | 'quiz-mastery';
 
@@ -74,6 +76,13 @@ export interface CertificateContext {
   chapterQuizzes?: Record<string, { passed: boolean; score: number }>;
   /** Whether the user has passed the final master textbook exam. */
   textbookFinalExamPassed?: boolean;
+  /** Distinct dialogue assessments passed per persona category. */
+  dialogueAssessmentsPassed?: {
+    philosopher: number;
+    scifiAuthor: number;
+    scifiMedia: number;
+    framework: number;
+  };
 }
 
 export interface CertificateDefinition {
@@ -248,6 +257,81 @@ const TEXTBOOK_MASTER_CERTIFICATE: CertificateDefinition = {
   }),
 };
 
+// ─── Dialogue Explorer certificates ──────────────────────────────────
+
+export { DIALOGUE_CATEGORY_CERT_THRESHOLD };
+
+const D = DIALOGUE_CATEGORY_CERT_THRESHOLD;
+
+function dialogueCount(
+  ctx: CertificateContext,
+  key: 'philosopher' | 'scifiAuthor' | 'scifiMedia' | 'framework'
+): number {
+  return ctx.dialogueAssessmentsPassed?.[key] ?? 0;
+}
+
+/**
+ * Category Explorer certificates: pass the goal-based assessment dialogue
+ * with N distinct personas in a category. The Dialogues Master certificate
+ * requires the threshold in EVERY category (its `current` sums each
+ * category's progress capped at the threshold, so it completes exactly
+ * when all four categories do).
+ */
+const DIALOGUE_CERTIFICATE_DEFINITIONS: CertificateDefinition[] = [
+  {
+    id: 'achievement-dialogues-philosopher',
+    title: 'Philosopher Explorer Certificate',
+    description: `Awarded for passing assessed dialogues with ${D} philosophers.`,
+    criteria: `Pass ${D} philosopher assessment dialogues`,
+    category: 'dialogue',
+    kind: 'count',
+    metric: (c) => ({ current: dialogueCount(c, 'philosopher'), target: D }),
+  },
+  {
+    id: 'achievement-dialogues-scifi-author',
+    title: 'Sci-Fi Author Explorer Certificate',
+    description: `Awarded for passing assessed dialogues with ${D} science-fiction authors.`,
+    criteria: `Pass ${D} sci-fi author assessment dialogues`,
+    category: 'dialogue',
+    kind: 'count',
+    metric: (c) => ({ current: dialogueCount(c, 'scifiAuthor'), target: D }),
+  },
+  {
+    id: 'achievement-dialogues-scifi-media',
+    title: 'Sci-Fi Media Explorer Certificate',
+    description: `Awarded for passing assessed dialogues with ${D} science-fiction works.`,
+    criteria: `Pass ${D} sci-fi media assessment dialogues`,
+    category: 'dialogue',
+    kind: 'count',
+    metric: (c) => ({ current: dialogueCount(c, 'scifiMedia'), target: D }),
+  },
+  {
+    id: 'achievement-dialogues-framework',
+    title: 'Ethical Framework Explorer Certificate',
+    description: `Awarded for passing assessed dialogues with ${D} ethical frameworks.`,
+    criteria: `Pass ${D} ethical-framework assessment dialogues`,
+    category: 'dialogue',
+    kind: 'count',
+    metric: (c) => ({ current: dialogueCount(c, 'framework'), target: D }),
+  },
+  {
+    id: 'achievement-dialogues-master',
+    title: 'Dialogues Master Certificate',
+    description: `Awarded for passing ${D} assessment dialogues in every category: philosophers, sci-fi authors, sci-fi media, and ethical frameworks.`,
+    criteria: `Pass ${D} assessment dialogues in each of the four categories`,
+    category: 'dialogue',
+    kind: 'completion',
+    metric: (c) => ({
+      current:
+        Math.min(dialogueCount(c, 'philosopher'), D) +
+        Math.min(dialogueCount(c, 'scifiAuthor'), D) +
+        Math.min(dialogueCount(c, 'scifiMedia'), D) +
+        Math.min(dialogueCount(c, 'framework'), D),
+      target: D * 4,
+    }),
+  },
+];
+
 /**
  * All milestone certificates: the fixed activity-milestone certificates plus
  * the one textbook master certificate. Individual activities earn
@@ -256,6 +340,7 @@ const TEXTBOOK_MASTER_CERTIFICATE: CertificateDefinition = {
 export const CERTIFICATE_DEFINITIONS: CertificateDefinition[] = [
   ...BASE_CERTIFICATE_DEFINITIONS,
   TEXTBOOK_MASTER_CERTIFICATE,
+  ...DIALOGUE_CERTIFICATE_DEFINITIONS,
 ];
 
 /** Look up a definition by its stable id. */

@@ -117,14 +117,18 @@ describe('quiz-mastery certificates', () => {
 });
 
 describe('evaluateAll / earnedDefinitions', () => {
-  it('has exactly the milestone certificates: 11 activity + 1 textbook', () => {
+  it('has exactly the milestone certificates: 11 activity + 1 textbook + 5 dialogue', () => {
     expect(evaluateAll(ctx())).toHaveLength(CERTIFICATE_DEFINITIONS.length);
-    expect(CERTIFICATE_DEFINITIONS).toHaveLength(12);
+    expect(CERTIFICATE_DEFINITIONS).toHaveLength(17);
     const textbook = CERTIFICATE_DEFINITIONS.filter(
       (d) => d.category === 'textbook-master'
     );
     expect(textbook).toHaveLength(1);
     expect(textbook[0].id).toBe('textbook-master');
+    const dialogue = CERTIFICATE_DEFINITIONS.filter(
+      (d) => d.category === 'dialogue'
+    );
+    expect(dialogue).toHaveLength(5);
   });
 
   it('reports exactly the earned definitions', () => {

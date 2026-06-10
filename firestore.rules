@@ -82,6 +82,17 @@ service cloud.firestore {
       allow delete: if true;
     }
 
+    // ─── Dialogue Sessions (persona chats) ─────────────────────
+    // Same server-action access pattern as chatSessions; ownership is
+    // enforced in application code via the deterministic doc id and a
+    // userId check on read.
+    match /dialogueSessions/{sessionId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if true;
+    }
+
     // ─── User Progress ─────────────────────────────────────────
     match /userProgress/{userId} {
       allow read: if true;

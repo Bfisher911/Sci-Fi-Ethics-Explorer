@@ -824,6 +824,7 @@ export type ActivityReportType =
   | 'studio_reflect'
   | 'framework_explorer'
   | 'media_reflection'
+  | 'dialogue'
   | 'other';
 
 export interface ActivityReportAttempt {

@@ -138,6 +138,23 @@ export function buildReportSummary(input: ActivityReportInput): string {
       if (response) parts.push(`Response: ${truncate(response)}`);
       return parts.join(' ');
     }
+    case 'dialogue': {
+      const status =
+        input.passed === true
+          ? 'passed'
+          : input.passed === false
+            ? 'did not pass'
+            : 'completed';
+      const score = typeof input.score === 'number' ? ` with ${input.score}%` : '';
+      const frameworks = asList(c.frameworksUsed);
+      const summary = str(c.summary);
+      const parts = [`Completed "${title}"${score} — ${status}.`];
+      if (frameworks.length) {
+        parts.push(`Frameworks demonstrated: ${truncate(frameworks.join(', '), 120)}.`);
+      }
+      if (summary) parts.push(truncate(summary, 200));
+      return parts.join(' ');
+    }
     default:
       return `Completed "${title}".`;
   }
@@ -155,6 +172,7 @@ export function activityTypeLabel(type: string): string {
     studio_reflect: 'Studio Reflect',
     framework_explorer: 'Framework Explorer',
     media_reflection: 'Media Reflection',
+    dialogue: 'Dialogue Assessment',
     other: 'Activity',
   };
   return map[type] ?? 'Activity';
@@ -176,6 +194,7 @@ export function badgeLabel(type: string): string {
     studio_compare: 'Studio Comparison Report',
     studio_reflect: 'Studio Reflection Report',
     media_reflection: 'Media Reflection Report',
+    dialogue: 'Dialogue Assessment Report',
     other: 'Activity Completion Report',
   };
   return map[type] ?? 'Activity Completion Report';
