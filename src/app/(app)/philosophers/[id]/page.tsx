@@ -11,6 +11,7 @@ import { getPhilosopherById } from '@/app/actions/philosophers';
 import { PhilosopherDetail } from '@/components/philosophers/philosopher-detail';
 import { QuizCta } from '@/components/quiz/quiz-cta';
 import { InfographicCta } from '@/components/infographic/infographic-cta';
+import { DialogueCta } from '@/components/dialogues/dialogue-cta';
 import { AdminActions } from '@/components/admin/admin-actions';
 import { adminDeleteArtifact } from '@/app/actions/admin';
 import type { Philosopher } from '@/types';
@@ -77,6 +78,11 @@ export default function PhilosopherDetailPage() {
       />
       <PhilosopherDetail philosopher={philosopher} />
       <div className="mt-6 space-y-3">
+        <DialogueCta
+          category="philosopher"
+          entryId={philosopher.id}
+          displayName={philosopher.name}
+        />
         <InfographicCta
           href={`/philosophers/${philosopher.id}/infographic`}
           subjectName={philosopher.name}

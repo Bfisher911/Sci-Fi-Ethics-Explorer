@@ -8,25 +8,38 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { getSciFiAuthorById } from '@/app/actions/scifi-authors';
+import { getMediaForAuthor } from '@/app/actions/scifi-media';
 import { SciFiAuthorDetail } from '@/components/scifi-authors/scifi-author-detail';
 import { QuizCta } from '@/components/quiz/quiz-cta';
 import { InfographicCta } from '@/components/infographic/infographic-cta';
+import { DialogueCta } from '@/components/dialogues/dialogue-cta';
 import { AdminActions } from '@/components/admin/admin-actions';
 import { adminDeleteArtifact } from '@/app/actions/admin';
 import type { SciFiAuthor } from '@/types';
+import { Badge } from '@/components/ui/badge';
+import { Clapperboard } from 'lucide-react';
 
 export default function SciFiAuthorDetailPage() {
   const params = useParams();
   const id = params.id as string;
 
   const [author, setAuthor] = useState<SciFiAuthor | null>(null);
+  const [featuredIn, setFeaturedIn] = useState<
+    Array<{ id: string; title: string; year: string }>
+  >([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData(): Promise<void> {
-      const result = await getSciFiAuthorById(id);
+      const [result, mediaResult] = await Promise.all([
+        getSciFiAuthorById(id),
+        getMediaForAuthor(id),
+      ]);
       if (result.success) {
         setAuthor(result.data);
+      }
+      if (mediaResult.success) {
+        setFeaturedIn(mediaResult.data);
       }
       setLoading(false);
     }
@@ -75,6 +88,11 @@ export default function SciFiAuthorDetailPage() {
       />
       <SciFiAuthorDetail author={author} />
       <div className="mt-6 space-y-3">
+        <DialogueCta
+          category="scifi-author"
+          entryId={author.id}
+          displayName={author.name}
+        />
         <InfographicCta
           href={`/scifi-authors/${author.id}/infographic`}
           subjectName={author.name}
@@ -86,6 +104,27 @@ export default function SciFiAuthorDetailPage() {
           href={`/scifi-authors/${author.id}/quiz`}
         />
       </div>
+
+      {featuredIn.length > 0 && (
+        <Card className="mt-6 p-4 bg-card/80 backdrop-blur-sm">
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
+            <Clapperboard className="h-4 w-4" aria-hidden />
+            Featured in the library
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {featuredIn.map((m) => (
+              <Link key={m.id} href={`/scifi-media/${m.id}`}>
+                <Badge
+                  variant="secondary"
+                  className="hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  {m.title} ({m.year})
+                </Badge>
+              </Link>
+            ))}
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

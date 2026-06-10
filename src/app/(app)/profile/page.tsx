@@ -8,6 +8,7 @@ import { AchievementsSection } from '@/components/profile/achievements-section';
 import { LicenseStatusCard } from '@/components/profile/license-status-card';
 import { TextbookProgressCard } from '@/components/textbook/textbook-progress-card';
 import { EthicsJourneyCard } from '@/components/profile/ethics-journey-card';
+import { DialogueProgressCard } from '@/components/profile/dialogue-progress-card';
 import { Card, CardContent } from '@/components/ui/card';
 import { auth } from '@/lib/firebase/config';
 import { redirect } from 'next/navigation';
@@ -50,6 +51,9 @@ export default async function ProfilePage() {
       </div>
       <div className="mt-8">
         <EthicsJourneyCard />
+      </div>
+      <div className="mt-8">
+        <DialogueProgressCard />
       </div>
       <div className="mt-8">
         <ProgressDashboard />
