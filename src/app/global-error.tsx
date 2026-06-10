@@ -10,8 +10,9 @@
  * rely on layout context. Inline styles only.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { reportError } from '@/lib/observability/report';
+import { recoverFromChunkError } from '@/lib/chunk-error';
 
 interface Props {
   error: Error & { digest?: string };
@@ -19,7 +20,13 @@ interface Props {
 }
 
 export default function GlobalError({ error, reset }: Props) {
+  const [reloading, setReloading] = useState(false);
+
   useEffect(() => {
+    if (recoverFromChunkError(error)) {
+      setReloading(true);
+      return;
+    }
     // eslint-disable-next-line no-console
     console.error('[global-error]', error);
     reportError(error, {
@@ -28,6 +35,14 @@ export default function GlobalError({ error, reset }: Props) {
       severity: 'fatal',
     });
   }, [error]);
+
+  if (reloading) {
+    return (
+      <html lang="en">
+        <body style={{ margin: 0, background: '#0a0e1a' }} />
+      </html>
+    );
+  }
 
   return (
     <html lang="en">

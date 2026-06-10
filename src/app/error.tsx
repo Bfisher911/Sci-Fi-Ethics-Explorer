@@ -17,11 +17,12 @@
  * authenticated error page can be richer.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { reportError } from '@/lib/observability/report';
+import { recoverFromChunkError } from '@/lib/chunk-error';
 
 interface Props {
   error: Error & { digest?: string };
@@ -29,11 +30,21 @@ interface Props {
 }
 
 export default function Error({ error, reset }: Props) {
+  const [reloading, setReloading] = useState(false);
+
   useEffect(() => {
+    if (recoverFromChunkError(error)) {
+      setReloading(true);
+      return;
+    }
     // eslint-disable-next-line no-console
     console.error('[root-error]', error);
     reportError(error, { where: 'app/error', digest: error.digest });
   }, [error]);
+
+  if (reloading) {
+    return null; // page reload in progress to pick up the new deploy
+  }
 
   return (
     <main

@@ -1,9 +1,10 @@
 'use client'; // Error components must be Client Components
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 import { reportError } from '@/lib/observability/report';
+import { recoverFromChunkError } from '@/lib/chunk-error';
 
 export default function Error({
   error,
@@ -12,11 +13,21 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const [reloading, setReloading] = useState(false);
+
   useEffect(() => {
+    if (recoverFromChunkError(error)) {
+      setReloading(true);
+      return;
+    }
     // eslint-disable-next-line no-console
     console.error('[app-error]', error);
     reportError(error, { where: 'app/(app)/error', digest: error.digest });
   }, [error]);
+
+  if (reloading) {
+    return null; // page reload in progress to pick up the new deploy
+  }
 
   return (
     <div className="container mx-auto flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] text-center p-8">
