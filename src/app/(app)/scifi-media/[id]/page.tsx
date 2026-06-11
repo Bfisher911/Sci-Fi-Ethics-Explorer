@@ -11,6 +11,7 @@ import { getSciFiMediaById } from '@/app/actions/scifi-media';
 import { MediaDetail } from '@/components/scifi-media/media-detail';
 import { QuizCta } from '@/components/quiz/quiz-cta';
 import { InfographicCta } from '@/components/infographic/infographic-cta';
+import { DialogueCta } from '@/components/dialogues/dialogue-cta';
 import { AdminActions } from '@/components/admin/admin-actions';
 import { adminDeleteArtifact } from '@/app/actions/admin';
 import { MediaCommunityDiscussion } from '@/components/forum/media-community-discussion';
@@ -81,6 +82,11 @@ export default function SciFiMediaDetailPage() {
       />
       <MediaDetail media={media} />
       <div className="mt-6 space-y-3">
+        <DialogueCta
+          category="scifi-media"
+          entryId={media.id}
+          displayName={media.title}
+        />
         <InfographicCta
           href={`/scifi-media/${media.id}/infographic`}
           subjectName={media.title}

@@ -45,7 +45,7 @@ export default function SearchPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search stories, dilemmas, theories..."
+              placeholder="Search stories, philosophers, authors, media, theories…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="pl-10 w-full md:w-1/2"

@@ -43,6 +43,7 @@ import {
   Layers,
   Microscope,
   Sparkles,
+  MessagesSquare,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -133,6 +134,7 @@ const SECTIONS: NavSection[] = [
     label: 'Library',
     icon: Library,
     items: [
+      { href: '/dialogues', label: 'Dialogues', icon: MessagesSquare },
       { href: '/philosophers', label: 'Philosophers', icon: ScrollText },
       { href: '/glossary', label: 'Ethical Frameworks', icon: BookText },
       { href: '/scifi-authors', label: 'Sci-Fi Authors', icon: Rocket },

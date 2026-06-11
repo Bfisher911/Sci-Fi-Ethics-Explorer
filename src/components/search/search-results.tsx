@@ -1,8 +1,15 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { BookOpen, AlertTriangle, Lightbulb } from 'lucide-react';
+import {
+  AlertTriangle,
+  BookOpen,
+  Clapperboard,
+  Lightbulb,
+  Rocket,
+  ScrollText,
+  type LucideIcon,
+} from 'lucide-react';
 import Link from 'next/link';
 import type { SearchResults as SearchResultsType } from '@/app/actions/search';
 
@@ -10,11 +17,55 @@ interface SearchResultsProps {
   results: SearchResultsType;
 }
 
+interface ResultItem {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+}
+
+function ResultSection({
+  label,
+  icon: Icon,
+  items,
+}: {
+  label: string;
+  icon: LucideIcon;
+  items: ResultItem[];
+}) {
+  if (items.length === 0) return null;
+  return (
+    <section aria-label={`${label} results`}>
+      <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-1">
+        <Icon className="h-4 w-4" aria-hidden />
+        {label} ({items.length})
+      </h3>
+      <div className="space-y-2">
+        {items.map((item) => (
+          <Link key={item.id} href={item.href} className="block">
+            <Card className="bg-card/80 backdrop-blur-sm hover:bg-card transition-colors">
+              <CardContent className="p-3">
+                <p className="font-medium text-sm">{item.title}</p>
+                <p className="text-xs text-muted-foreground line-clamp-1">
+                  {item.description}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function SearchResults({ results }: SearchResultsProps) {
   const totalCount =
     results.stories.length +
     results.dilemmas.length +
-    results.theories.length;
+    results.theories.length +
+    results.philosophers.length +
+    results.scifiAuthors.length +
+    results.scifiMedia.length;
 
   if (totalCount === 0) {
     return (
@@ -26,74 +77,66 @@ export function SearchResults({ results }: SearchResultsProps) {
 
   return (
     <div className="space-y-6">
-      {results.stories.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-1">
-            <BookOpen className="h-4 w-4" />
-            Stories ({results.stories.length})
-          </h3>
-          <div className="space-y-2">
-            {results.stories.map((s) => (
-              <Link key={s.id} href={`/stories/${s.id}`}>
-                <Card className="bg-card/80 backdrop-blur-sm hover:bg-card transition-colors">
-                  <CardContent className="p-3">
-                    <p className="font-medium text-sm">{s.title}</p>
-                    <p className="text-xs text-muted-foreground line-clamp-1">
-                      {s.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {results.dilemmas.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-1">
-            <AlertTriangle className="h-4 w-4" />
-            Dilemmas ({results.dilemmas.length})
-          </h3>
-          <div className="space-y-2">
-            {results.dilemmas.map((d) => (
-              <Link key={d.id} href={`/community-dilemmas`}>
-                <Card className="bg-card/80 backdrop-blur-sm hover:bg-card transition-colors">
-                  <CardContent className="p-3">
-                    <p className="font-medium text-sm">{d.title}</p>
-                    <p className="text-xs text-muted-foreground line-clamp-1">
-                      {d.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {results.theories.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-1">
-            <Lightbulb className="h-4 w-4" />
-            Theories ({results.theories.length})
-          </h3>
-          <div className="space-y-2">
-            {results.theories.map((t) => (
-              <Link key={t.id} href={`/glossary`}>
-                <Card className="bg-card/80 backdrop-blur-sm hover:bg-card transition-colors">
-                  <CardContent className="p-3">
-                    <p className="font-medium text-sm">{t.name}</p>
-                    <p className="text-xs text-muted-foreground line-clamp-1">
-                      {t.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
+      <ResultSection
+        label="Stories"
+        icon={BookOpen}
+        items={results.stories.map((s) => ({
+          id: s.id,
+          title: s.title,
+          description: s.description,
+          href: `/stories/${s.id}`,
+        }))}
+      />
+      <ResultSection
+        label="Philosophers"
+        icon={ScrollText}
+        items={results.philosophers.map((p) => ({
+          id: p.id,
+          title: p.name,
+          description: p.description,
+          href: `/philosophers/${p.id}`,
+        }))}
+      />
+      <ResultSection
+        label="Sci-Fi Authors"
+        icon={Rocket}
+        items={results.scifiAuthors.map((a) => ({
+          id: a.id,
+          title: a.name,
+          description: a.description,
+          href: `/scifi-authors/${a.id}`,
+        }))}
+      />
+      <ResultSection
+        label="Sci-Fi Media"
+        icon={Clapperboard}
+        items={results.scifiMedia.map((m) => ({
+          id: m.id,
+          title: m.title,
+          description: m.description,
+          href: `/scifi-media/${m.id}`,
+        }))}
+      />
+      <ResultSection
+        label="Theories"
+        icon={Lightbulb}
+        items={results.theories.map((t) => ({
+          id: t.id,
+          title: t.name,
+          description: t.description,
+          href: `/glossary/${t.id}`,
+        }))}
+      />
+      <ResultSection
+        label="Dilemmas"
+        icon={AlertTriangle}
+        items={results.dilemmas.map((d) => ({
+          id: d.id,
+          title: d.title,
+          description: d.description,
+          href: '/community-dilemmas',
+        }))}
+      />
     </div>
   );
 }

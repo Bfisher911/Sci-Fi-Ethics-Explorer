@@ -117,6 +117,12 @@ export async function buildCertificateContext(
       scifiAuthor: { passed: 0, total: scifiAuthorData.length },
       scifiMedia: { passed: 0, total: scifiMediaData.length },
     },
+    dialogueAssessmentsPassed: {
+      philosopher: 0,
+      scifiAuthor: 0,
+      scifiMedia: 0,
+      framework: 0,
+    },
   };
   if (!userId) return base;
 
@@ -135,6 +141,7 @@ export async function buildCertificateContext(
     philosopherQuizSnap,
     textbookProgressRes,
     voidedReports,
+    dialogueReportSnap,
   ] = await Promise.all([
     getUserProgress(userId),
     getUserPerspectives(userId),
@@ -146,6 +153,13 @@ export async function buildCertificateContext(
     ).catch(() => ({ docs: [] as any[] })),
     getTextbookProgress(userId),
     getUserVoidedReports(userId),
+    getDocs(
+      query(
+        collection(db, 'activityReports'),
+        where('userId', '==', userId),
+        where('activityType', '==', 'dialogue')
+      )
+    ).catch(() => ({ docs: [] as any[] })),
   ]);
 
   // Voided activity evidence does not count toward certificates. Subtract
@@ -169,6 +183,27 @@ export async function buildCertificateContext(
       .map((d) => String(d.data().subjectId || ''))
       .filter(Boolean)
   );
+
+  // Distinct dialogue assessments passed per persona category. Voided
+  // evidence is excluded; retakes of the same persona count once.
+  const dialoguePassed = {
+    philosopher: new Set<string>(),
+    scifiAuthor: new Set<string>(),
+    scifiMedia: new Set<string>(),
+    framework: new Set<string>(),
+  };
+  const subtypeKey: Record<string, keyof typeof dialoguePassed> = {
+    philosopher: 'philosopher',
+    'scifi-author': 'scifiAuthor',
+    'scifi-media': 'scifiMedia',
+    framework: 'framework',
+  };
+  for (const d of dialogueReportSnap.docs as any[]) {
+    const data = d.data();
+    if (data.voided === true || data.passed !== true) continue;
+    const key = subtypeKey[String(data.activitySubtype || '')];
+    if (key) dialoguePassed[key].add(String(data.activityId || d.id));
+  }
 
   // Per-chapter quiz pass state, keyed by chapter slug (the quiz subjectId).
   // Voided chapter-quiz evidence is excluded (doesn't count toward the
@@ -214,6 +249,12 @@ export async function buildCertificateContext(
     textbookFinalExamPassed: textbookProgressRes.success
       ? textbookProgressRes.data.finalExamPassed === true
       : false,
+    dialogueAssessmentsPassed: {
+      philosopher: dialoguePassed.philosopher.size,
+      scifiAuthor: dialoguePassed.scifiAuthor.size,
+      scifiMedia: dialoguePassed.scifiMedia.size,
+      framework: dialoguePassed.framework.size,
+    },
   };
 }
 

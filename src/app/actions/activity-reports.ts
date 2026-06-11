@@ -290,6 +290,7 @@ const ACTIVITY_TO_CONTRIBUTION: Record<string, ContributionType> = {
   studio_reflect: 'reflection',
   framework_explorer: 'framework_result',
   media_reflection: 'media_reflection',
+  dialogue: 'reflection',
   other: 'reflection',
 };
 

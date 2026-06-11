@@ -97,3 +97,18 @@ export async function getSciFiMediaById(
     return { success: true, data: fallback };
   }
 }
+
+/**
+ * Media entries linked to a sci-fi author (via each entry's `authorIds`).
+ * Lightweight projection for the author page's "Featured in the library"
+ * section — searches the canonical static dataset, so no Firestore reads.
+ */
+export async function getMediaForAuthor(
+  authorId: string
+): Promise<ActionResult<Array<{ id: string; title: string; year: string; category: SciFiMediaCategory }>>> {
+  if (!authorId) return { success: true, data: [] };
+  const items = scifiMediaData
+    .filter((m) => (m.authorIds ?? []).includes(authorId))
+    .map((m) => ({ id: m.id, title: m.title, year: m.year, category: m.category }));
+  return { success: true, data: items };
+}

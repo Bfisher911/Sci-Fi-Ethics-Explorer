@@ -23,6 +23,7 @@ import {
 } from '@/app/actions/ethical-theories';
 import { QuizCta } from '@/components/quiz/quiz-cta';
 import { InfographicCta } from '@/components/infographic/infographic-cta';
+import { DialogueCta } from '@/components/dialogues/dialogue-cta';
 import { AdminActions } from '@/components/admin/admin-actions';
 import { adminDeleteArtifact } from '@/app/actions/admin';
 import type { EthicalTheory, Philosopher } from '@/types';
@@ -194,6 +195,13 @@ export default function TheoryDetailPage() {
 
       {/* Test Your Knowledge */}
       <div className="mb-6 space-y-3">
+        {theory.activeInScoring !== false && (
+          <DialogueCta
+            category="framework"
+            entryId={theory.id}
+            displayName={theory.name}
+          />
+        )}
         <InfographicCta
           href={`/glossary/${theory.id}/infographic`}
           subjectName={theory.name}
