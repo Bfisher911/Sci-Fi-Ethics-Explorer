@@ -331,12 +331,21 @@ export async function getPublishedDilemmas(): Promise<ActionResult<WeeklyDilemma
       data: mergeDilemmas(staticPublishedDilemmas(), firestoreDilemmas),
     };
   } catch (error) {
+    // The library's core content is the first-party authored catalog, which
+    // lives in code — Firestore only *adds* weekly-published dilemmas on top.
+    // So if the Firestore read fails for ANY reason (missing admin credentials,
+    // a missing composite index, a transient outage), still serve the static
+    // catalog rather than blanking the page with "No dilemmas yet".
     if (isMissingWeeklyDilemmaAdminCredentialsError(error)) {
       console.warn('[weekly-dilemmas] Firebase Admin credentials are missing; serving static dilemma library.');
-      return { success: true, data: staticPublishedDilemmas() };
+    } else {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(
+        '[weekly-dilemmas] getPublishedDilemmas Firestore read failed; serving static dilemma library.',
+        message,
+      );
     }
-    const message = error instanceof Error ? error.message : String(error);
-    return { success: false, error: message };
+    return { success: true, data: staticPublishedDilemmas() };
   }
 }
 
