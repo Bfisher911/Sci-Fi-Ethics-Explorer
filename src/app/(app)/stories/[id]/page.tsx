@@ -12,6 +12,7 @@ import type { Story, StorySegment, StoryChoice } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { PollComponent } from '@/components/stories/poll-component';
+import { DiscussionThread } from '@/components/stories/discussion-thread';
 import { BranchingNavigator } from '@/components/stories/branching-navigator';
 import { StoryHeader } from '@/components/stories/story-header';
 import { StoryMapOverlay } from '@/components/stories/story-map-overlay';
@@ -960,6 +961,11 @@ export default function StoryDetailPage() {
           />
         </div>
       )}
+
+      {/* Reader discussion — threaded comments backed by the comments action */}
+      <div className="mx-auto mt-8 w-full max-w-3xl">
+        <DiscussionThread storyId={storyId} />
+      </div>
 
       {/* Floating framework counts */}
       <div data-tour="story-impact">

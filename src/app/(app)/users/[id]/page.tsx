@@ -3,24 +3,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
 
-// Lazy-load the radar chart — recharts is ~80 KB. Most visitors to a
-// user profile don't have the chart open above the fold, and many
-// users they're viewing haven't taken the framework quiz yet (in
-// which case we render a tiny "no quiz" message and never need the
-// chart at all). The skeleton placeholder uses the page's existing
-// Skeleton import (further down) and a fixed height so the layout
-// doesn't shift on load.
-const FrameworkRadar = dynamic(
-  () => import('@/components/charts/framework-radar').then((m) => m.FrameworkRadar),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-[380px] w-full rounded-lg bg-muted/30 animate-pulse" />
-    ),
-  },
-);
+// The public ethical-framework profile now renders via
+// <PublicEthicsProfile>, which pulls the unified profile across all of
+// the user's activities (Stories, Framework Explorer, dilemmas,
+// debates) rather than a single quiz result.
 import {
   Flag,
   Lock,
@@ -40,7 +27,7 @@ import {
   unblockUser,
 } from '@/app/actions/user-blocks';
 import { getOrCreateThread } from '@/app/actions/messages';
-import { ethicalTheories } from '@/data/ethical-theories';
+import { submitUserReport } from '@/app/actions/user-reports';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -75,21 +62,9 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { EarnedBadges } from '@/components/profile/earned-badges';
+import { PublicEthicsProfile } from '@/components/profile/public-ethics-profile';
 
 import type { QuizResult, UserProfile } from '@/types';
-
-interface ChartPoint {
-  name: string;
-  score: number;
-}
-
-function buildChartData(result: QuizResult | undefined): ChartPoint[] {
-  if (!result) return [];
-  return ethicalTheories.map((theory) => ({
-    name: theory.name,
-    score: result.scores[theory.id] ?? 0,
-  }));
-}
 
 function quizResultDate(result: QuizResult | undefined): Date | null {
   if (!result) return null;
@@ -152,6 +127,16 @@ export default function PublicUserProfilePage(): React.ReactElement {
   const [isPrivate, setIsPrivate] = useState(false);
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [badgeIds, setBadgeIds] = useState<string[]>([]);
+  // Activity counts derived from the user's REAL userProgress doc. The
+  // legacy `users.{storiesCompleted,dilemmasAnalyzed,communitySubmissions}`
+  // fields are never written, so we compute these from userProgress
+  // (the same source the owner's own /profile dashboard uses).
+  const [activityStats, setActivityStats] = useState({
+    storiesCompleted: 0,
+    scenariosAnalyzed: 0,
+    debatesParticipated: 0,
+    dilemmasSubmitted: 0,
+  });
 
   const [isBlocked, setIsBlocked] = useState(false);
   const [isBlocking, setIsBlocking] = useState(false);
@@ -217,13 +202,21 @@ export default function PublicUserProfilePage(): React.ReactElement {
       ]);
 
       if (progressResult.success) {
+        const prog = progressResult.data;
         // Sort quiz results by completion date desc.
-        const sorted = [...progressResult.data.quizResults].sort((a, b) => {
+        const sorted = [...prog.quizResults].sort((a, b) => {
           const ad = quizResultDate(a)?.getTime() ?? 0;
           const bd = quizResultDate(b)?.getTime() ?? 0;
           return bd - ad;
         });
         setQuizResults(sorted);
+        // Real activity counts from userProgress (not the dead users-doc fields).
+        setActivityStats({
+          storiesCompleted: prog.storiesCompleted?.length ?? 0,
+          scenariosAnalyzed: prog.scenariosAnalyzed ?? 0,
+          debatesParticipated: prog.debatesParticipated?.length ?? 0,
+          dilemmasSubmitted: prog.dilemmasSubmitted?.length ?? 0,
+        });
       } else {
         setQuizResults([]);
       }
@@ -356,23 +349,36 @@ export default function PublicUserProfilePage(): React.ReactElement {
   }, [currentUser, targetId, isBlocked, toast]);
 
   const handleSubmitReport = useCallback(async () => {
-    setIsSubmittingReport(true);
-    // Placeholder — full reporting pipeline is not yet implemented. We show a
-    // success toast so the user knows their intent was recorded locally.
-    try {
-      // eslint-disable-next-line no-console
-      console.log('[user-profile] report submitted (stub):', {
-        reportedId: targetId,
-        reporterId: currentUser?.uid,
-        note: reportText,
-      });
-      setReportDialogOpen(false);
-      setReportText('');
+    if (!currentUser?.uid) {
       toast({
-        title: 'Report submitted',
-        description:
-          'Report submitted to admin team — full reporting coming soon.',
+        title: 'Sign in required',
+        description: 'You must be signed in to report a user.',
+        variant: 'destructive',
       });
+      return;
+    }
+    setIsSubmittingReport(true);
+    try {
+      const res = await submitUserReport({
+        reportedUserId: targetId,
+        reporterId: currentUser.uid,
+        reason: reportText,
+      });
+      if (res.success) {
+        setReportDialogOpen(false);
+        setReportText('');
+        toast({
+          title: 'Report submitted',
+          description:
+            'Thank you. Our moderation team will review this report.',
+        });
+      } else {
+        toast({
+          title: 'Could not submit report',
+          description: res.error,
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsSubmittingReport(false);
     }
@@ -405,9 +411,6 @@ export default function PublicUserProfilePage(): React.ReactElement {
 
   const displayName = profile.displayName || 'Anonymous Explorer';
   const initial = displayName.charAt(0).toUpperCase();
-  const latestQuiz = quizResults[0];
-  const chartData = buildChartData(latestQuiz);
-  const hasQuiz = !!latestQuiz && chartData.some((d) => d.score > 0);
 
   return (
     <div className="container mx-auto py-8 px-4 space-y-6">
@@ -500,24 +503,19 @@ export default function PublicUserProfilePage(): React.ReactElement {
         </CardContent>
       </Card>
 
-      {/* Framework chart */}
+      {/* Ethical framework profile — unified across all of this user's
+          activities (Stories, Framework Explorer modules, dilemmas,
+          debates). Aggregate distribution only; no private answers. */}
       <Card className="bg-card/80 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="text-primary">Ethical Framework Profile</CardTitle>
           <CardDescription>
-            {hasQuiz
-              ? 'Based on their most recent Framework Explorer quiz.'
-              : 'No framework quiz completed yet.'}
+            How {displayName}&apos;s choices across the platform distribute
+            across the ethical frameworks.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {hasQuiz ? (
-            <FrameworkRadar data={chartData} />
-          ) : (
-            <p className="text-sm text-muted-foreground py-6 text-center">
-              This explorer hasn&apos;t taken the Framework Explorer quiz yet.
-            </p>
-          )}
+          <PublicEthicsProfile userId={targetId} displayName={displayName} />
         </CardContent>
       </Card>
 
@@ -530,21 +528,21 @@ export default function PublicUserProfilePage(): React.ReactElement {
           <CardContent className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-2xl font-bold text-foreground">
-                {profile.storiesCompleted ?? 0}
+                {activityStats.storiesCompleted}
               </p>
               <p className="text-xs text-muted-foreground">Stories completed</p>
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">
-                {profile.dilemmasAnalyzed ?? 0}
+                {activityStats.scenariosAnalyzed}
               </p>
-              <p className="text-xs text-muted-foreground">Dilemmas analyzed</p>
+              <p className="text-xs text-muted-foreground">Scenarios analyzed</p>
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">
-                {profile.communitySubmissions ?? 0}
+                {activityStats.debatesParticipated}
               </p>
-              <p className="text-xs text-muted-foreground">Community submissions</p>
+              <p className="text-xs text-muted-foreground">Debates joined</p>
             </div>
           </CardContent>
         </Card>

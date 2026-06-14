@@ -81,7 +81,7 @@ export default function ChapterQuizPage() {
         </h1>
         <p className="text-muted-foreground mt-1">
           {quiz.questions.length} questions · pass at {quiz.passingScorePercent}% to
-          earn the chapter certificate.
+          complete this chapter and progress toward your Master Certificate.
         </p>
       </div>
 

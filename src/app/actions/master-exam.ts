@@ -32,6 +32,7 @@ import {
 import { issueCertificate, getUserCertificates } from '@/app/actions/certificates';
 import { getTextbookProgress } from '@/app/actions/textbook';
 import { getUserProgress } from '@/app/actions/progress';
+import { getFrameworkProgress } from '@/app/actions/framework-explorer';
 import { getUserPerspectives } from '@/app/actions/perspectives';
 import { chapters as ALL_CHAPTERS } from '@/data/textbook';
 import { countFrameworkExplorerRuns } from '@/lib/master-exam-helpers';
@@ -164,6 +165,7 @@ export async function getMasterExamUnlockState(
       dilemmasCount,
       debatesCreatedCount,
       certsRes,
+      frameworkProgressRes,
     ] = await Promise.all([
       getTextbookProgress(userId),
       getUserProgress(userId),
@@ -171,6 +173,7 @@ export async function getMasterExamUnlockState(
       countDilemmasByUser(userId),
       countDebatesCreatedByUser(userId),
       getUserCertificates(userId),
+      getFrameworkProgress(userId),
     ]);
 
     const textbookQuizzesPassed = textbookRes.success
@@ -183,9 +186,18 @@ export async function getMasterExamUnlockState(
     const storiesCompleted = progressRes.success
       ? progressRes.data.storiesCompleted.length
       : 0;
-    const frameworkExplorerRuns = progressRes.success
+    // Framework Explorer progress: the new 12-module system records
+    // completed modules in `frameworkExplorerProgress`, NOT the legacy
+    // `userProgress.quizResults`. Count completed modules; fall back to
+    // the legacy per-day run count so users who only used the old quiz
+    // still get credit.
+    const completedModules = frameworkProgressRes.success
+      ? frameworkProgressRes.data.completedModules.length
+      : 0;
+    const legacyRuns = progressRes.success
       ? countFrameworkExplorerRuns(progressRes.data.quizResults)
       : 0;
+    const frameworkExplorerRuns = Math.max(completedModules, legacyRuns);
     const debatesParticipatedCount = progressRes.success
       ? progressRes.data.debatesParticipated.length
       : 0;
@@ -264,9 +276,9 @@ function buildRequirements(input: BuildInput): MasterExamRequirement[] {
     },
     {
       id: 'framework-explorer',
-      title: 'Run the Framework Explorer quiz 5 times',
+      title: 'Complete 5 Framework Explorer modules',
       description:
-        'Complete the Framework Explorer quiz at least five times (each attempt counts separately).',
+        'Work through at least five of the twelve Framework Explorer assessment modules.',
       current: input.frameworkExplorerRuns,
       target: TARGET.FRAMEWORK_EXPLORER,
       complete: input.frameworkExplorerRuns >= TARGET.FRAMEWORK_EXPLORER,

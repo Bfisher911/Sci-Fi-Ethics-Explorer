@@ -63,9 +63,11 @@ describe('new stories (stories-extra)', () => {
 });
 
 describe('new dilemmas', () => {
-  it('has exactly 9 published dilemmas with unique slugs', () => {
-    expect(NEW_DILEMMAS.length).toBe(9);
-    expect(new Set(NEW_DILEMMAS.map((d) => d.slug)).size).toBe(9);
+  it('has at least 12 published dilemmas with unique slugs', () => {
+    expect(NEW_DILEMMAS.length).toBeGreaterThanOrEqual(12);
+    expect(new Set(NEW_DILEMMAS.map((d) => d.slug)).size).toBe(
+      NEW_DILEMMAS.length,
+    );
     expect(NEW_DILEMMAS.every((d) => d.visibilityStatus === 'published')).toBe(true);
   });
 

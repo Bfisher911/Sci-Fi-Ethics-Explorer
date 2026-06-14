@@ -15,6 +15,7 @@ import { getStaticScifiAuthorQuiz } from '@/data/scifi-author-quizzes';
 import { getStaticScifiMediaQuiz } from '@/data/scifi-media-quizzes';
 import { getStaticTextbookQuiz } from '@/data/textbook/quizzes';
 import { getStaticEthicalTheoryQuiz } from '@/data/theory-quizzes';
+import { getStaticPhilosopherQuiz } from '@/data/philosopher-quizzes';
 import { masterExamQuiz } from '@/data/master-exam';
 
 type ActionResult<T = void> =
@@ -100,6 +101,10 @@ export async function getQuizForSubject(
       const fallback = getStaticEthicalTheoryQuiz(subjectId);
       if (fallback) return { success: true, data: fallback };
     }
+    if (subjectType === 'philosopher') {
+      const fallback = getStaticPhilosopherQuiz(subjectId);
+      if (fallback) return { success: true, data: fallback };
+    }
     if (subjectType === 'book-chapter' || subjectType === 'book-final') {
       const fallback = getStaticTextbookQuiz(subjectId);
       if (fallback) return { success: true, data: fallback };
@@ -124,6 +129,10 @@ export async function getQuizForSubject(
     }
     if (subjectType === 'theory') {
       const fallback = getStaticEthicalTheoryQuiz(subjectId);
+      if (fallback) return { success: true, data: fallback };
+    }
+    if (subjectType === 'philosopher') {
+      const fallback = getStaticPhilosopherQuiz(subjectId);
       if (fallback) return { success: true, data: fallback };
     }
     if (subjectType === 'book-chapter' || subjectType === 'book-final') {
@@ -167,6 +176,9 @@ export async function submitQuizAttempt(input: {
     }
     if (!quiz && input.subjectType === 'theory') {
       quiz = getStaticEthicalTheoryQuiz(input.subjectId);
+    }
+    if (!quiz && input.subjectType === 'philosopher') {
+      quiz = getStaticPhilosopherQuiz(input.subjectId);
     }
     if (!quiz && (input.subjectType === 'book-chapter' || input.subjectType === 'book-final')) {
       quiz = getStaticTextbookQuiz(input.subjectId);

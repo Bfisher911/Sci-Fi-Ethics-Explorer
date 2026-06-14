@@ -32,3 +32,37 @@ export interface EthicsReport {
   error?: string;
   errorCode?: EthicsReportErrorCode;
 }
+
+/** The two kinds of report a student can generate. */
+export type ReportType = 'ethical_profile' | 'role_fit';
+
+/**
+ * Role Fit Reflection Report — translates a student's ethical
+ * tendencies into possible technology-role strengths. Written
+ * carefully as a REFLECTION tool, never a deterministic hiring test:
+ * it always carries the educational caveat and frames strengths as
+ * "may be useful," not "you are suited only for."
+ */
+export interface RoleFitReport {
+  /** 2–3 sentence framing of how the student's ethical instincts might
+   *  show up in technology work. */
+  summary: string;
+  /** The top ethical tendencies the role suggestions are grounded in. */
+  topTendencies: string[];
+  /** How those tendencies may show up in workplace decision-making. */
+  workplaceBehaviors: string[];
+  /** Possible strengths. */
+  strengths: string[];
+  /** Possible blind spots to stay aware of. */
+  blindSpots: string[];
+  /** Technology roles / responsibilities where these instincts may be useful. */
+  roleAffinities: { role: string; why: string }[];
+  /** Teams or decisions where the student may offer a helpful perspective. */
+  helpfulPerspectiveFor: string[];
+  /** Reflection questions for the student to sit with. */
+  reflectionQuestions: string[];
+  /** The mandatory educational caveat (reflection, not diagnosis/hiring). */
+  caveat: string;
+  error?: string;
+  errorCode?: EthicsReportErrorCode;
+}

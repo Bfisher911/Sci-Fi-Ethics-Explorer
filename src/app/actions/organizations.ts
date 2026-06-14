@@ -11,6 +11,9 @@ import {
   deleteField,
   serverTimestamp,
   collection,
+  collectionGroup,
+  query,
+  where,
   arrayUnion,
   arrayRemove,
 } from 'firebase/firestore';
@@ -440,6 +443,85 @@ export async function acceptInvite(
   } catch (error: any) {
     console.error(`[SERVER ACTION] acceptInvite: Error:`, error);
     return { success: false, error: `Failed to accept invite: ${error.message}` };
+  }
+}
+
+/**
+ * List the pending organization invites addressed to a given email, across
+ * every organization. Backs the recipient-facing invites banner so org
+ * invites can actually be accepted (previously the invite was written but
+ * never surfaced to the invitee).
+ *
+ * Uses a collectionGroup query over the `invites` subcollections, which
+ * requires a Firestore collectionGroup index on (email, status). If that
+ * index is missing the query throws and we degrade to an empty list rather
+ * than breaking the page.
+ */
+export async function getPendingOrgInvites(
+  email: string
+): Promise<{ success: boolean; data: OrganizationInvite[]; error?: string }> {
+  if (!db || !email) {
+    return { success: true, data: [] };
+  }
+  try {
+    const q = query(
+      collectionGroup(db, 'invites'),
+      where('email', '==', email.trim().toLowerCase()),
+      where('status', '==', 'pending')
+    );
+    const snap = await getDocs(q);
+    const invites: OrganizationInvite[] = [];
+    for (const d of snap.docs) {
+      const data = d.data() as OrganizationInvite;
+      // collectionGroup matches any `invites` subcollection; keep only those
+      // that are actually organization invites (they carry organizationId).
+      if (!data.organizationId) continue;
+      let organizationName: string | undefined;
+      try {
+        const orgSnap = await getDoc(doc(db, 'organizations', data.organizationId));
+        if (orgSnap.exists()) organizationName = orgSnap.data().name;
+      } catch {
+        /* best-effort name resolution */
+      }
+      invites.push({ ...data, id: d.id, organizationName });
+    }
+    return { success: true, data: invites };
+  } catch (error: any) {
+    console.error('[organizations] getPendingOrgInvites error:', error);
+    return { success: true, data: [], error: String(error?.message || error) };
+  }
+}
+
+/**
+ * Decline an organization invite. Marks it `declined` without adding the
+ * user to the org — the write path behind the recipient "Decline" action.
+ */
+export async function declineOrgInvite(
+  orgId: string,
+  inviteId: string,
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
+  if (!orgId || !inviteId) {
+    return { success: false, error: 'Organization ID and Invite ID are required.' };
+  }
+  if (!db) {
+    return { success: false, error: 'Firestore is not initialized.' };
+  }
+  try {
+    const inviteRef = doc(db, 'organizations', orgId, 'invites', inviteId);
+    const inviteSnap = await getDoc(inviteRef);
+    if (!inviteSnap.exists()) {
+      return { success: false, error: 'Invite not found.' };
+    }
+    await updateDoc(inviteRef, {
+      status: 'declined',
+      declinedBy: userId,
+      declinedAt: serverTimestamp(),
+    });
+    return { success: true };
+  } catch (error: any) {
+    console.error('[organizations] declineOrgInvite error:', error);
+    return { success: false, error: `Failed to decline invite: ${error.message}` };
   }
 }
 

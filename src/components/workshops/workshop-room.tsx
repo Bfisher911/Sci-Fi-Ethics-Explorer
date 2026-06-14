@@ -10,7 +10,7 @@ import {
   query,
   orderBy,
 } from 'firebase/firestore';
-import { joinWorkshop, sendWorkshopMessage } from '@/app/actions/workshops';
+import { joinWorkshop, sendWorkshopMessage, endWorkshop } from '@/app/actions/workshops';
 import type { Workshop, WorkshopMessage } from '@/types';
 import { ParticipantPanel } from '@/components/workshops/participant-panel';
 import { SharedNotes } from '@/components/workshops/shared-notes';
@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Loader2, MessageCircle, LogIn, Video, MapPin, ExternalLink } from 'lucide-react';
+import { Send, Loader2, MessageCircle, LogIn, Video, MapPin, ExternalLink, Flag, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface WorkshopRoomProps {
@@ -36,11 +36,41 @@ export function WorkshopRoom({ workshop }: WorkshopRoomProps) {
   const [messageInput, setMessageInput] = useState('');
   const [sending, setSending] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [ending, setEnding] = useState(false);
+  // Track status locally so ending the workshop updates the UI without a
+  // full reload (the workshop prop is fetched once on the server).
+  const [status, setStatus] = useState<Workshop['status']>(workshop.status);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const isParticipant = user
     ? workshop.participantIds.includes(user.uid)
     : false;
+  const isHost = user ? user.uid === workshop.hostId : false;
+
+  const handleEndWorkshop = async () => {
+    if (!user) return;
+    setEnding(true);
+    try {
+      const result = await endWorkshop(workshop.id, user.uid);
+      if (result.success) {
+        setStatus('completed');
+        toast({
+          title: 'Workshop ended',
+          description: 'Participants can now submit it to a community.',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: result.error,
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to end workshop:', error);
+    } finally {
+      setEnding(false);
+    }
+  };
 
   // Listen for chat messages in real time
   useEffect(() => {
@@ -160,22 +190,45 @@ export function WorkshopRoom({ workshop }: WorkshopRoomProps) {
             </div>
           )}
 
-          {!isParticipant && user && (
-            <Button onClick={handleJoin} disabled={joining} className="mt-4 gap-2">
-              {joining ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <LogIn className="h-4 w-4" />
-              )}
-              Join Workshop
-            </Button>
-          )}
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            {!isParticipant && user && (
+              <Button onClick={handleJoin} disabled={joining} className="gap-2">
+                {joining ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <LogIn className="h-4 w-4" />
+                )}
+                Join Workshop
+              </Button>
+            )}
+            {isHost && status === 'active' && (
+              <Button
+                onClick={handleEndWorkshop}
+                disabled={ending}
+                variant="outline"
+                className="gap-2"
+              >
+                {ending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Flag className="h-4 w-4" />
+                )}
+                End Workshop
+              </Button>
+            )}
+            {status === 'completed' && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                This workshop has ended.
+              </span>
+            )}
+          </div>
         </CardContent>
       </Card>
 
       {/* Once a workshop has ended, participants can submit it into a
           community learning record. */}
-      {workshop.status === 'completed' && isParticipant && (
+      {status === 'completed' && isParticipant && (
         <SubmitToCommunitySection
           type="workshop"
           defaultTitle={`Workshop: ${workshop.title}`}

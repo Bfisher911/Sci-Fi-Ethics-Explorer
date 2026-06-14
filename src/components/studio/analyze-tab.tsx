@@ -181,14 +181,6 @@ export function AnalyzeTab() {
               items={analysisResult.applicableEthicalTheories}
             />
 
-            {analysisResult.quotaInformation && (
-              <Alert variant="default" className="bg-secondary/50">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Quota Information</AlertTitle>
-                <AlertDescription>{analysisResult.quotaInformation}</AlertDescription>
-              </Alert>
-            )}
-
             {user && (
               <div className="rounded-lg border border-input bg-background/50 p-4 space-y-3">
                 <div className="flex items-center justify-between gap-4">

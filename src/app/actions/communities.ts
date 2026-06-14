@@ -287,6 +287,33 @@ export async function acceptCommunityInvite(
 }
 
 /**
+ * Decline a community invite. Marks the invite `declined` without adding
+ * the user to the community. This is the write path that backs the
+ * "Declined" status the instructor invite list already renders.
+ */
+export async function declineCommunityInvite(
+  inviteId: string,
+  userId: string
+): Promise<ActionResult<undefined>> {
+  try {
+    const inviteRef = doc(db, 'communityInvites', inviteId);
+    const inviteSnap = await getDoc(inviteRef);
+    if (!inviteSnap.exists()) {
+      return { success: false, error: 'Invite not found.' };
+    }
+    await updateDoc(inviteRef, {
+      status: 'declined',
+      declinedBy: userId,
+      declinedAt: serverTimestamp(),
+    });
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error('[communities] declineCommunityInvite error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
  * Join a community via invite code.
  */
 export async function joinCommunityByCode(

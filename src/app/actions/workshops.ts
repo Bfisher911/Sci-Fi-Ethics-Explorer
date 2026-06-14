@@ -57,6 +57,9 @@ export async function createWorkshop(data: {
       meetingUrl: data.meetingUrl?.trim() || null,
       locationAddress: data.locationAddress?.trim() || null,
       createdAt: serverTimestamp(),
+      // A workshop is live from the moment it's created, so stamp startedAt
+      // now. endedAt/status='completed' are written when the host ends it.
+      startedAt: serverTimestamp(),
     };
 
     const docRef = await addDoc(collection(db, 'workshops'), workshopData);
@@ -190,6 +193,46 @@ export async function getWorkshopById(
     const message = error instanceof Error ? error.message : String(error);
     console.error('[SERVER ACTION] getWorkshopById error:', message);
     return { success: false, error: `Could not fetch workshop. ${message}` };
+  }
+}
+
+/**
+ * Ends a workshop. Only the host may end it. Marks the workshop
+ * `completed` and stamps `endedAt`, which unlocks the "submit to community"
+ * record for participants.
+ */
+export async function endWorkshop(
+  workshopId: string,
+  hostId: string
+): Promise<ActionResult<undefined>> {
+  if (!db) {
+    return { success: false, error: 'Firestore is not initialized.' };
+  }
+
+  try {
+    const workshopRef = doc(db, 'workshops', workshopId);
+    const workshopSnap = await getDoc(workshopRef);
+
+    if (!workshopSnap.exists()) {
+      return { success: false, error: 'Workshop not found.' };
+    }
+    const data = workshopSnap.data();
+    if (data.hostId !== hostId) {
+      return { success: false, error: 'Only the host can end this workshop.' };
+    }
+    if (data.status === 'completed') {
+      return { success: true, data: undefined };
+    }
+
+    await updateDoc(workshopRef, {
+      status: 'completed',
+      endedAt: serverTimestamp(),
+    });
+    return { success: true, data: undefined };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('[SERVER ACTION] endWorkshop error:', message);
+    return { success: false, error: `Could not end workshop. ${message}` };
   }
 }
 

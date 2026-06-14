@@ -16,7 +16,8 @@
  * there's no activity yet it shows an encouraging empty state.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import {
   Compass,
@@ -26,6 +27,8 @@ import {
   Trophy,
   ChevronDown,
   ChevronUp,
+  Radar as RadarIcon,
+  LayoutGrid,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import {
@@ -43,29 +46,50 @@ import { SubmitToCommunitySection } from '@/components/communities/submit-to-com
 import {
   getUnifiedEthicsProfile,
   generateEthicsReportForUser,
+  generateRoleFitReportForUser,
 } from '@/app/actions/ethics-journey';
 import {
   buildJourneyProfile,
   type JourneyProfile,
+  type FrameworkScores,
 } from '@/lib/ethics/journey';
-import { FRAMEWORK_META } from '@/lib/ethics/frameworks';
+import { FRAMEWORK_META, type FrameworkId } from '@/lib/ethics/frameworks';
+
+// Radar uses recharts (~80KB); lazy-load so it only ships when a
+// profile with data actually mounts it.
+const FrameworkRadar = dynamic(
+  () =>
+    import('@/components/charts/framework-radar').then((m) => m.FrameworkRadar),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[300px] w-full animate-pulse rounded-lg bg-muted/20" />
+    ),
+  },
+);
 import {
   MIN_DECISIONS_FOR_REPORT,
   type EthicsReport,
+  type RoleFitReport,
 } from '@/lib/ethics/report-types';
+import { Briefcase } from 'lucide-react';
 
 export function EthicsJourneyCard(): JSX.Element {
   const { user } = useAuth();
   const [profile, setProfile] = useState<JourneyProfile | null>(null);
   const [sources, setSources] = useState<Record<string, number>>({});
+  const [topics, setTopics] = useState<Record<string, FrameworkScores>>({});
   const [showAll, setShowAll] = useState(false);
   const [report, setReport] = useState<EthicsReport | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
+  const [roleFit, setRoleFit] = useState<RoleFitReport | null>(null);
+  const [roleFitLoading, setRoleFitLoading] = useState(false);
 
   useEffect(() => {
     if (!user) {
       setProfile(buildJourneyProfile([]));
       setSources({});
+      setTopics({});
       return;
     }
     let cancelled = false;
@@ -73,11 +97,43 @@ export function EthicsJourneyCard(): JSX.Element {
       if (cancelled) return;
       setProfile(res.success ? res.data.profile : buildJourneyProfile([]));
       setSources(res.success ? res.data.counts.bySource : {});
+      setTopics(res.success ? res.data.topics : {});
     });
     return () => {
       cancelled = true;
     };
   }, [user]);
+
+  // Top-6 frameworks (by cumulative score) as radar points. A radar
+  // with all 22 axes is unreadable, so we plot the strongest few.
+  const radarData = useMemo(() => {
+    if (!profile) return [];
+    return profile.ranked
+      .filter((r) => r.score > 0)
+      .slice(0, 6)
+      .map((r) => ({ name: FRAMEWORK_META[r.id as FrameworkId].shortLabel, score: r.score }));
+  }, [profile]);
+
+  // Technology-topic breakdown: each topic's leading framework + weight,
+  // sorted by how much the user has engaged with that topic.
+  const topicRows = useMemo(() => {
+    return Object.entries(topics)
+      .map(([topic, scores]) => {
+        let leadId: FrameworkId | null = null;
+        let lead = 0;
+        let totalWeight = 0;
+        for (const [id, w] of Object.entries(scores) as [FrameworkId, number][]) {
+          totalWeight += w;
+          if (w > lead) {
+            lead = w;
+            leadId = id;
+          }
+        }
+        return { topic, leadId, totalWeight };
+      })
+      .filter((r) => r.totalWeight > 0)
+      .sort((a, b) => b.totalWeight - a.totalWeight);
+  }, [topics]);
 
   async function handleGenerate() {
     if (!user) return;
@@ -93,6 +149,29 @@ export function EthicsJourneyCard(): JSX.Element {
         patterns: [],
         examples: [],
         tensions: [],
+        errorCode: 'upstream_error',
+        error: res.error,
+      });
+  }
+
+  async function handleGenerateRoleFit() {
+    if (!user) return;
+    setRoleFitLoading(true);
+    setRoleFit(null);
+    const res = await generateRoleFitReportForUser(user.uid);
+    setRoleFitLoading(false);
+    if (res.success) setRoleFit(res.data);
+    else
+      setRoleFit({
+        summary: '',
+        topTendencies: [],
+        workplaceBehaviors: [],
+        strengths: [],
+        blindSpots: [],
+        roleAffinities: [],
+        helpfulPerspectiveFor: [],
+        reflectionQuestions: [],
+        caveat: '',
         errorCode: 'upstream_error',
         error: res.error,
       });
@@ -204,6 +283,51 @@ export function EthicsJourneyCard(): JSX.Element {
                 </div>
               )}
             </div>
+
+            {/* Radar — relative strength across the user's top frameworks */}
+            {radarData.length >= 3 && (
+              <div>
+                <div className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <RadarIcon className="h-3.5 w-3.5 text-primary" /> Framework
+                  strength
+                </div>
+                <FrameworkRadar data={radarData} height={300} />
+              </div>
+            )}
+
+            {/* Technology-topic breakdown — which ethical lens leads in each
+                technology domain the user has engaged with. */}
+            {topicRows.length > 0 && (
+              <div>
+                <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <LayoutGrid className="h-3.5 w-3.5 text-primary" /> By
+                  technology topic
+                </div>
+                <ul className="space-y-1.5">
+                  {topicRows.map((r) => (
+                    <li
+                      key={r.topic}
+                      className="flex items-center justify-between gap-3 text-xs"
+                    >
+                      <span className="text-foreground/80">{r.topic}</span>
+                      {r.leadId ? (
+                        <span
+                          className={`shrink-0 font-medium ${FRAMEWORK_META[r.leadId].color}`}
+                        >
+                          {FRAMEWORK_META[r.leadId].label}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-1.5 text-[10px] text-muted-foreground/70">
+                  Your leading ethical lens in each technology domain you&apos;ve
+                  explored. This may shift as you complete more scenarios.
+                </p>
+              </div>
+            )}
 
             {/* Tensions */}
             {profile.tensions.length > 0 && (
@@ -384,6 +508,158 @@ export function EthicsJourneyCard(): JSX.Element {
                         tensions: report.tensions,
                       }}
                     />
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Role Fit Reflection report — second report type. */}
+            <div className="border-t border-border/40 pt-4">
+              <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <Briefcase className="h-3.5 w-3.5 text-primary" /> Technology
+                role-fit reflection
+              </div>
+              {!canReport ? (
+                <p className="text-xs text-muted-foreground">
+                  Complete at least {MIN_DECISIONS_FOR_REPORT} activities to
+                  unlock a role-fit reflection.
+                </p>
+              ) : (
+                <>
+                  <p className="mb-2 text-xs text-muted-foreground">
+                    A reflective look at where your ethical instincts might be
+                    useful in technology work — not a hiring test or diagnosis.
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleGenerateRoleFit}
+                    disabled={roleFitLoading}
+                  >
+                    {roleFitLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Reflecting on your tendencies…
+                      </>
+                    ) : (
+                      <>
+                        <Briefcase className="mr-2 h-4 w-4" />
+                        {roleFit ? 'Regenerate reflection' : 'Generate reflection'}
+                      </>
+                    )}
+                  </Button>
+
+                  {roleFit?.error && (
+                    <p className="mt-3 text-xs text-destructive">
+                      {roleFit.error}
+                    </p>
+                  )}
+
+                  {roleFit && !roleFit.error && (
+                    <>
+                      <div className="mt-4 space-y-4 rounded-lg border bg-background/40 p-4">
+                        {roleFit.summary && (
+                          <p className="text-sm italic leading-relaxed text-foreground/90">
+                            {roleFit.summary}
+                          </p>
+                        )}
+
+                        {roleFit.roleAffinities.length > 0 && (
+                          <div>
+                            <h4 className="text-xs font-semibold uppercase tracking-wider text-primary">
+                              Where your instincts may be useful
+                            </h4>
+                            <ul className="mt-1.5 space-y-1.5">
+                              {roleFit.roleAffinities.map((r, i) => (
+                                <li key={i} className="text-xs leading-relaxed">
+                                  <span className="font-semibold text-foreground">
+                                    {r.role}:
+                                  </span>{' '}
+                                  <span className="text-muted-foreground">
+                                    {r.why}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {roleFit.strengths.length > 0 && (
+                          <div>
+                            <h4 className="text-xs font-semibold uppercase tracking-wider text-primary">
+                              Possible strengths
+                            </h4>
+                            <ul className="mt-1.5 list-disc space-y-1 pl-4 text-xs text-muted-foreground">
+                              {roleFit.strengths.map((s, i) => (
+                                <li key={i}>{s}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {roleFit.blindSpots.length > 0 && (
+                          <div>
+                            <h4 className="text-xs font-semibold uppercase tracking-wider text-accent">
+                              Possible blind spots
+                            </h4>
+                            <ul className="mt-1.5 list-disc space-y-1 pl-4 text-xs text-muted-foreground">
+                              {roleFit.blindSpots.map((s, i) => (
+                                <li key={i}>{s}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {roleFit.helpfulPerspectiveFor.length > 0 && (
+                          <div>
+                            <h4 className="text-xs font-semibold uppercase tracking-wider text-primary">
+                              Teams &amp; decisions you may strengthen
+                            </h4>
+                            <ul className="mt-1.5 list-disc space-y-1 pl-4 text-xs text-muted-foreground">
+                              {roleFit.helpfulPerspectiveFor.map((s, i) => (
+                                <li key={i}>{s}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {roleFit.reflectionQuestions.length > 0 && (
+                          <div>
+                            <h4 className="text-xs font-semibold uppercase tracking-wider text-primary">
+                              Questions to sit with
+                            </h4>
+                            <ul className="mt-1.5 list-disc space-y-1 pl-4 text-xs text-muted-foreground">
+                              {roleFit.reflectionQuestions.map((q, i) => (
+                                <li key={i}>{q}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {roleFit.caveat && (
+                          <p className="rounded border border-border/40 bg-muted/20 p-2 text-[10px] italic leading-relaxed text-muted-foreground">
+                            {roleFit.caveat}
+                          </p>
+                        )}
+                      </div>
+
+                      <SubmitToCommunitySection
+                        type="ethics_report"
+                        defaultTitle="My technology role-fit reflection"
+                        defaultSummary={
+                          roleFit.summary?.slice(0, 280) ||
+                          'My technology role-fit reflection.'
+                        }
+                        className="mt-4"
+                        content={{
+                          roleFit,
+                          summary: roleFit.summary,
+                          roleAffinities: roleFit.roleAffinities,
+                          strengths: roleFit.strengths,
+                          blindSpots: roleFit.blindSpots,
+                        }}
+                      />
                     </>
                   )}
                 </>

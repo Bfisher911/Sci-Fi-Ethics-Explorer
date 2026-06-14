@@ -388,36 +388,62 @@ export async function getModerationQueue(adminUid: string): Promise<ActionResult
   try {
     await requireAdmin(adminUid);
 
-    async function fetchQueue(coll: string): Promise<any[]> {
-      try {
-        // Fetch globally-visible items (pending or flagged moderation status)
-        const snap = await getDocs(
-          query(
-            collection(db, coll),
-            where('globalVisibility', '==', 'public'),
-            orderBy('createdAt', 'desc'),
-            limit(200)
-          )
-        );
-        return snap.docs
-          .map((d) => {
-            const data = d.data();
-            return { id: d.id, ...data };
-          })
+    // Each collection stamps its creation time on a different field:
+    // stories/analyses/perspectives use `createdAt`, but submittedDilemmas
+    // uses `submittedAt`. Ordering by the wrong field returns ZERO docs
+    // (Firestore drops docs missing the orderBy field), which silently
+    // emptied the Dilemmas moderation tab. Pass the right field per coll,
+    // and fall back to an unordered fetch if the ordered query fails
+    // (e.g. missing composite index), sorting in memory afterward.
+    async function fetchQueue(coll: string, dateField: string): Promise<any[]> {
+      const normalize = (docs: any[]) =>
+        docs
+          .map((d) => ({ id: d.id, ...d.data() }))
           .filter((item: any) => {
             const status = item.moderationStatus || 'pending';
             return status === 'pending' || status === 'flagged';
           });
+      const ts = (item: any): number => {
+        const v = item[dateField];
+        if (!v) return 0;
+        if (typeof v.toMillis === 'function') return v.toMillis();
+        if (typeof v.toDate === 'function') return v.toDate().getTime();
+        const d = new Date(v);
+        return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+      };
+      try {
+        const snap = await getDocs(
+          query(
+            collection(db, coll),
+            where('globalVisibility', '==', 'public'),
+            orderBy(dateField, 'desc'),
+            limit(200)
+          )
+        );
+        return normalize(snap.docs);
       } catch {
-        return [];
+        // Fall back to an unordered fetch + in-memory sort so a missing
+        // index or field never blanks the queue.
+        try {
+          const snap = await getDocs(
+            query(
+              collection(db, coll),
+              where('globalVisibility', '==', 'public'),
+              limit(200)
+            )
+          );
+          return normalize(snap.docs).sort((a, b) => ts(b) - ts(a));
+        } catch {
+          return [];
+        }
       }
     }
 
     const [storiesRaw, dilemmasRaw, analysesRaw, perspectivesRaw] = await Promise.all([
-      fetchQueue('stories'),
-      fetchQueue('submittedDilemmas'),
-      fetchQueue('analyses'),
-      fetchQueue('perspectives'),
+      fetchQueue('stories', 'createdAt'),
+      fetchQueue('submittedDilemmas', 'submittedAt'),
+      fetchQueue('analyses', 'createdAt'),
+      fetchQueue('perspectives', 'createdAt'),
     ]);
 
     return {

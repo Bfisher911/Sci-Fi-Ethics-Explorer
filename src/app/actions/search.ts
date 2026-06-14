@@ -7,6 +7,7 @@ import { timestampToDate } from '@/lib/firebase/firestore-helpers';
 import { philosopherData } from '@/data/philosophers';
 import { scifiAuthorData } from '@/data/scifi-authors';
 import { scifiMediaData } from '@/data/scifi-media';
+import { ethicalTheories } from '@/data/ethical-theories';
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -133,26 +134,28 @@ export async function searchAll(
       console.error('[search] dilemmas search error:', e);
     }
 
-    // Search ethical theories
-    try {
-      const theoriesSnap = await getDocs(
-        query(collection(db, 'ethicalTheories'), limit(100))
-      );
-      theoriesSnap.docs.forEach((d) => {
-        const data = d.data();
-        const name = (data.name || '').toLowerCase();
-        const description = (data.description || '').toLowerCase();
-        if (name.includes(lowerQuery) || description.includes(lowerQuery)) {
-          results.theories.push({
-            id: d.id,
-            name: data.name || '',
-            description: data.description || '',
-          });
-        }
-      });
-    } catch (e) {
-      console.error('[search] theories search error:', e);
-    }
+    // Search ethical theories from STATIC data (the glossary's source of
+    // truth). Previously this queried an `ethicalTheories` Firestore
+    // collection that is never seeded, so theory search always returned
+    // nothing. Match the philosophers/authors/media static pattern above.
+    results.theories = ethicalTheories
+      .filter((t) => {
+        const name = t.name.toLowerCase();
+        const description = (t.description || '').toLowerCase();
+        const concepts = (t.keyConcepts || []).join(' ').toLowerCase();
+        return (
+          name.includes(lowerQuery) ||
+          description.includes(lowerQuery) ||
+          concepts.includes(lowerQuery)
+        );
+      })
+      .slice(0, 20)
+      .map((t) => ({
+        id: t.id,
+        name: t.name,
+        description: (t.keyConcepts || []).slice(0, 3).join(' · ') ||
+          t.description.slice(0, 120),
+      }));
 
     return { success: true, data: results };
   } catch (error) {

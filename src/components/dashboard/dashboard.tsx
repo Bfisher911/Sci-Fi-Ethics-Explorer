@@ -58,12 +58,12 @@ import { getTextbookProgress } from '@/app/actions/textbook';
 import { getUserBadges } from '@/app/actions/badges';
 import { getDebates } from '@/app/actions/debates';
 import { addBookmark } from '@/app/actions/bookmarks';
-import { getUserProfile } from '@/app/actions/user';
-import { recordDailyActivity } from '@/app/actions/progress';
+import { recordDailyActivity, getUserProgress } from '@/app/actions/progress';
 import { chapters as ALL_CHAPTERS } from '@/data/textbook';
 import { getQuoteOfTheDay, type TechEthicsQuote } from '@/data/quotes';
 import { getLatestChangelog } from '@/data/changelog';
 import { ReadingGoalCard } from '@/components/dashboard/reading-goal-card';
+import { PendingInvitesBanner } from '@/components/communities/pending-invites-banner';
 import { SpacedRepetitionRail } from '@/components/dashboard/spaced-repetition-rail';
 // Lazy-load FirstRunCards — only first-ever visitors render it, but
 // it'd otherwise ship in every dashboard bundle. `dynamic` defers the
@@ -357,10 +357,10 @@ export function Dashboard(): JSX.Element {
     if (!user) return;
     let cancelled = false;
     (async () => {
-      const [progRes, badgeRes, profRes] = await Promise.all([
+      const [progRes, badgeRes, userProgressRes] = await Promise.all([
         getTextbookProgress(user.uid),
         getUserBadges(user.uid),
-        getUserProfile(user.uid),
+        getUserProgress(user.uid),
       ]);
       if (cancelled) return;
       if (progRes.success) {
@@ -370,8 +370,10 @@ export function Dashboard(): JSX.Element {
         setMasterCertId(progRes.data.masterCertificateId);
       }
       if (badgeRes.success) setBadgeCount(badgeRes.data.length);
-      if (profRes.success && profRes.data) {
-        setStoriesCompleted(profRes.data.storiesCompleted ?? 0);
+      // Stories-completed comes from userProgress (the real array), not the
+      // never-written users.storiesCompleted counter.
+      if (userProgressRes.success && userProgressRes.data) {
+        setStoriesCompleted(userProgressRes.data.storiesCompleted?.length ?? 0);
       } else {
         setStoriesCompleted(0);
       }
@@ -550,6 +552,9 @@ export function Dashboard(): JSX.Element {
 
   return (
     <div className="mx-auto w-full max-w-[1400px] px-6 py-6 md:px-8 md:py-8 lg:px-10">
+      {/* Pending community / organization invites — accept or decline inline */}
+      <PendingInvitesBanner />
+
       {/* First-run welcome (one-time, dismissible) */}
       {showFirstRun && (
         <FirstRunCards

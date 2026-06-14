@@ -79,7 +79,15 @@ export async function getUserSubscription(
     );
     const snap = await getDocs(q);
 
-    if (snap.empty) return { success: true, data: null };
+    if (snap.empty) {
+      // No doc in the `subscriptions` collection. The PRODUCTION Stripe
+      // path doesn't write here — the webhook writes subscription state
+      // onto the user's `users` doc (subscriptionStatus, stripeCustomerId,
+      // subscriptionId). Synthesize a Subscription from that so real
+      // paying subscribers don't see "No Active Plan" and can open the
+      // billing portal.
+      return await subscriptionFromUserDoc(userId);
+    }
 
     const d = snap.docs[0];
     const data = d.data();
@@ -96,11 +104,53 @@ export async function getUserSubscription(
         cancelAtPeriodEnd: data.cancelAtPeriodEnd,
         createdAt: timestampToDate(data.createdAt),
         updatedAt: timestampToDate(data.updatedAt),
+        stripeCustomerId: data.stripeCustomerId,
+        stripeSubscriptionId: data.stripeSubscriptionId,
       } as Subscription,
     };
   } catch (error) {
     console.error('[subscriptions] getUserSubscription error:', error);
     return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Build a Subscription view from the user's `users` doc, where the Stripe
+ * webhook records live subscription state. Returns null when the user has
+ * no active/trialing Stripe subscription.
+ */
+async function subscriptionFromUserDoc(
+  userId: string
+): Promise<ActionResult<Subscription | null>> {
+  try {
+    const userSnap = await getDoc(doc(db, 'users', userId));
+    if (!userSnap.exists()) return { success: true, data: null };
+    const u = userSnap.data();
+    const status = u.subscriptionStatus as SubscriptionStatus | undefined;
+    if (status !== 'active' && status !== 'trial') {
+      return { success: true, data: null };
+    }
+    return {
+      success: true,
+      data: {
+        // Use the Stripe subscription id as the stable id when present.
+        id: (u.subscriptionId as string) || `user-${userId}`,
+        userId,
+        planId: (u.planId as string) || 'member',
+        billingPeriod: (u.billingPeriod as BillingPeriodId) || 'monthly',
+        status,
+        currentPeriodStart: timestampToDate(u.currentPeriodStart),
+        currentPeriodEnd: timestampToDate(u.currentPeriodEnd),
+        cancelAtPeriodEnd: Boolean(u.cancelAtPeriodEnd),
+        createdAt: timestampToDate(u.createdAt),
+        updatedAt: timestampToDate(u.lastUpdated),
+        stripeCustomerId: u.stripeCustomerId as string | undefined,
+        stripeSubscriptionId: u.subscriptionId as string | undefined,
+      } as Subscription,
+    };
+  } catch (error) {
+    console.error('[subscriptions] subscriptionFromUserDoc error:', error);
+    return { success: true, data: null };
   }
 }
 

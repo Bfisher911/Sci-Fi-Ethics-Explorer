@@ -1535,6 +1535,7 @@ export interface Organization {
 export interface OrganizationInvite {
   id: string;
   organizationId: string;
+  organizationName?: string;
   email: string;
   role: OrganizationMemberRole;
   status: 'pending' | 'accepted' | 'declined';

@@ -3,8 +3,29 @@
 
 import { db } from '@/lib/firebase/config';
 import { collection, getDocs, doc, getDoc, query, where, limit as fsLimit } from 'firebase/firestore';
+import { mockStories } from '@/data/stories';
+import { EXTRA_STORIES } from '@/data/stories-extra';
+import { NEW_DEBATES } from '@/data/debates';
+import { ethicalTheoryQuizzes } from '@/data/theory-quizzes';
+import { scifiAuthorQuizzes } from '@/data/scifi-author-quizzes';
+import { scifiMediaQuizzes } from '@/data/scifi-media-quizzes';
 
 export type ArtifactType = 'story' | 'quiz' | 'debate' | 'analysis' | 'discussion';
+
+/**
+ * IDs of content bundled with the app (static seed data). These exist as
+ * real, playable content even when Firestore isn't seeded, so a curriculum
+ * item referencing one is NOT a broken link.
+ */
+const STATIC_ARTIFACT_IDS: Partial<Record<ArtifactType, Set<string>>> = {
+  story: new Set([...mockStories, ...EXTRA_STORIES].map((s) => s.id)),
+  debate: new Set(NEW_DEBATES.map((d) => d.id)),
+  quiz: new Set(
+    [...ethicalTheoryQuizzes, ...scifiAuthorQuizzes, ...scifiMediaQuizzes].map(
+      (q) => q.id
+    )
+  ),
+};
 
 export interface ArtifactSearchResult {
   type: ArtifactType;
@@ -162,17 +183,26 @@ export async function checkArtifactExists(
       type === 'quiz' ? 'quizzes' :
       type === 'debate' ? 'debates' :
       type === 'analysis' ? 'analyses' :
+      type === 'discussion' ? 'stories' :
       'stories';
     const snap = await getDoc(doc(db, collectionName, id));
-    if (!snap.exists()) return { success: true, data: { exists: false } };
-    const data = snap.data();
-    return {
-      success: true,
-      data: {
-        exists: true,
-        title: data.title || data.scenarioText?.slice(0, 80) || undefined,
-      },
-    };
+    if (snap.exists()) {
+      const data = snap.data();
+      return {
+        success: true,
+        data: {
+          exists: true,
+          title: data.title || data.scenarioText?.slice(0, 80) || undefined,
+        },
+      };
+    }
+    // Firestore miss — fall back to bundled static seed content, which is
+    // always present even when Firestore isn't seeded. Only then is a
+    // reference genuinely broken.
+    if (STATIC_ARTIFACT_IDS[type]?.has(id)) {
+      return { success: true, data: { exists: true } };
+    }
+    return { success: true, data: { exists: false } };
   } catch (error) {
     console.error('[artifacts] checkArtifactExists error:', error);
     return { success: false, error: String(error) };

@@ -153,6 +153,15 @@ export default function CommunityBlogPostPage() {
                 </div>
               )}
             </div>
+            {post.imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={post.imageUrl}
+                alt={post.title}
+                loading="lazy"
+                className="w-full rounded-lg border border-border/60 object-cover max-h-[28rem]"
+              />
+            )}
             <div className="prose prose-lg dark:prose-invert max-w-none text-foreground/90 leading-relaxed">
               {paragraphs.map((p, i) => (
                 <p key={i} className="mb-4 whitespace-pre-wrap">{p}</p>

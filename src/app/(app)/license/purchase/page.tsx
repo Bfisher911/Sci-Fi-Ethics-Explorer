@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import type { LicenseTerm } from '@/types';
 
-type Step = 1 | 2 | 3 | 4 | 5;
+type Step = 1 | 2 | 3 | 4;
 
 const STEPS = [
   { number: 1, label: 'Organization' },
@@ -54,7 +54,6 @@ export default function LicensePurchasePage() {
   const [term, setTerm] = useState<LicenseTerm>(initialTerm);
   const [selectedSeats, setSelectedSeats] = useState<number | undefined>(initialSeats);
   const [submitting, setSubmitting] = useState(false);
-  const [licenseId, setLicenseId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(wasCanceled ? 'Checkout was canceled. Adjust your selection and try again.' : null);
 
   const seatTiers = getSeatTiers(term);
@@ -130,58 +129,9 @@ export default function LicensePurchasePage() {
     }
   }
 
-  // ─── Success State ───────────────────────────────────────────────
-  if (step === 5 && licenseId) {
-    return (
-      <div className="container mx-auto py-12 px-4 max-w-lg">
-        <Card className="bg-card/80 backdrop-blur-sm border-green-500/50">
-          <CardContent className="pt-8 pb-8 text-center space-y-6">
-            <div className="flex justify-center">
-              <div className="rounded-full bg-green-500/20 p-4">
-                <CheckCircle2 className="h-12 w-12 text-green-400" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-foreground">License Purchased!</h2>
-              <p className="text-muted-foreground">
-                Your organization license has been created successfully.
-              </p>
-            </div>
-            <div className="rounded-lg bg-muted/30 p-4 space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">License ID</span>
-                <span className="font-mono text-xs">{licenseId}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Organization</span>
-                <span className="font-medium">{orgName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Seats</span>
-                <span className="font-medium">{selectedSeats}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Term</span>
-                <span className="font-medium capitalize">{term}</span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <Button
-                onClick={() => router.push('/communities/create')}
-                className="bg-accent hover:bg-accent/90 text-accent-foreground"
-              >
-                Create a Community
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-              <Button variant="outline" onClick={() => router.push('/billing')}>
-                Go to Billing
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Post-payment success is handled by the dedicated /success route that
+  // Stripe redirects to (success_url), which reconciles the webhook-provisioned
+  // license. This page's job ends at the Stripe redirect.
 
   return (
     <div className="container mx-auto py-12 px-4 max-w-3xl">

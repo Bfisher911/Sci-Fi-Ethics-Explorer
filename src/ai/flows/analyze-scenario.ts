@@ -20,7 +20,6 @@ const AnalyzeScenarioOutputSchema = z.object({
   ethicalDilemmas: z.array(z.string()).describe('List of identified ethical dilemmas.'),
   potentialConsequences: z.array(z.string()).describe('List of potential consequences of the scenario.'),
   applicableEthicalTheories: z.array(z.string()).describe('List of applicable ethical theories.'),
-  quotaInformation: z.string().optional().describe('Quota information or disclaimers.'),
 });
 export type AnalyzeScenarioOutput = z.infer<typeof AnalyzeScenarioOutputSchema>;
 

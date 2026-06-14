@@ -28,6 +28,23 @@ function seededDebateFallback(id: string) {
   return NEW_DEBATES.find((debate) => debate.id === id);
 }
 
+/**
+ * Static fallback: the first-party structured debates (src/data/debates.ts),
+ * mapped to the Debate runtime shape (createdAt stamped now), for use when
+ * the Firestore `debates` collection is empty (not yet seeded) so the
+ * Debate Arena is never blank when content exists in code.
+ */
+function staticDebates(): Debate[] {
+  return NEW_DEBATES.filter(
+    (d) => d.status === 'open' || d.status === 'voting',
+  ).map((d) => ({ ...d, createdAt: new Date() }) as Debate);
+}
+
+function staticDebateById(id: string): Debate | null {
+  const seed = NEW_DEBATES.find((d) => d.id === id);
+  return seed ? ({ ...seed, createdAt: new Date() } as Debate) : null;
+}
+
 // ─── Create Debate ─────────────────────────────────────────────────
 
 export async function createDebate(data: {
@@ -108,6 +125,11 @@ export async function getDebates(): Promise<ActionResult<Debate[]>> {
         closesAt: d.closesAt?.toDate?.() ?? undefined,
       } as Debate;
     });
+    // No seeded debates in Firestore yet → serve the static first-party set
+    // so the Debate Arena lists the authored structured debates.
+    if (debates.length === 0) {
+      return { success: true, data: staticDebates() };
+    }
     return { success: true, data: debates };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -128,7 +150,9 @@ export async function getDebateById(debateId: string): Promise<ActionResult<Deba
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
-      return { success: true, data: null };
+      // Not in Firestore — fall back to the static first-party debate so its
+      // detail page (with the full brief) still renders.
+      return { success: true, data: staticDebateById(debateId) };
     }
 
     const d = docSnap.data();

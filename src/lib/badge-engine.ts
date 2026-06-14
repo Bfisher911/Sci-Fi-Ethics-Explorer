@@ -36,8 +36,15 @@ export function evaluateBadges(
   if (debatesCount >= 1) earned.push('first_debate');
   if (debatesCount >= 10) earned.push('debate_champion');
 
-  // Learning badges
-  const quizCount = progress.quizResults.length;
+  // Learning badges. Quizzes are recorded in the `quizAttempts`
+  // collection (surfaced via extras.quizzesPassed), NOT the legacy
+  // `userProgress.quizResults` array, which nothing writes to. Count the
+  // real passed-quiz signal, falling back to the legacy array for any
+  // old data that happens to carry it.
+  const quizCount = Math.max(
+    extras.quizzesPassed ?? 0,
+    progress.quizResults?.length ?? 0,
+  );
   if (quizCount >= 3) earned.push('quiz_master');
 
   // Community badges

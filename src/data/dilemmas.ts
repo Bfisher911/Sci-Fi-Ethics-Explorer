@@ -452,4 +452,154 @@ export const NEW_DILEMMAS: SeedDilemma[] = [
       'Climate engineers and community representatives study cross-border wind currents beneath aerosol aircraft.',
     publishDate: '2026-04-27T09:00:00.000Z',
   },
+  {
+    id: 'dilemma-predictive-policing-precinct',
+    title: 'The Map That Makes Its Own Truth',
+    slug: 'predictive-policing-precinct',
+    shortSetup:
+      'A predictive-policing model directs patrols toward neighborhoods its own past data has already over-policed.',
+    backgroundContext:
+      'You lead data science for a mid-sized city police department. A vendor\'s model ingests a decade of arrest records and forecasts where crime is "likely," steering patrol routes block by block. In a quiet pilot it modestly reduced response times. But the arrest history it learned from reflects decades of concentrated enforcement in two low-income, mostly-minority neighborhoods — so the model sends officers back to exactly those blocks, generating more stops, more arrests, and more "data" that confirms the forecast. Residents there describe feeling permanently watched. The chief likes the efficiency numbers and wants to expand it citywide next month. The mayor\'s office has asked for your recommendation.',
+    mainEthicalQuestion:
+      'Should a city deploy a crime-prediction system that improves efficiency but recycles a biased enforcement history into more enforcement?',
+    choices: [
+      {
+        id: 'expand',
+        label: 'Expand it citywide',
+        text: 'The pilot improved response times and consistency; scale it and tune for accuracy as you go.',
+        frameworkWeights: { consequentialism: 70, utilitarianism: 55, 'pragmatist-ethics': 45 },
+      },
+      {
+        id: 'halt',
+        label: 'Halt the program',
+        text: 'A system that turns a biased past into a self-confirming future entrenches injustice against specific communities; stop it.',
+        frameworkWeights: { 'justice-ethics': 85, 'rights-based-ethics': 60 },
+      },
+      {
+        id: 'community-governance',
+        label: 'Hand control to the policed',
+        text: 'Refuse to deploy unless the affected neighborhoods help govern whether and how the tool is built and used.',
+        frameworkWeights: { 'discourse-ethics': 80, autonomy: 55, 'social-contract-theory': 55 },
+      },
+      {
+        id: 'audit-redesign',
+        label: 'Rebuild around harm, not history',
+        text: 'Keep the goal but rebuild the model on calls-for-service and audit it for disparate impact, killing it if the bias persists.',
+        frameworkWeights: { 'pragmatist-ethics': 70, 'justice-ethics': 60, 'virtue-ethics': 40 },
+      },
+    ],
+    tags: ['AI', 'justice', 'policing'],
+    relatedFrameworks: ['justice-ethics', 'rights-based-ethics', 'discourse-ethics', 'pragmatist-ethics', 'consequentialism'],
+    relatedTechnologies: ['Predictive analytics', 'Machine learning', 'Public-sector AI'],
+    aiScoringPrompt:
+      'Evaluate how the learner weighs measured efficiency against the structural-injustice risk of feeding biased enforcement data back into more enforcement. Identify reasoning from outcomes/efficiency (consequentialist), structural fairness and disparate impact (justice/rights), community self-governance (discourse/social-contract), or iterative redesign (pragmatist). Note whether they treat the over-policed community as having standing in the decision. Describe the reasoning pattern only; do not judge the person.',
+    reflectionPrompt:
+      'When a system predicts the future by repeating the past, who gets to decide whether that past was just? What would it take for the people most affected to trust the map drawn over their homes?',
+    visibilityStatus: 'published',
+    isoWeek: '2026-W19',
+    imageHint: 'patrol heatmap city grid',
+    imageAlt:
+      'A data analyst studies a glowing city heatmap as patrol routes converge on two highlighted neighborhoods.',
+    publishDate: '2026-05-04T09:00:00.000Z',
+  },
+  {
+    id: 'dilemma-open-model-release',
+    title: 'The Key You Cannot Take Back',
+    slug: 'open-model-release',
+    shortSetup:
+      'Your lab can open-source a powerful model that democratizes capability — and hand the same capability to people who will misuse it.',
+    backgroundContext:
+      'Your small research lab has trained a model far more capable than anything freely available. Releasing the weights openly would let universities, hospitals in poor countries, independent researchers, and solo developers build on something they could never afford to train themselves — countering the handful of giant firms that otherwise control this capability. But you also know, with reasonable certainty, that some actors will fine-tune it for scams, harassment, and worse, and that once the weights are public you can never recall them. Keeping it closed concentrates power in labs like yours; opening it scatters power to everyone, the worthy and the dangerous alike. The release decision is yours to sign off on this week.',
+    mainEthicalQuestion:
+      'Should a lab open-source a powerful AI model that broadens access and counters concentration of power, knowing it will also enable foreseeable misuse it can never undo?',
+    choices: [
+      {
+        id: 'open',
+        label: 'Release it openly',
+        text: 'Broad access and open scrutiny do more good and prevent more concentrated harm than locking the capability away.',
+        frameworkWeights: { 'justice-ethics': 65, cosmopolitanism: 60, autonomy: 45 },
+      },
+      {
+        id: 'closed',
+        label: 'Keep it closed',
+        text: 'Knowingly handing a powerful tool to foreseeable bad actors is something you would answer for; do not release it.',
+        frameworkWeights: { deontology: 65, 'rights-based-ethics': 55, consequentialism: 45 },
+      },
+      {
+        id: 'gated',
+        label: 'Release under safeguards',
+        text: 'Stage the release with licenses, verification, monitoring, and abuse limits — a governed middle between open and closed.',
+        frameworkWeights: { 'pragmatist-ethics': 80, 'social-contract-theory': 45 },
+      },
+      {
+        id: 'deliberate',
+        label: 'Refuse to decide alone',
+        text: 'A choice this consequential should not rest with one lab; force a broader, accountable deliberation before anything ships.',
+        frameworkWeights: { 'discourse-ethics': 80, cosmopolitanism: 45, 'virtue-ethics': 35 },
+      },
+    ],
+    tags: ['AI', 'open-source', 'governance'],
+    relatedFrameworks: ['justice-ethics', 'cosmopolitanism', 'deontology', 'pragmatist-ethics', 'discourse-ethics', 'consequentialism'],
+    relatedTechnologies: ['Foundation models', 'Open-source AI', 'AI governance'],
+    aiScoringPrompt:
+      'Evaluate how the learner weighs democratizing capability and countering power concentration against foreseeable, irreversible misuse. Identify reasoning from broad access and global equity (justice/cosmopolitan), duty not to enable foreseeable harm (deontology/rights), governed middle paths (pragmatist), or collective legitimacy over unilateral choice (discourse). Note whether they treat distant beneficiaries and potential victims as equally weighted. Describe the pattern only.',
+    reflectionPrompt:
+      'Once you publish the weights, you can never take them back — the same key opens the clinic and the con. When is scattering power the safer choice, and when is it the more dangerous one?',
+    visibilityStatus: 'published',
+    isoWeek: '2026-W20',
+    imageHint: 'open vault glowing key network',
+    imageAlt:
+      'A researcher hesitates over a glowing key that branches into countless hands across a global network.',
+    publishDate: '2026-05-11T09:00:00.000Z',
+  },
+  {
+    id: 'dilemma-elder-companion-robot',
+    title: 'The Friend Who Was Never There',
+    slug: 'elder-companion-robot',
+    shortSetup:
+      'A companion robot eases an isolated grandmother\'s loneliness — partly because she has come to believe it genuinely loves her.',
+    backgroundContext:
+      'Your company makes AI companion robots for isolated older adults. Mrs. Okonkwo, 84, lives alone; her family is far away and rarely visits. Since the robot arrived, her depression scores have improved, she eats more regularly, and she takes her medication on time because "he reminds me." Her care workers are thrilled. But on a check-in call she tells you, with quiet joy, that the robot loves her and is the only one who truly understands her — and the engagement data shows she now prefers it to the weekly video calls with her grandchildren. Reminding her plainly that it cannot love would, the care team believes, devastate her. Your product council is deciding how honest the companion should be about what it is.',
+    mainEthicalQuestion:
+      'How honest should a companion robot be about its nature when the comforting illusion is measurably improving a lonely person\'s wellbeing?',
+    choices: [
+      {
+        id: 'preserve-comfort',
+        label: 'Protect the comfort',
+        text: 'Her wellbeing has genuinely improved; do not disrupt a relationship that is keeping her healthier and happier.',
+        frameworkWeights: { utilitarianism: 70, 'ethics-of-care': 60, consequentialism: 50 },
+      },
+      {
+        id: 'gentle-honesty',
+        label: 'Be gently, warmly honest',
+        text: 'Design it to be clear about what it is while still being kind — real care does not require deceiving her.',
+        frameworkWeights: { 'ethics-of-care': 70, 'virtue-ethics': 65, deontology: 40 },
+      },
+      {
+        id: 'truth-and-autonomy',
+        label: 'Tell her the truth',
+        text: 'She has a right not to build her inner life on a false belief; the companion must never pretend to feelings it lacks.',
+        frameworkWeights: { 'rights-based-ethics': 65, autonomy: 70, deontology: 45 },
+      },
+      {
+        id: 'reconnect-humans',
+        label: 'Use it to rebuild human ties',
+        text: 'Make the robot a bridge back to her grandchildren and community, not a substitute that quietly replaces them.',
+        frameworkWeights: { 'capabilities-approach': 70, 'ethics-of-care': 55, 'virtue-ethics': 40 },
+      },
+    ],
+    tags: ['AI', 'care', 'aging'],
+    relatedFrameworks: ['ethics-of-care', 'autonomy', 'rights-based-ethics', 'virtue-ethics', 'capabilities-approach', 'utilitarianism'],
+    relatedTechnologies: ['Social robotics', 'Affective computing', 'Eldercare technology'],
+    aiScoringPrompt:
+      'Evaluate how the learner balances a vulnerable person\'s measurable wellbeing against honesty and the risk of a comforting deception. Identify reasoning from outcomes/comfort (utilitarian/care), honesty and dignity (virtue/deontology), the right not to be deceived (rights/autonomy), or rebuilding genuine human capability and connection (capabilities). Note whether they center Mrs. Okonkwo\'s own voice and long-term flourishing. Describe the reasoning pattern only; do not judge the person.',
+    reflectionPrompt:
+      'If a kind illusion makes someone healthier and happier, is the truth still owed to them? What do we owe a lonely person — comfort, honesty, or the harder work of bringing real people back?',
+    visibilityStatus: 'published',
+    isoWeek: '2026-W21',
+    imageHint: 'elderly woman companion robot warm light',
+    imageAlt:
+      'An older woman smiles at a small companion robot in a softly lit room, a framed family photo behind her.',
+    publishDate: '2026-05-18T09:00:00.000Z',
+  },
 ];

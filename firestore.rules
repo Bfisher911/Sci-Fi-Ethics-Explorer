@@ -390,6 +390,17 @@ service cloud.firestore {
       allow create, update: if true;
     }
 
+    // ─── User reports ───────────────────────────────────────────
+    // Filed when a user reports another user from a public profile.
+    // Written by the submitUserReport server action (client SDK, no
+    // browser auth context), which validates reporterId / self-report;
+    // rules follow this file's "server action enforces it" convention.
+    // Reads are only surfaced to admins by the moderation UI.
+    match /userReports/{reportId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
     // ─── Ethical profile reports ────────────────────────────────
     // Generated profile / role-fit reports + their visibility and
     // learning-community submissions. App code enforces ownership and

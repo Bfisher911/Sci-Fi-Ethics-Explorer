@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -107,9 +107,26 @@ const CommunityMediaList = dynamic(
 export default function CommunityDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const { isPaid, isSuperAdmin } = useSubscription();
   const { toast } = useToast();
+
+  // Honor a `?tab=` deep link (e.g. the Activity Feed's "Contribute" and
+  // "Start a discussion" CTAs link to ?tab=contributions / ?tab=forum).
+  // Without this the page always opened on the default Contributions tab.
+  const VALID_TABS = [
+    'contributions',
+    'forum',
+    'media',
+    'overview',
+    'members',
+    'invites',
+    'analytics',
+    'settings',
+  ];
+  const tabParam = searchParams?.get('tab') ?? '';
+  const initialTab = VALID_TABS.includes(tabParam) ? tabParam : 'contributions';
 
   const [community, setCommunity] = useState<Community | null>(null);
   const [members, setMembers] = useState<CommunityMemberInfo[]>([]);
@@ -458,7 +475,7 @@ export default function CommunityDetailPage() {
         </Button>
       </div>
 
-      <Tabs defaultValue="contributions" className="space-y-6">
+      <Tabs defaultValue={initialTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4 md:grid-cols-8">
           <TabsTrigger value="contributions">Contributions</TabsTrigger>
           <TabsTrigger value="forum">Forum</TabsTrigger>

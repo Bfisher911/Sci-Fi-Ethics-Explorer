@@ -14,8 +14,10 @@ import {
   serverTimestamp,
   arrayUnion,
 } from 'firebase/firestore';
-import type { Classroom, StudentProgress } from '@/types';
+import type { Classroom, StudentProgress, QuizResult } from '@/types';
 import { timestampToDate } from '@/lib/firebase/firestore-helpers';
+import { getEnrollment } from '@/app/actions/curriculum';
+import { getUserBestAttempts } from '@/app/actions/quizzes';
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -227,27 +229,104 @@ export async function assignCurriculum(
 
 /**
  * Fetch all student progress for a classroom.
+ *
+ * The `studentProgress` doc written at join time only ever carries the
+ * student's name — its `completedItems`/`quizScores`/`lastActivity` fields
+ * are never updated, so reading them back produced an all-zero gradebook.
+ * Instead we derive each student's progress from the canonical sources:
+ *   - completedItems ← the student's curriculum enrollment (completedItemIds)
+ *   - quizScores     ← the student's best quiz attempt per subject
+ *   - lastActivity   ← the most recent of enrollment / quiz / join activity
+ * The roster comes from the classroom doc (authoritative); names come from
+ * the join-time studentProgress docs.
  */
 export async function getClassroomStudentProgress(
   classroomId: string
 ): Promise<ActionResult<StudentProgress[]>> {
   try {
-    const q = query(
-      collection(db, 'studentProgress'),
-      where('classroomId', '==', classroomId)
+    const classSnap = await getDoc(doc(db, 'classrooms', classroomId));
+    if (!classSnap.exists()) {
+      return { success: true, data: [] };
+    }
+    const classData = classSnap.data();
+    const studentIds: string[] = classData.studentIds || [];
+    const curriculumPathId: string | undefined =
+      classData.curriculumPathId || undefined;
+
+    // Display names (and the join timestamp as a baseline activity) come from
+    // the studentProgress docs written when each student joined.
+    const nameSnap = await getDocs(
+      query(
+        collection(db, 'studentProgress'),
+        where('classroomId', '==', classroomId)
+      )
     );
-    const snapshot = await getDocs(q);
-    const progress: StudentProgress[] = snapshot.docs.map((d) => {
+    const nameById = new Map<string, string>();
+    const joinActivityById = new Map<string, Date | undefined>();
+    for (const d of nameSnap.docs) {
       const data = d.data();
-      return {
-        classroomId: data.classroomId,
-        studentId: data.studentId,
-        studentName: data.studentName,
-        completedItems: data.completedItems || [],
-        quizScores: data.quizScores || {},
-        lastActivity: timestampToDate(data.lastActivity),
-      };
-    });
+      if (!data.studentId) continue;
+      if (data.studentName) nameById.set(data.studentId, data.studentName);
+      joinActivityById.set(data.studentId, timestampToDate(data.lastActivity));
+    }
+
+    const progress = await Promise.all(
+      studentIds.map(async (studentId): Promise<StudentProgress> => {
+        let completedItems: string[] = [];
+        const quizScores: Record<string, QuizResult> = {};
+        const activity: Date[] = [];
+        const joinActivity = joinActivityById.get(studentId);
+        if (joinActivity instanceof Date) activity.push(joinActivity);
+
+        // Curriculum completion for the classroom's assigned path.
+        if (curriculumPathId) {
+          try {
+            const enrollRes = await getEnrollment(curriculumPathId, studentId);
+            if (enrollRes.success && enrollRes.data) {
+              completedItems = enrollRes.data.completedItemIds || [];
+              if (enrollRes.data.lastActivity instanceof Date) {
+                activity.push(enrollRes.data.lastActivity);
+              }
+            }
+          } catch (e) {
+            console.error('[classroom] enrollment read failed:', studentId, e);
+          }
+        }
+
+        // Quizzes taken — best attempt per subject is the "quizzes taken" count.
+        try {
+          const attemptsRes = await getUserBestAttempts(studentId);
+          if (attemptsRes.success) {
+            for (const a of attemptsRes.data) {
+              quizScores[a.subjectId] = {
+                id: a.id,
+                completedAt: a.completedAt,
+                scores: { [a.subjectId]: a.scorePercent },
+                dominantFramework: '',
+              };
+              if (a.completedAt instanceof Date) activity.push(a.completedAt);
+            }
+          }
+        } catch (e) {
+          console.error('[classroom] quiz attempts read failed:', studentId, e);
+        }
+
+        const lastActivity =
+          activity.length > 0
+            ? new Date(Math.max(...activity.map((d) => d.getTime())))
+            : null;
+
+        return {
+          classroomId,
+          studentId,
+          studentName: nameById.get(studentId),
+          completedItems,
+          quizScores,
+          lastActivity,
+        };
+      })
+    );
+
     return { success: true, data: progress };
   } catch (error) {
     console.error('[classroom] getClassroomStudentProgress error:', error);

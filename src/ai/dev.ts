@@ -11,3 +11,4 @@ import '@/ai/flows/calculate-ethical-impact.ts';
 import '@/ai/flows/find-real-world-parallels.ts';
 import '@/ai/flows/generate-quiz.ts';
 import '@/ai/flows/generate-ethics-report.ts';
+import '@/ai/flows/generate-role-fit-report.ts';

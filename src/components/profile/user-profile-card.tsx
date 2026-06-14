@@ -6,6 +6,7 @@ import type { UserProfile } from '@/types';
 // 🔁 PATCH: Use onSnapshot for real-time updates and client-side updateDoc (BF 2025-06-06)
 import { db } from '@/lib/firebase/config';
 import { doc, onSnapshot, updateDoc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { getUserProgress } from '@/app/actions/progress';
 // import { getUserProfile, updateUserProfile } from '@/app/actions/user'; // No longer using server actions for fetch/update here
 // 🔁 END PATCH
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -44,6 +45,14 @@ export function UserProfileCard() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [profileError, setProfileError] = useState<string | null>(null);
+  // Real engagement counts from userProgress. The legacy
+  // users.{storiesCompleted,dilemmasAnalyzed,communitySubmissions} fields
+  // are never written, so we source these from userProgress instead.
+  const [engagement, setEngagement] = useState({
+    storiesCompleted: 0,
+    scenariosAnalyzed: 0,
+    debatesParticipated: 0,
+  });
 
   const [editDisplayName, setEditDisplayName] = useState('');
   const [editFirstName, setEditFirstName] = useState('');
@@ -124,6 +133,28 @@ export function UserProfileCard() {
     }
   }, [authUser, authLoading, toast]);
   // 🔁 END PATCH
+
+  // Fetch real engagement counts from userProgress (the legacy users-doc
+  // counters are never written). Best-effort; failures leave zeros.
+  useEffect(() => {
+    if (!authUser?.uid) return;
+    let cancelled = false;
+    getUserProgress(authUser.uid)
+      .then((res) => {
+        if (cancelled || !res.success) return;
+        setEngagement({
+          storiesCompleted: res.data.storiesCompleted?.length ?? 0,
+          scenariosAnalyzed: res.data.scenariosAnalyzed ?? 0,
+          debatesParticipated: res.data.debatesParticipated?.length ?? 0,
+        });
+      })
+      .catch(() => {
+        /* non-fatal */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [authUser?.uid]);
 
   // 🔁 PATCH: Update profile using client-side updateDoc (BF 2025-06-06)
   const handleUpdateProfile = async (e: FormEvent) => {
@@ -224,9 +255,9 @@ export function UserProfileCard() {
   const showFullNameLine = fullNameDisplay && fullNameDisplay !== displayData.displayName;
 
   const engagementStats = [
-    { label: "Dilemmas Explored", value: displayData.storiesCompleted || 0, icon: BookOpenCheck },
-    { label: "Scenarios Analyzed", value: displayData.dilemmasAnalyzed || 0, icon: BarChartHorizontalBig },
-    { label: "Community Submissions", value: displayData.communitySubmissions || 0, icon: MessageSquarePlus },
+    { label: "Stories Completed", value: engagement.storiesCompleted, icon: BookOpenCheck },
+    { label: "Scenarios Analyzed", value: engagement.scenariosAnalyzed, icon: BarChartHorizontalBig },
+    { label: "Debates Joined", value: engagement.debatesParticipated, icon: MessageSquarePlus },
   ];
 
   const lastUpdatedText = displayData.lastUpdated instanceof Date

@@ -19,7 +19,6 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { ThreadView } from '@/components/messages/thread-view';
 import { NewConversationDialog } from '@/components/messages/new-conversation-dialog';
@@ -283,11 +282,6 @@ function MessagesInner(): React.ReactElement | null {
                   })}
                 </ul>
               )}
-            </div>
-
-            <Separator />
-            <div className="p-3 text-center text-xs text-muted-foreground">
-              Message Requests (0)
             </div>
           </div>
 

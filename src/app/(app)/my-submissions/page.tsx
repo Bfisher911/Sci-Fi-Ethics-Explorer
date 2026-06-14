@@ -181,27 +181,38 @@ function normalizePerspective(p: SavedPerspective): NormalizedItem {
 
 const TYPE_META: Record<
   ItemType,
-  { label: string; icon: React.ElementType; editPath: (id: string) => string }
+  {
+    label: string;
+    icon: React.ElementType;
+    /** Edit destination. Omitted for types with no working edit flow,
+     *  which hides the Edit action rather than opening a blank form. */
+    editPath?: (id: string) => string;
+  }
 > = {
   story: {
     label: 'Story',
     icon: BookOpen,
+    // create-story reads ?edit and pre-populates the editor.
     editPath: (id) => `/create-story?edit=${id}`,
   },
   dilemma: {
     label: 'Dilemma',
     icon: FileText,
-    editPath: (id) => `/submit-dilemma?edit=${id}`,
+    // No working server-side edit/update path for submitted dilemmas
+    // (the submit form only creates, and edits would need to re-enter
+    // moderation). Hide the Edit action rather than open a blank form
+    // that silently creates a duplicate. Delete + resubmit is the
+    // current supported flow.
   },
   analysis: {
     label: 'Analysis',
     icon: FlaskConical,
-    editPath: (id) => `/analyzer?edit=${id}`,
+    // AI-generated artifact — no edit flow; Edit action hidden.
   },
   perspective: {
     label: 'Perspective',
     icon: GitCompare,
-    editPath: (id) => `/perspective-comparison?edit=${id}`,
+    // AI-generated artifact — no edit flow; Edit action hidden.
   },
 };
 
@@ -410,7 +421,8 @@ export default function MySubmissionsPage() {
   };
 
   const handleEdit = (item: NormalizedItem) => {
-    router.push(TYPE_META[item.type].editPath(item.id));
+    const edit = TYPE_META[item.type].editPath;
+    if (edit) router.push(edit(item.id));
   };
 
   const confirmDelete = async () => {
@@ -575,16 +587,18 @@ export default function MySubmissionsPage() {
                           {item.title}
                         </CardTitle>
                         <div className="flex items-center gap-1 shrink-0">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-8 w-8"
-                            onClick={() => handleEdit(item)}
-                            aria-label={`Edit ${item.title}`}
-                            title="Edit"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
+                          {TYPE_META[item.type].editPath && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8"
+                              onClick={() => handleEdit(item)}
+                              aria-label={`Edit ${item.title}`}
+                              title="Edit"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button
                             size="icon"
                             variant="ghost"

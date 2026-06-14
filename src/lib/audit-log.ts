@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/firebase/config';
-import { collection, addDoc, getDocs, query, orderBy, where, limit as fsLimit, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc, getDocs, query, orderBy, where, limit as fsLimit, serverTimestamp } from 'firebase/firestore';
 import type { AuditAction, AuditLogEntry } from '@/types';
 import { timestampToDate } from '@/lib/firebase/firestore-helpers';
 
@@ -21,10 +21,26 @@ export async function logAdminAction(input: {
   note?: string;
 }): Promise<void> {
   try {
+    // Callers pass actorId but rarely the name, which left every entry
+    // rendering as "Unknown". Resolve the actor's display name from their
+    // users doc when not supplied (best-effort — never block the log write).
+    let actorName = input.actorName;
+    if (!actorName && input.actorId) {
+      try {
+        const userSnap = await getDoc(doc(db, 'users', input.actorId));
+        if (userSnap.exists()) {
+          const u = userSnap.data();
+          actorName = u.displayName || u.name || u.email || undefined;
+        }
+      } catch {
+        /* name resolution is best-effort */
+      }
+    }
+
     await addDoc(collection(db, 'auditLog'), {
       action: input.action,
       actorId: input.actorId,
-      actorName: input.actorName || null,
+      actorName: actorName || null,
       targetType: input.targetType,
       targetId: input.targetId,
       before: input.before || null,

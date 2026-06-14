@@ -114,8 +114,28 @@ function itemHref(item: CurriculumItem): string | null {
   switch (item.type) {
     case 'story':
       return `/stories/${item.referenceId}`;
-    case 'quiz':
-      return `/quizzes/${item.referenceId}`;
+    case 'quiz': {
+      // Quiz reference IDs are canonical `{subjectType}-{subjectId}`
+      // (e.g. `philosopher-kant`, `theory-utilitarianism`,
+      // `scifi-author-asimov`, `scifi-media-blade-runner`). Route to the
+      // unified /quiz/[type]/[id] page. The previous `/quizzes/{id}`
+      // route did not exist and always 404'd.
+      const ref = item.referenceId;
+      const knownTypes = [
+        'scifi-author',
+        'scifi-media',
+        'philosopher',
+        'theory',
+      ];
+      const matched = knownTypes.find((t) => ref.startsWith(`${t}-`));
+      if (matched) {
+        const subjectId = ref.slice(matched.length + 1);
+        return `/quiz/${matched}/${subjectId}`;
+      }
+      // Unknown/legacy quiz reference — no resolvable route; render as
+      // non-link rather than sending the user to a 404.
+      return null;
+    }
     case 'debate':
       return `/debate-arena/${item.referenceId}`;
     case 'discussion':

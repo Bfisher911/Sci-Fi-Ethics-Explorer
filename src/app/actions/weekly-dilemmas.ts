@@ -263,6 +263,39 @@ export async function getCurrentWeeklyDilemma(userId?: string) {
  * as getCurrentWeeklyDilemma. Degrades to an empty list (never throws) when
  * admin credentials are unavailable.
  */
+/**
+ * Static fallback: the first-party authored dilemmas (src/data/dilemmas.ts),
+ * mapped from the SeedDilemma authoring shape (publishDate as ISO string)
+ * to the WeeklyDilemma runtime shape (publishDate as Date), newest first.
+ * Lets the /dilemmas library render even before the seed script has run
+ * or when Firebase Admin credentials aren't configured.
+ */
+function staticPublishedDilemmas(): WeeklyDilemma[] {
+  return NEW_DILEMMAS.filter((d) => d.visibilityStatus === 'published')
+    .map((d) => ({
+      ...d,
+      publishDate: toDate(d.publishDate),
+      closeDate: d.closeDate ? toDate(d.closeDate) : undefined,
+    }))
+    .sort(
+      (a, b) =>
+        (b.publishDate as Date).getTime() - (a.publishDate as Date).getTime(),
+    );
+}
+
+/** One authored dilemma by slug, mapped to the WeeklyDilemma shape, or null. */
+function staticDilemmaBySlug(slug: string): WeeklyDilemma | null {
+  const seed = NEW_DILEMMAS.find(
+    (d) => d.slug === slug && d.visibilityStatus === 'published',
+  );
+  if (!seed) return null;
+  return {
+    ...seed,
+    publishDate: toDate(seed.publishDate),
+    closeDate: seed.closeDate ? toDate(seed.closeDate) : undefined,
+  };
+}
+
 export async function getPublishedDilemmas(): Promise<ActionResult<WeeklyDilemma[]>> {
   try {
     const db = weeklyDb();
@@ -271,11 +304,17 @@ export async function getPublishedDilemmas(): Promise<ActionResult<WeeklyDilemma
       .where('visibilityStatus', '==', 'published')
       .orderBy('publishDate', 'desc')
       .get();
-    return { success: true, data: snap.docs.map((d) => dilemmaFromDoc(d.id, d.data())) };
+    // If Firestore has published dilemmas, use them. Otherwise fall back to
+    // the static authored set so the library is never empty when content
+    // exists in code but hasn't been seeded yet.
+    if (!snap.empty) {
+      return { success: true, data: snap.docs.map((d) => dilemmaFromDoc(d.id, d.data())) };
+    }
+    return { success: true, data: staticPublishedDilemmas() };
   } catch (error) {
     if (isMissingWeeklyDilemmaAdminCredentialsError(error)) {
-      console.warn('[weekly-dilemmas] Firebase Admin credentials are missing; returning empty dilemma list.');
-      return { success: true, data: [] };
+      console.warn('[weekly-dilemmas] Firebase Admin credentials are missing; serving static dilemma library.');
+      return { success: true, data: staticPublishedDilemmas() };
     }
     const message = error instanceof Error ? error.message : String(error);
     return { success: false, error: message };
@@ -287,9 +326,18 @@ export async function getWeeklyDilemmaBySlug(slug: string, userId?: string) {
     const db = weeklyDb();
     const dilemmaSnap = await db.collection('weeklyDilemmas').where('slug', '==', slug).limit(1).get();
     if (dilemmaSnap.empty) {
+      // Not seeded into Firestore — fall back to the authored static
+      // dilemma so the respond → reflect flow still works.
+      const staticDilemma = staticDilemmaBySlug(slug);
       return {
         success: true,
-        data: { dilemma: null, ownResponse: null, peerResponses: [], replies: [], peersLocked: true },
+        data: {
+          dilemma: staticDilemma,
+          ownResponse: null,
+          peerResponses: [],
+          replies: [],
+          peersLocked: true,
+        },
       } as const;
     }
     const dilemma = dilemmaFromDoc(dilemmaSnap.docs[0].id, dilemmaSnap.docs[0].data());
@@ -342,7 +390,20 @@ export async function getWeeklyDilemmaBySlug(slug: string, userId?: string) {
     } as const;
   } catch (error) {
     if (isMissingWeeklyDilemmaAdminCredentialsError(error)) {
-      console.warn('[weekly-dilemmas] Firebase Admin credentials are missing; returning empty read state.');
+      console.warn('[weekly-dilemmas] Firebase Admin credentials are missing; serving static dilemma if available.');
+      const staticDilemma = staticDilemmaBySlug(slug);
+      if (staticDilemma) {
+        return {
+          success: true,
+          data: {
+            dilemma: staticDilemma,
+            ownResponse: null,
+            peerResponses: [],
+            replies: [],
+            peersLocked: true,
+          },
+        } as const;
+      }
       return { success: true, data: createEmptyWeeklyDilemmaLoadData() } as const;
     }
     const message = error instanceof Error ? error.message : String(error);

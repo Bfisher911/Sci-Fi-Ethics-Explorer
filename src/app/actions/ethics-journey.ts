@@ -40,7 +40,8 @@ import {
 } from '@/lib/ethics/journey';
 import { normalizeFrameworkId, FRAMEWORK_META } from '@/lib/ethics/frameworks';
 import { generateEthicsReport } from '@/ai/flows/generate-ethics-report';
-import type { EthicsReport } from '@/lib/ethics/report-types';
+import { generateRoleFitReport } from '@/ai/flows/generate-role-fit-report';
+import type { EthicsReport, RoleFitReport } from '@/lib/ethics/report-types';
 import { getAllFrameworkResponses } from '@/app/actions/framework-explorer';
 import { getUserEthicalJudgmentEvents } from '@/app/actions/ethical-judgments';
 import { eventToJourneyEntry, activityTypeLabel } from '@/lib/ethics/event-entries';
@@ -313,6 +314,54 @@ export async function generateEthicsReportForUser(
     return { success: true, data: report };
   } catch (error) {
     console.error('[ethics-journey] generateEthicsReportForUser error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Generate the Technology Role Fit Reflection report — a second report
+ * type that translates the user's ethical tendencies into possible
+ * technology-role strengths. Reflection tool, not a hiring instrument
+ * (the flow always attaches the educational caveat).
+ */
+export async function generateRoleFitReportForUser(
+  userId: string,
+): Promise<ActionResult<RoleFitReport>> {
+  try {
+    if (!userId) return { success: false, error: 'Not signed in.' };
+    const { entries, feResponses } = await getUnifiedEntries(userId);
+    const profile = buildJourneyProfile(entries);
+
+    // Underrepresented frameworks: ranked entries with zero/low score.
+    const underrepresented = profile.ranked
+      .filter((r) => r.score === 0)
+      .map((r) => r.label)
+      .slice(0, 6);
+
+    // Strong technology topics, from the Framework Explorer topic breakdown.
+    const fe = feResponses.success ? feResponses.data : [];
+    const topics = topicBreakdown(fe);
+    const strongTopics = Object.entries(topics)
+      .map(([topic, scores]) => ({
+        topic,
+        weight: Object.values(scores).reduce((a, b) => a + b, 0),
+      }))
+      .filter((t) => t.weight > 0)
+      .sort((a, b) => b.weight - a.weight)
+      .slice(0, 4)
+      .map((t) => t.topic);
+
+    const report = await generateRoleFitReport({
+      totalDecisions: profile.totalDecisions,
+      dominant: profile.dominant.map((d) => ({ label: d.label, score: d.score })),
+      secondary: profile.secondary.map((d) => ({ label: d.label, score: d.score })),
+      underrepresented,
+      strongTopics,
+    });
+
+    return { success: true, data: report };
+  } catch (error) {
+    console.error('[ethics-journey] generateRoleFitReportForUser error:', error);
     return { success: false, error: String(error) };
   }
 }

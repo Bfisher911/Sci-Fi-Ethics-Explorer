@@ -64,8 +64,8 @@ export function InviteMemberDialog({
 
       if (result.success) {
         toast({
-          title: 'Invite Sent',
-          description: `An invitation has been sent to ${email}.`,
+          title: 'Invitation created',
+          description: `${email} will see this invite on their dashboard the next time they sign in.`,
         });
         setEmail('');
         setRole('member');

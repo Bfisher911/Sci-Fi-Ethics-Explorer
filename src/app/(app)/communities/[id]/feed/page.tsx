@@ -211,7 +211,7 @@ function CommunityFeedPage() {
                 </Link>
               </Button>
               <Button asChild size="sm">
-                <Link href={`/communities/${communityId}/contributions`}>
+                <Link href={`/communities/${communityId}?tab=contributions`}>
                   Contribute
                 </Link>
               </Button>
@@ -262,7 +262,7 @@ function FeedRow({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-baseline gap-2">
               <Link
-                href={`/communities/${communityId}?tab=forum&topic=${t.id}`}
+                href={`/communities/${communityId}/forum/${t.id}`}
                 className="font-semibold text-foreground hover:text-primary"
               >
                 {t.title}

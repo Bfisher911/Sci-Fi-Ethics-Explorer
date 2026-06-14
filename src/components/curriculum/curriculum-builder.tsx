@@ -213,6 +213,12 @@ export function CurriculumBuilder({ curriculum, onSaved }: CurriculumBuilderProp
       for (const mod of modules) {
         for (const it of mod.items) {
           if (!it.referenceId) continue;
+          // Only artifact-picker types live in Firestore and can go missing.
+          // Static-picker content (philosophers, theories, authors, media,
+          // textbook chapters) and inline items are bundled with the app, so
+          // they can never be "broken" — checking them against Firestore
+          // produced false "Content Missing" flags.
+          if (!ARTIFACT_PICKER_TYPES.includes(it.type)) continue;
           const key = itemKey(it);
           if (existsMap[key]?.checked) continue;
           toCheck.push({ key, type: it.type as ArtifactType, id: it.referenceId });
