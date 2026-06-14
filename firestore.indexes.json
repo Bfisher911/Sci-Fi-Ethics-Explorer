@@ -1,6 +1,14 @@
 {
   "indexes": [
     {
+      "collectionGroup": "weeklyDilemmas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "visibilityStatus", "order": "ASCENDING" },
+        { "fieldPath": "publishDate", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "debates",
       "queryScope": "COLLECTION",
       "fields": [
