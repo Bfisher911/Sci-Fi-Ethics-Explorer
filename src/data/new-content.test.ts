@@ -63,8 +63,8 @@ describe('new stories (stories-extra)', () => {
 });
 
 describe('new dilemmas', () => {
-  it('has at least 12 published dilemmas with unique slugs', () => {
-    expect(NEW_DILEMMAS.length).toBeGreaterThanOrEqual(12);
+  it('has at least 24 published dilemmas with unique slugs', () => {
+    expect(NEW_DILEMMAS.length).toBeGreaterThanOrEqual(24);
     expect(new Set(NEW_DILEMMAS.map((d) => d.slug)).size).toBe(
       NEW_DILEMMAS.length,
     );

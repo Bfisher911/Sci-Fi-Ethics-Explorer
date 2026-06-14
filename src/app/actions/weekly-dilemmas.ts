@@ -283,6 +283,24 @@ function staticPublishedDilemmas(): WeeklyDilemma[] {
     );
 }
 
+/**
+ * Merge the static first-party catalog with Firestore-published dilemmas,
+ * deduped by slug (a real Firestore doc wins over its static seed), newest
+ * first. Keeps the whole library visible even after some weekly dilemmas
+ * have been published.
+ */
+function mergeDilemmas(
+  staticDocs: WeeklyDilemma[],
+  firestoreDocs: WeeklyDilemma[],
+): WeeklyDilemma[] {
+  const bySlug = new Map<string, WeeklyDilemma>();
+  for (const d of staticDocs) bySlug.set(d.slug, d);
+  for (const d of firestoreDocs) bySlug.set(d.slug, d);
+  return [...bySlug.values()].sort(
+    (a, b) => (b.publishDate as Date).getTime() - (a.publishDate as Date).getTime(),
+  );
+}
+
 /** One authored dilemma by slug, mapped to the WeeklyDilemma shape, or null. */
 function staticDilemmaBySlug(slug: string): WeeklyDilemma | null {
   const seed = NEW_DILEMMAS.find(
@@ -304,13 +322,14 @@ export async function getPublishedDilemmas(): Promise<ActionResult<WeeklyDilemma
       .where('visibilityStatus', '==', 'published')
       .orderBy('publishDate', 'desc')
       .get();
-    // If Firestore has published dilemmas, use them. Otherwise fall back to
-    // the static authored set so the library is never empty when content
-    // exists in code but hasn't been seeded yet.
-    if (!snap.empty) {
-      return { success: true, data: snap.docs.map((d) => dilemmaFromDoc(d.id, d.data())) };
-    }
-    return { success: true, data: staticPublishedDilemmas() };
+    // Merge the static first-party catalog with anything published to
+    // Firestore (deduped by slug, Firestore wins) so the library shows the
+    // full set of dilemmas — not just the static set when Firestore is empty.
+    const firestoreDilemmas = snap.docs.map((d) => dilemmaFromDoc(d.id, d.data()));
+    return {
+      success: true,
+      data: mergeDilemmas(staticPublishedDilemmas(), firestoreDilemmas),
+    };
   } catch (error) {
     if (isMissingWeeklyDilemmaAdminCredentialsError(error)) {
       console.warn('[weekly-dilemmas] Firebase Admin credentials are missing; serving static dilemma library.');
