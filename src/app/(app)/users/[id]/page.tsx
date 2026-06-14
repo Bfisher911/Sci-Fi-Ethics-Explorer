@@ -9,6 +9,7 @@ import { useParams, useRouter } from 'next/navigation';
 // the user's activities (Stories, Framework Explorer, dilemmas,
 // debates) rather than a single quiz result.
 import {
+  CalendarDays,
   Flag,
   Lock,
   MessageCircle,
@@ -19,8 +20,6 @@ import {
 } from 'lucide-react';
 
 import { getUserProfile } from '@/app/actions/user';
-import { getUserProgress } from '@/app/actions/progress';
-import { getUserBadges } from '@/app/actions/badges';
 import {
   blockUser,
   getUserBlocks,
@@ -61,33 +60,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { EarnedBadges } from '@/components/profile/earned-badges';
 import { PublicEthicsProfile } from '@/components/profile/public-ethics-profile';
+import { ProfileActivityOverview } from '@/components/profile/profile-activity-overview';
 
-import type { QuizResult, UserProfile } from '@/types';
-
-function quizResultDate(result: QuizResult | undefined): Date | null {
-  if (!result) return null;
-  const completedAt = result.completedAt as unknown;
-  if (completedAt instanceof Date) return completedAt;
-  if (
-    completedAt &&
-    typeof completedAt === 'object' &&
-    'toDate' in completedAt &&
-    typeof (completedAt as { toDate: () => Date }).toDate === 'function'
-  ) {
-    try {
-      return (completedAt as { toDate: () => Date }).toDate();
-    } catch {
-      return null;
-    }
-  }
-  if (typeof completedAt === 'string' || typeof completedAt === 'number') {
-    const d = new Date(completedAt as string | number);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-  return null;
-}
+import type { UserProfile } from '@/types';
 
 function ProfilePrivateCard(): React.ReactElement {
   return (
@@ -125,18 +101,6 @@ export default function PublicUserProfilePage(): React.ReactElement {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isPrivate, setIsPrivate] = useState(false);
-  const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
-  const [badgeIds, setBadgeIds] = useState<string[]>([]);
-  // Activity counts derived from the user's REAL userProgress doc. The
-  // legacy `users.{storiesCompleted,dilemmasAnalyzed,communitySubmissions}`
-  // fields are never written, so we compute these from userProgress
-  // (the same source the owner's own /profile dashboard uses).
-  const [activityStats, setActivityStats] = useState({
-    storiesCompleted: 0,
-    scenariosAnalyzed: 0,
-    debatesParticipated: 0,
-    dilemmasSubmitted: 0,
-  });
 
   const [isBlocked, setIsBlocked] = useState(false);
   const [isBlocking, setIsBlocking] = useState(false);
@@ -192,43 +156,13 @@ export default function PublicUserProfilePage(): React.ReactElement {
       setProfile(fetchedProfile);
       setIsPrivate(false);
 
-      // Kick off ancillary loads in parallel. Failures are non-fatal.
-      const [progressResult, badgesResult, myBlocksResult] = await Promise.all([
-        getUserProgress(targetId),
-        getUserBadges(targetId),
-        currentUser && currentUser.uid !== targetId
-          ? getUserBlocks(currentUser.uid)
-          : Promise.resolve({ success: true as const, data: [] as string[] }),
-      ]);
-
-      if (progressResult.success) {
-        const prog = progressResult.data;
-        // Sort quiz results by completion date desc.
-        const sorted = [...prog.quizResults].sort((a, b) => {
-          const ad = quizResultDate(a)?.getTime() ?? 0;
-          const bd = quizResultDate(b)?.getTime() ?? 0;
-          return bd - ad;
-        });
-        setQuizResults(sorted);
-        // Real activity counts from userProgress (not the dead users-doc fields).
-        setActivityStats({
-          storiesCompleted: prog.storiesCompleted?.length ?? 0,
-          scenariosAnalyzed: prog.scenariosAnalyzed ?? 0,
-          debatesParticipated: prog.debatesParticipated?.length ?? 0,
-          dilemmasSubmitted: prog.dilemmasSubmitted?.length ?? 0,
-        });
-      } else {
-        setQuizResults([]);
-      }
-
-      if (badgesResult.success) {
-        setBadgeIds(badgesResult.data);
-      } else {
-        setBadgeIds([]);
-      }
-
-      if (myBlocksResult.success) {
-        setIsBlocked(myBlocksResult.data.includes(targetId));
+      // The viewer's own block list (to show Block vs. Unblock). The rich
+      // activity/achievement data is self-fetched by ProfileActivityOverview.
+      if (currentUser && currentUser.uid !== targetId) {
+        const myBlocksResult = await getUserBlocks(currentUser.uid);
+        if (myBlocksResult.success) {
+          setIsBlocked(myBlocksResult.data.includes(targetId));
+        }
       }
     } catch (err) {
       console.error('[users/[id]] load error:', err);
@@ -412,6 +346,23 @@ export default function PublicUserProfilePage(): React.ReactElement {
   const displayName = profile.displayName || 'Anonymous Explorer';
   const initial = displayName.charAt(0).toUpperCase();
 
+  // `createdAt` is written on the user doc and returned by getUserProfile, but
+  // isn't on the UserProfile type — read it defensively for "member since".
+  const createdAtRaw = (profile as { createdAt?: Date | { toDate: () => Date } })
+    .createdAt;
+  let memberSince = '';
+  if (createdAtRaw) {
+    const d =
+      createdAtRaw instanceof Date
+        ? createdAtRaw
+        : typeof (createdAtRaw as { toDate?: () => Date }).toDate === 'function'
+        ? (createdAtRaw as { toDate: () => Date }).toDate()
+        : null;
+    if (d && !Number.isNaN(d.getTime())) {
+      memberSince = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    }
+  }
+
   return (
     <div className="container mx-auto py-8 px-4 space-y-6">
       {/* Hero card */}
@@ -441,7 +392,18 @@ export default function PublicUserProfilePage(): React.ReactElement {
               {profile.dominantFramework && (
                 <Badge variant="outline">{profile.dominantFramework}</Badge>
               )}
+              {profile.favoriteGenre && (
+                <Badge variant="outline" className="text-muted-foreground">
+                  {profile.favoriteGenre}
+                </Badge>
+              )}
             </div>
+            {memberSince && (
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <CalendarDays className="h-3.5 w-3.5" />
+                Exploring since {memberSince}
+              </p>
+            )}
             {profile.bio ? (
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                 {profile.bio}
@@ -519,43 +481,10 @@ export default function PublicUserProfilePage(): React.ReactElement {
         </CardContent>
       </Card>
 
-      {/* Stats + Badges */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="bg-card/80 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-primary">Activity Stats</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {activityStats.storiesCompleted}
-              </p>
-              <p className="text-xs text-muted-foreground">Stories completed</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {activityStats.scenariosAnalyzed}
-              </p>
-              <p className="text-xs text-muted-foreground">Scenarios analyzed</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {activityStats.debatesParticipated}
-              </p>
-              <p className="text-xs text-muted-foreground">Debates joined</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/80 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-primary">Earned Badges</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <EarnedBadges earnedBadgeIds={badgeIds} />
-          </CardContent>
-        </Card>
-      </div>
+      {/* Comprehensive activity + achievements: stat tiles, learning
+          progress, quiz mastery, certificates, and badges. Aggregate /
+          achievement data only — self-fetched from the user's real signals. */}
+      <ProfileActivityOverview userId={targetId} displayName={displayName} />
 
       {/* Block confirmation */}
       <AlertDialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>
