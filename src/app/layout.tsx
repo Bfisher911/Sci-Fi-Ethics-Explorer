@@ -49,7 +49,16 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        {/* Two-family type system, one request:
+            • Inter     — product UI + body (the app's committed identity)
+            • Literata  — reading serif (font-display) for marketing /
+                          editorial headlines. Designed for long-form
+                          reading (Google Play Books): a deliberate nod to
+                          a product built around a 12-chapter textbook. */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400;1,7..72,500&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body className={cn('font-body antialiased min-h-screen bg-background text-foreground flex flex-col')} suppressHydrationWarning={true}>
         <AuthProvider>

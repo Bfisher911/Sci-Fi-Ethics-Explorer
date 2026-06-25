@@ -12,7 +12,19 @@ export default {
       fontFamily: {
         body: ['Inter', 'sans-serif'],
         headline: ['Inter', 'sans-serif'],
+        // Reading serif — used deliberately on marketing / editorial
+        // headlines to signal the "ethics through literature" half of
+        // the product. Literata is a long-form reading face, on-theme
+        // for a 12-chapter textbook. Kept separate from `headline`
+        // (Inter) so the dense in-app UI is untouched.
+        display: ['Literata', 'Georgia', 'Cambria', 'serif'],
         code: ['monospace'],
+      },
+      transitionTimingFunction: {
+        // Expo.out — the signature cinematic easing for this design
+        // system (recommended by the design-system pass). Entrances
+        // decelerate hard for a premium, weighty feel.
+        expo: 'cubic-bezier(0.16, 1, 0.3, 1)',
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -88,10 +100,23 @@ export default {
             height: '0',
           },
         },
+        // Ambient aurora blobs — slow, organic drift behind the hero.
+        aurora: {
+          '0%, 100%': { transform: 'translate3d(0, 0, 0) scale(1)' },
+          '33%': { transform: 'translate3d(3%, -4%, 0) scale(1.08)' },
+          '66%': { transform: 'translate3d(-3%, 3%, 0) scale(0.95)' },
+        },
+        // Twinkle for the starfield layer.
+        twinkle: {
+          '0%, 100%': { opacity: '0.2' },
+          '50%': { opacity: '0.9' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        aurora: 'aurora 18s ease-in-out infinite',
+        twinkle: 'twinkle 4s ease-in-out infinite',
       },
     },
   },

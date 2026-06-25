@@ -217,6 +217,78 @@
   -webkit-backdrop-filter: none !important;
 }
 
+/* ─── Marketing design system: cinematic dark ──────────────────────
+ * Utilities used by the marketing home page (and any editorial /
+ * marketing surface). Built entirely from theme tokens so they track
+ * light / dark / low-stim / high-contrast automatically. All motion
+ * here is covered by the global prefers-reduced-motion guard above.
+ * ─────────────────────────────────────────────────────────────────── */
+:root {
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Faint technical grid — the "blueprint of the future" backdrop. */
+.bg-grid-faint {
+  background-image:
+    linear-gradient(hsl(var(--primary) / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--primary) / 0.06) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+/* Glass surface — reserved for elements layered OVER the cosmic
+ * backdrop (the sticky header, the featured dilemma card), where the
+ * blur has live content to act on. Not a default card treatment. */
+.surface-glass {
+  background-color: hsl(var(--card) / 0.4);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid hsl(var(--border) / 0.6);
+}
+
+/* Solid elevated surface for content cards on the flat page
+ * background, where a backdrop blur would have nothing to act on. */
+.surface-card {
+  background-color: hsl(var(--card) / 0.55);
+  border: 1px solid hsl(var(--border) / 0.6);
+}
+
+/* Gradient hairline that threads the journey + section dividers. */
+.hairline-gradient {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--primary) / 0.5),
+    hsl(var(--accent) / 0.5),
+    transparent
+  );
+}
+
+/* ── Scroll reveal ──
+ * Pure CSS via scroll-driven timelines. Content is fully visible by
+ * default; the entrance only applies where animation-timeline is
+ * supported AND motion is allowed. No JS and no visibility gating, so
+ * sections never ship blank in headless renders, background tabs, or
+ * with JS disabled — the reveal strictly enhances a visible default. */
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal-in 0.8s var(--ease-expo) both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 22%;
+    }
+  }
+}
+
 /* ─── Reader focus mode ────────────────────────────────────────────
  * Toggled on via `<html class="reader-focus">` from the chapter
  * page when the user clicks "Focus". Hides the sidebar + header and
