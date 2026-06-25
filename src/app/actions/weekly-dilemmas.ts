@@ -19,6 +19,16 @@ type ActionResult<T = undefined> =
   | { success: true; data: T }
   | { success: false; error: string };
 
+const PLACEHOLDER_IMAGE_RE = /placehold|placeholder/i;
+
+function isRealImageUrl(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    value.trim().length > 0 &&
+    !PLACEHOLDER_IMAGE_RE.test(value)
+  );
+}
+
 function weeklyDb() {
   const adminDb = getAdminDb();
   if (!adminDb) {
@@ -80,7 +90,7 @@ function dilemmaFromDoc(id: string, data: Record<string, any>): WeeklyDilemma {
     closeDate: data.closeDate ? toDate(data.closeDate) : undefined,
     visibilityStatus: data.visibilityStatus || 'draft',
     isoWeek: data.isoWeek || getIsoWeek(toDate(data.publishDate)),
-    imageUrl: data.imageUrl || fallback?.imageUrl,
+    imageUrl: isRealImageUrl(data.imageUrl) ? data.imageUrl : fallback?.imageUrl,
     imageHint: data.imageHint || fallback?.imageHint,
     imageAlt: data.imageAlt || fallback?.imageAlt,
     generatedAt: data.generatedAt ? toDate(data.generatedAt) : undefined,

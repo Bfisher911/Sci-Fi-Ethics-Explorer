@@ -96,9 +96,14 @@ export default function TextbookLandingPage() {
         </Card>
       </section>
 
-      <footer className="text-center text-xs text-muted-foreground pb-6">
-        <p>{bookMeta.copyright}. All rights reserved.</p>
-      </footer>
+      {/* Book author's copyright — distinct from the site-wide copyright in
+          the global <SiteFooter /> (rendered by the root layout). Kept as a
+          plain <p>, NOT a <footer>: the page already gets the global footer,
+          so a nested <footer> here would stack a redundant footer above it
+          and expose a second `contentinfo` landmark. */}
+      <p className="text-center text-xs text-muted-foreground pb-6">
+        {bookMeta.copyright}. All rights reserved.
+      </p>
     </div>
   );
 }

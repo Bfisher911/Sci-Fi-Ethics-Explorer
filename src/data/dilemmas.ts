@@ -497,6 +497,7 @@ export const NEW_DILEMMAS: SeedDilemma[] = [
       'When a system predicts the future by repeating the past, who gets to decide whether that past was just? What would it take for the people most affected to trust the map drawn over their homes?',
     visibilityStatus: 'published',
     isoWeek: '2026-W19',
+    imageUrl: '/images/dilemmas/predictive-policing-precinct.png',
     imageHint: 'patrol heatmap city grid',
     imageAlt:
       'A data analyst studies a glowing city heatmap as patrol routes converge on two highlighted neighborhoods.',
@@ -547,6 +548,7 @@ export const NEW_DILEMMAS: SeedDilemma[] = [
       'Once you publish the weights, you can never take them back — the same key opens the clinic and the con. When is scattering power the safer choice, and when is it the more dangerous one?',
     visibilityStatus: 'published',
     isoWeek: '2026-W20',
+    imageUrl: '/images/dilemmas/open-model-release.png',
     imageHint: 'open vault glowing key network',
     imageAlt:
       'A researcher hesitates over a glowing key that branches into countless hands across a global network.',
@@ -597,6 +599,7 @@ export const NEW_DILEMMAS: SeedDilemma[] = [
       'If a kind illusion makes someone healthier and happier, is the truth still owed to them? What do we owe a lonely person — comfort, honesty, or the harder work of bringing real people back?',
     visibilityStatus: 'published',
     isoWeek: '2026-W21',
+    imageUrl: '/images/dilemmas/elder-companion-robot.png',
     imageHint: 'elderly woman companion robot warm light',
     imageAlt:
       'An older woman smiles at a small companion robot in a softly lit room, a framed family photo behind her.',
