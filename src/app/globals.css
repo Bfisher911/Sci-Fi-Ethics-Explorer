@@ -15,13 +15,13 @@
     --secondary: 210 40% 96%;
     --secondary-foreground: 222 47% 11%;
     --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted-foreground: 215 18% 42%;
     --accent: 272 72% 47%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
+    --border: 214 28% 82%;
+    --input: 214 25% 76%;
     --ring: 221 83% 53%;
     --radius: 0.5rem;
     --chart-1: 221 83% 53%;
@@ -43,22 +43,31 @@
   .dark {
     --background: 240 61% 27%;
     --foreground: 200 20% 95%;
-    --card: 240 55% 32%;
+    /* Card lifted from 32%→40% L and slightly desaturated so it reads as a
+       distinct surface above the indigo page bg (was 1.15:1, now ~1.5:1). */
+    --card: 240 45% 40%;
     --card-foreground: 200 20% 95%;
     --popover: 240 50% 22%;
     --popover-foreground: 200 20% 95%;
     --primary: 181 100% 74%;
     --primary-foreground: 240 61% 10%;
-    --secondary: 240 50% 40%;
+    /* Secondary lifted above the new card lightness so secondary buttons /
+       chips don't blend into cards. */
+    --secondary: 240 40% 46%;
     --secondary-foreground: 200 20% 95%;
     --muted: 240 50% 35%;
-    --muted-foreground: 200 20% 70%;
-    --accent: 300 100% 50%;
+    --muted-foreground: 200 20% 72%;
+    /* Accent: deepened from fluorescent 300 100% 50% to 300 80% 42% so white
+       text on accent fills (dropdown/select/ghost hovers, CTAs) meets AA
+       (3.14→5.07:1) and the magenta reads as designed, not neon. */
+    --accent: 300 80% 42%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 50% 40%;
-    --input: 240 50% 30%;
+    /* Borders/inputs raised from ~1.45:1 (invisible) to a visible crisp edge:
+       border ~3.3:1, input ~2.4:1 vs page bg. Subtle dividers use border/50–60. */
+    --border: 240 33% 60%;
+    --input: 240 35% 56%;
     --ring: 181 100% 74%;
 
     --chart-1: 181 100% 74%;
@@ -71,9 +80,12 @@
     --sidebar-foreground: 200 20% 85%;
     --sidebar-primary: 181 100% 74%;
     --sidebar-primary-foreground: 240 61% 10%;
-    --sidebar-accent: 300 80% 60%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 240 50% 35%;
+    /* Nav selection/hover is a calm raised indigo surface (was light magenta
+       300 80% 60% with white text at ~2.3:1 — failed AA and shouted across a
+       dense nav). The cyan section icons + font-medium still signal active. */
+    --sidebar-accent: 240 40% 38%;
+    --sidebar-accent-foreground: 200 20% 95%;
+    --sidebar-border: 240 35% 50%;
     --sidebar-ring: 181 100% 74%;
   }
 }
@@ -171,8 +183,8 @@
 .dark.theme-low-stim {
   /* Pull saturation down across the board so the eyes can rest. */
   --primary: 195 50% 70%;       /* desaturated cyan */
-  --accent: 195 30% 60%;        /* same family — kills the magenta clash */
-  --sidebar-accent: 195 30% 55%;
+  --accent: 195 38% 40%;        /* same family — kills the magenta clash; darkened so white text on accent fills meets AA */
+  --sidebar-accent: 200 25% 38%;
   --chart-2: 195 30% 60%;
   --ring: 195 50% 70%;
   --muted-foreground: 200 15% 75%;

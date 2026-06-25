@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { voteOnArgument } from '@/app/actions/debates';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, ThumbsDown, User, Clock } from 'lucide-react';
 import type { DebateArgument } from '@/types';
@@ -67,12 +68,27 @@ export function ArgumentCard({ argument, debateStatus }: ArgumentCardProps) {
     setIsVoting(false);
   };
 
-  const borderColor = argument.position === 'pro' ? 'border-l-green-500' : 'border-l-red-500';
+  // Stance reads from a full tinted border (pro = green, con = red) rather
+  // than a left side-stripe.
+  const stanceBorder =
+    argument.position === 'pro' ? 'border-green-500/40' : 'border-red-500/40';
 
   return (
-    <Card className={`bg-card/80 backdrop-blur-sm border-l-4 ${borderColor}`}>
+    <Card className={`bg-card/80 backdrop-blur-sm border ${stanceBorder}`}>
       <CardContent className="p-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+          {/* Stance label — text + color so pro/con isn't conveyed by color
+              alone (WCAG color-not-only). */}
+          <Badge
+            variant="outline"
+            className={
+              argument.position === 'pro'
+                ? 'border-green-500/40 bg-green-500/10 text-green-400'
+                : 'border-red-500/40 bg-red-500/10 text-red-400'
+            }
+          >
+            {argument.position === 'pro' ? 'Pro' : 'Con'}
+          </Badge>
           <User className="h-3.5 w-3.5" />
           <span className="font-medium text-foreground">{argument.authorName}</span>
           <span className="mx-1">·</span>

@@ -195,7 +195,7 @@ export default function AdminCommunityBlogQueuePage() {
       ) : (
         <div className="space-y-5">
           {posts.map((post) => (
-            <Card key={post.id} className="bg-card/80 backdrop-blur-sm border-l-4 border-l-accent/60">
+            <Card key={post.id} className="bg-card/80 backdrop-blur-sm">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div className="min-w-0">

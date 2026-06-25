@@ -203,15 +203,14 @@ export function CinematicHero({
             {dilemma.splitTitle[1] && (
               <>
                 <br />
-                <span
-                  style={{
-                    background:
-                      'linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
+                {/* Solid brand cyan for the second title line — a clean
+                    two-tone heading. (Was a clip-path gradient fill, which
+                    renders as decorative gradient text; replaced with a
+                    single solid color per the project's established
+                    no-gradient-text direction. Emphasis comes from color +
+                    size, and the h1's text-shadow inherits for legibility
+                    over the hero image.) */}
+                <span style={{ color: 'hsl(var(--primary))' }}>
                   {dilemma.splitTitle[1]}
                 </span>
               </>

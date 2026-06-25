@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useSubscription } from '@/hooks/use-subscription';
+import { PageSkeleton } from '@/components/loading/page-skeleton';
 import { MEMBER_PLAN } from '@/config/plans';
 import { createCheckoutSession } from '@/app/actions/stripe';
 import { joinCommunityByCode } from '@/app/actions/communities';
@@ -55,11 +56,7 @@ export default function OnboardingPage() {
   const [joiningCommunity, setJoiningCommunity] = useState(false);
 
   if (subLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
+    return <PageSkeleton blocks={1} />;
   }
 
   if (!user) {

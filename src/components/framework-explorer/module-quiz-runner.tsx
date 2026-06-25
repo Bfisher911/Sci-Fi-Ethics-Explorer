@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { PageSkeleton } from '@/components/loading/page-skeleton';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/use-auth';
@@ -214,13 +215,7 @@ export function ModuleQuizRunner({
   };
 
   if (loadingPrior) {
-    return (
-      <Card className="bg-card/80 backdrop-blur-sm">
-        <CardContent className="flex items-center gap-3 py-10 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" /> Loading your progress…
-        </CardContent>
-      </Card>
-    );
+    return <PageSkeleton blocks={1} />;
   }
 
   if (completed) {

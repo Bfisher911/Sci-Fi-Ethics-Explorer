@@ -200,7 +200,7 @@ export default function MyCommunityBlogPostsPage() {
             return (
               <Card
                 key={post.id}
-                className="bg-card/80 backdrop-blur-sm border-l-4 border-l-accent/50"
+                className="bg-card/80 backdrop-blur-sm"
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-3 flex-wrap">

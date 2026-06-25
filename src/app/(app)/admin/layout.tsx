@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useAdmin } from '@/hooks/use-admin';
 import { useAuth } from '@/hooks/use-auth';
 import { hasOwnedLicenses } from '@/app/actions/scope';
-import { ShieldCheck, Loader2 } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { PageSkeleton } from '@/components/loading/page-skeleton';
 
 /**
  * Admin layout that gates access to admin sub-pages.
@@ -46,14 +47,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     adminLoading || authLoading || (user !== null && licenseAdmin === null);
 
   if (loading) {
-    return (
-      <div className="flex h-[60vh] w-full items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <p className="text-muted-foreground">Verifying admin access...</p>
-        </div>
-      </div>
-    );
+    return <PageSkeleton blocks={1} />;
   }
 
   const allowed = isAdmin || isSuperAdmin || licenseAdmin === true;

@@ -117,7 +117,7 @@ export default function CommunityBlogPostPage() {
       )}
 
       <article className="mt-4">
-        <Card className="bg-card/80 backdrop-blur-sm border-l-4 border-l-accent/60">
+        <Card className="bg-card/80 backdrop-blur-sm">
           <CardContent className="p-6 md:p-10 space-y-6">
             <div className="space-y-3">
               <BlogKindBadge kind="community" authorId={post.authorId} />

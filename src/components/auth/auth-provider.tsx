@@ -14,11 +14,59 @@ import type { AuthContextType } from '@/hooks/use-auth';
 // AuthContextType is now defined in and imported from '@/hooks/use-auth'
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * ─── DEV-ONLY AUTH BYPASS ────────────────────────────────────────────
+ * When BOTH `NODE_ENV === 'development'` AND
+ * `NEXT_PUBLIC_DEV_AUTH_BYPASS === 'true'`, the provider skips the real
+ * Firebase auth listener and injects a mock signed-in user so the
+ * protected app shell renders locally without a live login — purely for
+ * design / QA review.
+ *
+ * SAFETY — double-gated. In any production build `NODE_ENV` is
+ * 'production', so this whole branch is dead-code-eliminated and the
+ * mock can NEVER activate, regardless of the env flag. The bypass is
+ * client-only and grants NO real Firebase credentials: rule-protected
+ * Firestore/Storage reads still fail, so it's for rendering, not data.
+ * Enable via `.env.local` (gitignored); never set the flag in a deploy.
+ * ──────────────────────────────────────────────────────────────────── */
+const DEV_AUTH_BYPASS =
+  process.env.NODE_ENV === 'development' &&
+  process.env.NEXT_PUBLIC_DEV_AUTH_BYPASS === 'true';
+
+// Mock user wears the canonical super-admin email so useAdmin /
+// useSubscription short-circuit to admin + paid WITHOUT any Firestore
+// read (see src/lib/super-admins.ts). The uid is obviously fake.
+const DEV_MOCK_USER = {
+  uid: 'dev-bypass-uid',
+  email: 'bfisher3@tulane.edu',
+  displayName: 'Dev Bypass — Professor Paradox',
+  photoURL: null,
+  emailVerified: true,
+  isAnonymous: false,
+  phoneNumber: null,
+  providerId: 'password',
+  tenantId: null,
+  refreshToken: '',
+  metadata: {},
+  providerData: [],
+  getIdToken: async () => 'dev-bypass-token',
+  getIdTokenResult: async () => ({ claims: { admin: true } }),
+  reload: async () => {},
+  delete: async () => {},
+  toJSON: () => ({}),
+} as unknown as User;
+
+const DEV_MOCK_CLAIMS: AuthContextType['claims'] = { admin: true, role: 'owner' };
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(
+    DEV_AUTH_BYPASS ? DEV_MOCK_USER : null,
+  );
+  const [loading, setLoading] = useState(!DEV_AUTH_BYPASS);
   // 🔁 PATCH: Add state for claims (BF 2025-06-06)
-  const [claims, setClaims] = useState<AuthContextType['claims'] | null>(null);
+  const [claims, setClaims] = useState<AuthContextType['claims'] | null>(
+    DEV_AUTH_BYPASS ? DEV_MOCK_CLAIMS : null,
+  );
   // 🔁 END PATCH
 
   // 🔁 PATCH: Implement refreshClaims function (BF 2025-06-06)
@@ -45,6 +93,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // 🔁 END PATCH
 
   useEffect(() => {
+    // Dev bypass: skip the real Firebase listener and the sign-in side
+    // effects (profile creation, seat claiming, super-admin license). The
+    // mock user is already seeded into state above.
+    if (DEV_AUTH_BYPASS) {
+      console.warn(
+        '[AuthProvider] DEV_AUTH_BYPASS active — mock user injected, Firebase auth listener skipped. NEVER enable in production.',
+      );
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       console.log("Auth Provider: Auth state changed. Current user:", currentUser?.uid || 'None');
       

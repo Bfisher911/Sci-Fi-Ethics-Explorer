@@ -442,7 +442,7 @@ export function ConceptInfographic({ kind, entity }: ConceptInfographicProps) {
       {/* APPLIED EXAMPLE / TECH FOCUS */}
       {(data.example || data.techEthicsFocus || data.creator) && (
         <Section title="Apply this lens" icon={Quote}>
-          <Card className="bg-card/80 backdrop-blur-sm border-l-4 border-l-accent/60">
+          <Card className="border border-accent/30 bg-accent/5 backdrop-blur-sm">
             <CardContent className="p-6 space-y-3">
               {data.creator && (
                 <p className="text-xs uppercase tracking-wider text-muted-foreground">

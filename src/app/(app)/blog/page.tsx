@@ -97,7 +97,7 @@ export default function BlogPage() {
         <div className="space-y-6">
           {posts.map((post) => (
             <Link key={post.id} href={`/blog/${post.slug}`} className="block group">
-              <Card className="bg-card/80 backdrop-blur-sm hover:border-primary/40 transition-colors border-l-4 border-l-primary/50">
+              <Card className="bg-card/80 backdrop-blur-sm hover:border-primary/40 transition-colors">
                 <CardHeader>
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <BlogKindBadge kind={post.kind || 'official'} authorId={post.authorId} size="sm" />

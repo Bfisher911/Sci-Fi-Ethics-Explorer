@@ -130,7 +130,7 @@ export default function CommunityBlogPage() {
               href={`/community-blog/${post.slug}`}
               className="block group"
             >
-              <Card className="bg-card/80 backdrop-blur-sm hover:border-accent/50 transition-colors border-l-4 border-l-accent/50">
+              <Card className="bg-card/80 backdrop-blur-sm hover:border-accent/50 transition-colors">
                 <CardHeader>
                   <div className="flex items-center gap-2 mb-2">
                     <BlogKindBadge kind={post.kind} authorId={post.authorId} size="sm" />

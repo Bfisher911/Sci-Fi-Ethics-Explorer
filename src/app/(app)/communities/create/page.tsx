@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useSubscription } from '@/hooks/use-subscription';
 import { createCommunity } from '@/app/actions/communities';
 import { CreateCommunityForm } from '@/components/communities/create-community-form';
+import { PageSkeleton } from '@/components/loading/page-skeleton';
 import type { Community } from '@/types';
 import Link from 'next/link';
 
@@ -28,7 +29,7 @@ export default function CreateCommunityPage() {
   if (subLoading) {
     return (
       <div className="container mx-auto py-8 px-4 max-w-lg">
-        <p className="text-muted-foreground">Loading...</p>
+        <PageSkeleton blocks={1} />
       </div>
     );
   }

@@ -11,11 +11,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Loader2, LogIn } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { ModuleList } from '@/components/framework-explorer/module-list';
+import { SkeletonList } from '@/components/loading/skeleton-list';
 import { ModuleQuizRunner } from '@/components/framework-explorer/module-quiz-runner';
 import { getFrameworkProgress } from '@/app/actions/framework-explorer';
 import type { FrameworkExplorerProgress } from '@/types/framework-explorer';
@@ -52,14 +53,7 @@ export function FrameworkExplorerExperience(): JSX.Element {
   }, [authLoading, loadProgress]);
 
   if (authLoading || loadingProgress) {
-    return (
-      <Card className="bg-card/80 backdrop-blur-sm">
-        <CardContent className="flex items-center gap-3 py-10 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" /> Loading the Framework
-          Explorer…
-        </CardContent>
-      </Card>
-    );
+    return <SkeletonList shape="card" count={6} />;
   }
 
   if (activeModule !== null) {
