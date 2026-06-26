@@ -1,9 +1,20 @@
 'use client';
 
+/**
+ * PricingPlans — the interactive pricing UI (individual subscriptions +
+ * organization seat licenses) with Stripe checkout.
+ *
+ * Extracted from the old `(app)/pricing` route so it can be rendered on
+ * the PUBLIC `/pricing` page (pre-auth). It depends only on hooks backed
+ * by the root-level AuthProvider, so it works inside or outside the app
+ * shell. Unauthenticated users who pick a plan are sent to
+ * `/login?next=/pricing` before checkout.
+ */
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -30,10 +41,7 @@ import {
 } from 'lucide-react';
 import type { BillingPeriodId, LicenseTerm } from '@/types';
 
-/**
- * Pricing page with two tabs: Individual Plans and Organization Licenses.
- */
-export default function PricingPage() {
+export function PricingPlans(): JSX.Element {
   const router = useRouter();
   const { accountRole } = useSubscription();
   const { user } = useAuth();
@@ -83,20 +91,17 @@ export default function PricingPage() {
 
   function handleLicensePurchase(): void {
     if (!selectedSeats) return;
+    if (!user) {
+      router.push(
+        `/login?next=${encodeURIComponent(`/license/purchase?term=${licenseTerm}&seats=${selectedSeats}`)}`,
+      );
+      return;
+    }
     router.push(`/license/purchase?term=${licenseTerm}&seats=${selectedSeats}`);
   }
 
   return (
-    <div className="container mx-auto py-12 px-4">
-      <div className="text-center mb-10">
-        <h1 className="text-5xl font-bold text-primary font-headline">
-          Choose Your Path
-        </h1>
-        <p className="text-xl text-muted-foreground mt-4 max-w-2xl mx-auto">
-          Full access to the Sci-Fi Ethics Explorer for individuals and organizations.
-        </p>
-      </div>
-
+    <>
       <Tabs defaultValue="individual" className="max-w-6xl mx-auto">
         <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-10">
           <TabsTrigger value="individual" className="flex items-center gap-2">
@@ -269,10 +274,7 @@ export default function PricingPage() {
           here. */}
       <p className="text-center text-xs text-muted-foreground mt-3 max-w-lg mx-auto">
         Already have an invite code from a school or organization?{' '}
-        <a
-          href="/onboarding"
-          className="text-primary hover:underline"
-        >
+        <a href="/onboarding" className="text-primary hover:underline">
           You don&apos;t need to buy anything &mdash; redeem it here.
         </a>
       </p>
@@ -281,6 +283,6 @@ export default function PricingPage() {
           Redirecting to secure checkout…
         </p>
       )}
-    </div>
+    </>
   );
 }
