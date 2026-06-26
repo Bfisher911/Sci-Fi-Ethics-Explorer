@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { Toaster } from '@/components/ui/toaster';
-import { SiteFooter } from '@/components/layout/site-footer';
+import { SiteFooterGate } from '@/components/layout/site-footer-gate';
 import { cn } from '@/lib/utils';
 import { SITE_URL } from '@/lib/site';
 
@@ -70,7 +70,7 @@ export default function RootLayout({
               outside the (app) shell get the footer immediately under
               their content — that's the primary surface for legal /
               changelog discoverability. */}
-          <SiteFooter />
+          <SiteFooterGate />
           <Toaster />
         </AuthProvider>
       </body>
