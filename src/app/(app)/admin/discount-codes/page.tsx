@@ -100,6 +100,8 @@ export default function AdminDiscountCodesPage() {
   );
   const [formPlatformName, setFormPlatformName] = useState('Off World Clause');
   const [formDurationMonths, setFormDurationMonths] = useState<string>('4');
+  const [formPercentOff, setFormPercentOff] = useState<string>('20');
+  const [formAmountOff, setFormAmountOff] = useState<string>('5');
   const [formMaxRedemptions, setFormMaxRedemptions] = useState<string>('');
   const [formOneUsePerUser, setFormOneUsePerUser] = useState(true);
   const [formIsActive, setFormIsActive] = useState(true);
@@ -169,6 +171,8 @@ export default function AdminDiscountCodesPage() {
     setRedemptionsLoading(false);
   }
 
+  const isStripeType = formType === 'percent_off' || formType === 'amount_off';
+
   async function handleSubmitCreate(e: FormEvent): Promise<void> {
     e.preventDefault();
     if (!user) return;
@@ -179,6 +183,9 @@ export default function AdminDiscountCodesPage() {
         ? parseInt(formMaxRedemptions, 10)
         : null;
       const expires = formExpiresAt ? new Date(formExpiresAt) : null;
+      // Stripe amount_off is stored in cents; the field collects dollars.
+      const amountDollars = parseFloat(formAmountOff);
+      const percent = parseFloat(formPercentOff);
       const res = await createDiscountCode({
         adminUid: user.uid,
         code: formCode,
@@ -190,6 +197,14 @@ export default function AdminDiscountCodesPage() {
           formScope !== 'platform' ? formCourseName || undefined : undefined,
         platformName: formPlatformName || undefined,
         accessDurationMonths: Number.isFinite(months) && months > 0 ? months : undefined,
+        percentOff:
+          formType === 'percent_off' && Number.isFinite(percent)
+            ? percent
+            : undefined,
+        amountOff:
+          formType === 'amount_off' && Number.isFinite(amountDollars)
+            ? Math.round(amountDollars * 100)
+            : undefined,
         maxRedemptions,
         oneUsePerUser: formOneUsePerUser,
         isActive: formIsActive,
@@ -230,8 +245,8 @@ export default function AdminDiscountCodesPage() {
           <p className="text-sm text-muted-foreground mt-1">
             Free-access codes (class, pilot, beta, institutional, comped) grant
             access without any Stripe billing. Stripe-flow codes
-            (percent_off / amount_off) carry a Stripe promotion code id and
-            apply at Checkout.
+            (percent_off / amount_off) auto-create a matching Stripe coupon +
+            promotion code and apply at checkout — no Stripe dashboard step.
           </p>
         </div>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
@@ -245,8 +260,9 @@ export default function AdminDiscountCodesPage() {
             <DialogHeader>
               <DialogTitle>Create discount code</DialogTitle>
               <DialogDescription>
-                Free-access codes create an internal grant. They do not touch
-                Stripe and will never charge the user.
+                Free-access codes create an internal grant — they never touch
+                Stripe. Percent/amount-off codes auto-create a Stripe coupon
+                and apply at checkout.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmitCreate} className="space-y-4">
@@ -298,6 +314,12 @@ export default function AdminDiscountCodesPage() {
                       <SelectItem value="beta">Beta tester</SelectItem>
                       <SelectItem value="institution">Institution</SelectItem>
                       <SelectItem value="promotional">Promotional</SelectItem>
+                      <SelectItem value="percent_off">
+                        Percent off (Stripe)
+                      </SelectItem>
+                      <SelectItem value="amount_off">
+                        Amount off (Stripe)
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -375,6 +397,45 @@ export default function AdminDiscountCodesPage() {
                   />
                 </div>
               </div>
+              {isStripeType && (
+                <div className="space-y-3 rounded-md border border-primary/40 bg-primary/5 p-3">
+                  <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <Ticket className="h-4 w-4 flex-shrink-0 text-primary" />
+                    <span>
+                      A Stripe coupon and promotion code will be created
+                      automatically (matching the code text above). No manual
+                      Stripe dashboard step needed. The discount applies at
+                      checkout; duration in months controls how many billing
+                      cycles it repeats.
+                    </span>
+                  </div>
+                  {formType === 'percent_off' ? (
+                    <div className="space-y-1">
+                      <Label htmlFor="form-percent">Percent off (1–100) *</Label>
+                      <Input
+                        id="form-percent"
+                        type="number"
+                        min={1}
+                        max={100}
+                        value={formPercentOff}
+                        onChange={(e) => setFormPercentOff(e.target.value)}
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <Label htmlFor="form-amount">Amount off (USD) *</Label>
+                      <Input
+                        id="form-amount"
+                        type="number"
+                        min={0.5}
+                        step={0.5}
+                        value={formAmountOff}
+                        onChange={(e) => setFormAmountOff(e.target.value)}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="flex items-center justify-between rounded-md border border-border/60 p-3">
                 <div>
                   <p className="text-sm font-medium">One use per user</p>

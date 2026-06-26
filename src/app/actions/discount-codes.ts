@@ -48,6 +48,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { requireAdmin, isUserAdmin } from '@/lib/admin';
+import { getStripe } from '@/lib/stripe';
 import type {
   DiscountCode,
   DiscountCodeAccessScope,
@@ -487,8 +488,11 @@ export interface CreateDiscountCodeInput {
  *  - Codes are unique (case-insensitive).
  *  - Free-access codes must have a duration (months or days) OR a fixed
  *    `expiresAt`; otherwise validateForRedemption would always fail.
- *  - Stripe-flow codes (percent_off / amount_off) must carry the Stripe
- *    promotion code id so we know what to apply at Checkout.
+ *  - Stripe-flow codes (percent_off / amount_off) are wired to Stripe
+ *    automatically: this action creates the Stripe Coupon + Promotion
+ *    Code (matching the code text) and stores their ids, so the admin
+ *    never touches the Stripe dashboard. Passing an existing
+ *    `stripePromotionCodeId` still works and skips auto-creation.
  */
 export async function createDiscountCode(
   input: CreateDiscountCodeInput,
@@ -518,12 +522,113 @@ export async function createDiscountCode(
       };
     }
 
-    if (!isFree && input.requiresStripe && !input.stripePromotionCodeId) {
-      return {
-        success: false,
-        error:
-          'Stripe-flow codes require a stripePromotionCodeId so the discount can be applied at Checkout.',
-      };
+    // Resolve the Stripe linkage for percent_off / amount_off codes. Two
+    // paths:
+    //   1. Admin pasted an existing Stripe promotion code id → use it as-is
+    //      (back-compat with codes created manually in the dashboard).
+    //   2. No id supplied → auto-create the Stripe Coupon + Promotion Code
+    //      here so the admin never has to touch the Stripe dashboard. The
+    //      created code text matches our normalized code so it can be typed
+    //      verbatim at Checkout.
+    let resolvedRequiresStripe = input.requiresStripe ?? false;
+    let resolvedCouponId = input.stripeCouponId;
+    let resolvedPromoId = input.stripePromotionCodeId;
+    const currency = input.currency ?? (input.amountOff ? 'usd' : undefined);
+
+    if (!isFree) {
+      resolvedRequiresStripe = true;
+
+      if (!resolvedPromoId) {
+        // Validate the discount inputs before calling Stripe.
+        if (input.discountType === 'percent_off') {
+          if (
+            typeof input.percentOff !== 'number' ||
+            input.percentOff <= 0 ||
+            input.percentOff > 100
+          ) {
+            return {
+              success: false,
+              error: 'Percent-off codes need a percentage between 1 and 100.',
+            };
+          }
+        } else if (input.discountType === 'amount_off') {
+          if (typeof input.amountOff !== 'number' || input.amountOff <= 0) {
+            return {
+              success: false,
+              error:
+                'Amount-off codes need a positive amount (in cents) to discount.',
+            };
+          }
+        }
+
+        try {
+          const stripe = getStripe();
+
+          // Coupon duration: if the admin set a month span, repeat the
+          // discount across that many billing cycles; otherwise apply it
+          // once. (Stripe duration is independent of our internal access
+          // window — it governs how long the *price* stays discounted.)
+          const months = input.accessDurationMonths;
+          const couponParams: Record<string, unknown> = {
+            name: input.name,
+            duration:
+              typeof months === 'number' && months > 0 ? 'repeating' : 'once',
+            metadata: {
+              discountCode: normalized,
+              createdBy: input.adminUid,
+            },
+          };
+          if (typeof months === 'number' && months > 0) {
+            couponParams.duration_in_months = months;
+          }
+          if (input.discountType === 'percent_off') {
+            couponParams.percent_off = input.percentOff;
+          } else {
+            couponParams.amount_off = input.amountOff;
+            couponParams.currency = currency ?? 'usd';
+          }
+          if (input.expiresAt) {
+            couponParams.redeem_by = Math.floor(input.expiresAt.getTime() / 1000);
+          }
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const coupon = await stripe.coupons.create(couponParams as any);
+
+          const promoParams: Record<string, unknown> = {
+            coupon: coupon.id,
+            code: normalized,
+            metadata: {
+              discountCode: normalized,
+              createdBy: input.adminUid,
+            },
+          };
+          if (typeof input.maxRedemptions === 'number' && input.maxRedemptions > 0) {
+            promoParams.max_redemptions = input.maxRedemptions;
+          }
+          if (input.expiresAt) {
+            promoParams.expires_at = Math.floor(input.expiresAt.getTime() / 1000);
+          }
+
+          const promo = await stripe.promotionCodes.create(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            promoParams as any,
+          );
+
+          resolvedCouponId = coupon.id;
+          resolvedPromoId = promo.id;
+        } catch (stripeErr) {
+          console.error(
+            '[discount-codes] Stripe coupon/promo creation failed:',
+            stripeErr,
+          );
+          return {
+            success: false,
+            error:
+              'Could not create the Stripe coupon for this code. ' +
+              (stripeErr instanceof Error ? stripeErr.message : String(stripeErr)),
+          };
+        }
+      }
     }
 
     const docData: Omit<DiscountCode, 'id'> = {
@@ -538,13 +643,13 @@ export async function createDiscountCode(
       accessDurationDays: input.accessDurationDays,
       percentOff: input.percentOff,
       amountOff: input.amountOff,
-      currency: input.currency ?? (input.amountOff ? 'usd' : undefined),
+      currency,
       maxRedemptions: input.maxRedemptions ?? null,
       redemptionCount: 0,
       oneUsePerUser: input.oneUsePerUser ?? true,
-      requiresStripe: input.requiresStripe ?? false,
-      stripeCouponId: input.stripeCouponId,
-      stripePromotionCodeId: input.stripePromotionCodeId,
+      requiresStripe: resolvedRequiresStripe,
+      stripeCouponId: resolvedCouponId,
+      stripePromotionCodeId: resolvedPromoId,
       startsAt: input.startsAt ? Timestamp.fromDate(input.startsAt) : undefined,
       expiresAt: input.expiresAt ? Timestamp.fromDate(input.expiresAt) : undefined,
       isActive: input.isActive ?? true,
