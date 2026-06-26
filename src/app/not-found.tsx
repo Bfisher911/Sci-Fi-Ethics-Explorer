@@ -11,6 +11,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Button } from '@/components/ui/button';
+import { Glitchy404 } from '@/components/ui/glitchy-404-1';
 
 export const metadata: Metadata = {
   title: 'Page not found',
@@ -24,11 +25,15 @@ export default function NotFound() {
       className="flex min-h-[80vh] flex-col items-center justify-center px-4 py-16 text-center"
       role="main"
     >
+      {/* Glitchy 404 art. White glyphs are rasterized to a canvas, so they
+          need a dark backdrop to read — this "deep space" panel keeps them
+          legible in both light and dark themes. Decorative only; the real
+          status is conveyed by the heading and metadata below. */}
       <div
         aria-hidden
-        className="mb-6 select-none font-headline text-7xl font-bold tracking-tight text-primary md:text-9xl"
+        className="mb-8 flex w-full max-w-2xl items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[radial-gradient(ellipse_at_center,_hsl(240_61%_18%),_hsl(240_61%_8%))] px-4 py-6 shadow-lg"
       >
-        404
+        <Glitchy404 width={520} height={150} color="#fff" />
       </div>
       <h1 className="mb-3 font-headline text-2xl font-bold tracking-tight md:text-3xl">
         We've drifted off the star chart
