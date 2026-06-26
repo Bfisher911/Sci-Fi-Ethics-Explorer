@@ -50,3 +50,6 @@ firestore-debug.log
 # Local Netlify folder
 .netlify
 graphify-out/
+
+# Local Claude Code session config
+.claude/
