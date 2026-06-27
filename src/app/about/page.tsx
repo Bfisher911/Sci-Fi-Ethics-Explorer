@@ -29,6 +29,21 @@ const PARTS = [
   },
 ];
 
+const WHY_NOW = [
+  {
+    title: 'AI makes consequential calls',
+    body: 'Models now sit in the loop on hiring, lending, medicine, policing, and what billions of people read each day. Knowing how to interrogate those systems is no longer a specialist concern.',
+  },
+  {
+    title: 'The pace outruns the rules',
+    body: 'Law and norms are written after harm shows up. Fiction lets us rehearse the failure modes — surveillance, automation, engineered life — before they ship, while there is still room to choose.',
+  },
+  {
+    title: 'Everyone is a participant',
+    body: 'You generate the data, accept the defaults, and cast the votes that shape this. Ethical literacy is how a citizen, not just a regulator, holds technology to account.',
+  },
+];
+
 export default function AboutPage() {
   return (
     <div className="flex min-h-screen flex-col text-foreground">
@@ -102,6 +117,46 @@ export default function AboutPage() {
                 })}
               </ul>
             </Reveal>
+          </div>
+        </section>
+
+        {/* ── Why it matters now ───────────────────────────────────── */}
+        <section className="border-y border-border/40 bg-background/40">
+          <div className="mx-auto w-full max-w-5xl px-4 py-20 md:py-24">
+            <Reveal>
+              <h2 className="max-w-3xl font-display text-3xl font-medium tracking-tight md:text-4xl">
+                Why this matters now
+              </h2>
+              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-foreground/90">
+                For most of history, a new technology arrived slowly enough that
+                a culture could argue about it before living with it. That
+                margin is gone. Systems that decide who gets a loan, what a
+                child sees, which patients are flagged, and what counts as true
+                are being deployed faster than our laws, our institutions, or
+                our intuitions can keep up.
+              </p>
+              <p className="mt-4 max-w-2xl text-lg leading-relaxed text-foreground/90">
+                You don&apos;t get to opt out of those decisions — you live
+                inside them. The only real choice is whether you can reason about
+                them clearly. That&apos;s a skill, and like any skill it takes
+                practice on hard cases before the stakes are personal.
+              </p>
+            </Reveal>
+
+            <div className="mt-12 grid gap-5 md:grid-cols-3">
+              {WHY_NOW.map((item) => (
+                <Reveal key={item.title}>
+                  <div className="surface-card h-full rounded-2xl p-6">
+                    <h3 className="font-display text-lg font-medium">
+                      {item.title}
+                    </h3>
+                    <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
+                      {item.body}
+                    </p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
           </div>
         </section>
 
