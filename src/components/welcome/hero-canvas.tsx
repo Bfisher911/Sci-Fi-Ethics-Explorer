@@ -72,30 +72,37 @@ void main() {
   vec2 r = vec2(fbm(p * 1.5 + 1.7 * q + t * 0.5), fbm(p * 1.5 + 1.7 * q - t * 0.5));
   float f = fbm(p * 1.5 + 2.4 * r);
 
-  // Lean tilts the color balance cyan <-> magenta.
+  // Lean tilts the color balance cyan <-> magenta (wide, dramatic swing).
   float bias = 0.5 + 0.5 * clamp(uLean, -1.0, 1.0);
-  vec3 neon = mix(uAccent, uPrimary, clamp(0.35 + bias * 0.5, 0.0, 1.0));
+  vec3 neon = mix(uAccent, uPrimary, clamp(0.3 + bias * 0.6, 0.0, 1.0));
+  vec3 neon2 = mix(uPrimary, uAccent, clamp(0.3 + bias * 0.6, 0.0, 1.0));
 
-  // Deep base, with neon only in the bright ridges of the warp so the
-  // scene stays predominantly dark (and the hero text stays legible).
-  vec3 col = uBg * 0.65;
-  float ridge = smoothstep(0.55, 0.95, f);
-  col += neon * ridge * 0.45;
-  col += neon * smoothstep(0.25, 0.85, f) * 0.07;
+  vec3 col = uBg * 0.55;
 
-  // Starfield (subtle).
+  // Broad nebula bloom.
+  col += neon * smoothstep(0.18, 0.85, f) * 0.5;
+  // Hot filament ridges where the warp piles up.
+  float ridge = smoothstep(0.58, 0.92, f);
+  col += neon * ridge * 0.95;
+  // Thin complementary veins along the folds of the domain warp.
+  float vein = smoothstep(0.5, 0.46, abs(r.x - r.y));
+  col += neon2 * vein * 0.4;
+  // Energy pulse that breathes through the whole field.
+  col += neon * (0.06 + 0.05 * sin(uTime * 0.6 + f * 6.2831));
+
+  // Starfield (brighter, livelier twinkle).
   vec2 sp = gl_FragCoord.xy / 2.2;
-  float star = pow(hash(floor(sp)), 60.0);
-  star *= 0.6 + 0.4 * sin(uTime * 2.0 + hash(floor(sp)) * 30.0);
-  col += vec3(star) * 0.55;
+  float star = pow(hash(floor(sp)), 55.0);
+  star *= 0.5 + 0.5 * sin(uTime * 2.0 + hash(floor(sp)) * 30.0);
+  col += vec3(star) * 0.9;
 
-  // Cursor glow.
+  // Cursor glow — stronger, tinted by the current lean.
   float md = distance(uv, uMouse);
-  col += uPrimary * smoothstep(0.32, 0.0, md) * 0.09;
+  col += neon * smoothstep(0.4, 0.0, md) * 0.2;
 
-  // Vignette, then floor the value so it never blows out to white.
-  col *= 1.0 - 0.45 * length(p * 0.75);
-  col = max(col, uBg * 0.25);
+  // Gentle vignette; floor the value so it never blows out to white.
+  col *= 1.0 - 0.42 * length(p * 0.75);
+  col = max(col, uBg * 0.28);
 
   outColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }`;
@@ -161,7 +168,10 @@ export default function HeroCanvas({ lean, reducedMotion }: HeroCanvasProps) {
     window.addEventListener('pointermove', onMove, { passive: true });
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      // Lower the pixel-ratio cap on phones — the deliberate perf trade
+      // for running the full shader on mobile rather than a poster.
+      const mobile = window.innerWidth < 768;
+      const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.0 : 1.5);
       const w = Math.floor(canvas.clientWidth * dpr);
       const h = Math.floor(canvas.clientHeight * dpr);
       if (canvas.width !== w || canvas.height !== h) {

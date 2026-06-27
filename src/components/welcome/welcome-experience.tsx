@@ -78,7 +78,9 @@ export function WelcomeExperience() {
     const fine = window.matchMedia('(pointer: fine)').matches;
     setReducedMotion(rm);
     setFinePointer(fine);
-    setWebglEnabled(supportsWebGL2() && window.innerWidth >= 768);
+    // 3D everywhere it's supported — including mobile (a deliberate perf
+    // trade, mitigated by a lower DPR cap on phones in HeroCanvas).
+    setWebglEnabled(supportsWebGL2());
   }, []);
 
   // Pointer-driven flourishes require a fine pointer + motion allowed.
@@ -129,7 +131,7 @@ export function WelcomeExperience() {
               behind the headline. Two stacked layers: an edge vignette
               plus a soft center scrim. */}
           <div
-            className="pointer-events-none absolute inset-0 z-[5] bg-[radial-gradient(ellipse_80%_70%_at_50%_45%,hsl(var(--background)/0.45),hsl(var(--background)/0.92)_100%)]"
+            className="pointer-events-none absolute inset-0 z-[5] bg-[radial-gradient(ellipse_78%_68%_at_50%_45%,hsl(var(--background)/0.55),hsl(var(--background)/0.93)_100%)]"
             aria-hidden="true"
           />
 
